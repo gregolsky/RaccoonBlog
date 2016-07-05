@@ -233,6 +233,10 @@
         $('.comment.preview').addClass('active');
     }
 
+    function editComment(commentId) {
+        
+    }
+
     function getMarkdownConverter() {
         var markdown = new MarkdownDeep.Markdown();
         markdown.ExtraMode = true;

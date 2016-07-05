@@ -1,0 +1,162 @@
+﻿@model PostViewModel
+
+<section class="comments">
+    <a name="comments"></a>
+    <h2>Comments</h2>
+
+    @foreach (var comment in Model.Comments)
+    {
+        var importantClass = comment.IsImportant ? "important" : string.Empty;
+
+        <article data-comment-id="@comment.Id" data-can-edit="@Model." class="comment @importantClass">
+            <a name='@(string.Format("comment{0}", (comment.Id)))'></a>
+            <div class="avatar">
+                <img src='@(string.Format("http://www.gravatar.com/avatar.php?gravatar_id={0}&size=50&default=identicon", @comment.EmailHash))' alt="@comment.Author" />
+            </div>
+            <div class="postedBy">
+                <a href="@comment.Url" target="_blank" title='@(string.Format("Comment by {0}", @comment.Author))'>@comment.Author</a>
+            </div>
+            <time>
+                @DateTime.Parse(@comment.CreatedAt).ToString("dd MMM yyyy")<br />
+                @DateTime.Parse(@comment.CreatedAt).ToString("HH:mm tt")
+            </time>
+            <div class="comment-body">
+                @comment.Body
+            </div>
+        </article>
+    }
+
+    <article class="comment preview">
+        <h4 class="preview-title">Comment preview</h4>
+        <a name="comment-preview"></a>
+        <div class="avatar">
+            <img src='http://www.gravatar.com/avatar.php?gravatar_id={0}&size=50&default=identicon' alt=""/>
+        </div>
+        <time>
+        </time>
+        <div class="postedBy">
+            <a href=""></a>
+        </div>
+        <div class="comment-body">
+        </div>
+    </article>
+
+    <article id="postComment">
+        @if (Model.Post.IsCommentAllowed == false || Model.AreCommentsClosed)
+        {
+            <div class="commentsClosedMessage">Comments have been closed on this topic.</div>
+        }
+        else
+        {
+            <h3 style="float: left">
+                <a id="comments-form-location">Join the conversation...</a>
+            </h3>
+            if (Model.IsLoggedInCommenter == false)
+            {
+                <div class="openAuth-wrapper">
+                    <span class="btn">Sign in with</span>
+                    <form action="@Url.Action("Login", "Social")" method="post">
+                        @Html.Hidden("redirectUrl", Url.RelativeToAbsolute((string)ViewBag.CurrentUrl + "#postComment"))
+                        @if (ConfigurationHelper.GoogleOAuthKeys != null)
+                        {
+                            <button type="submit" name="provider" value="Google" class="btn btn-default btn-google">c</button>
+                        }
+                        @if (ConfigurationHelper.MicrosoftOAuthKeys != null)
+                        {
+                            <button type="submit" name="provider" value="Microsoft" class="btn btn-default btn-ms">Z</button>
+                        }
+                        @if (ConfigurationHelper.FacebookOAuthKeys != null)
+                        {
+                            <button type="submit" name="provider" value="Facebook" class="btn btn-default btn-fb">b</button>
+                        }
+                        @if (ConfigurationHelper.TwitterOAuthKeys != null)
+                        {
+                            <button type="submit" name="provider" value="Twitter" class="btn btn-default btn-twitter">a</button>
+                        }
+
+                    </form>
+                </div>
+            }
+            <div class="clearfix"></div>
+            <div class="comment-form-wrapper">
+                @using (Html.BeginForm("Comment", "PostDetails", new { Model.Post.Id, key = Model.Post.ShowPostEvenIfPrivate }))
+                {
+                    <div class="row">
+                        <div class="form_item form-group col-sm-12 col-md-4">
+                            <label>
+                                <span class="form_item_name">Name</span>
+                            </label>
+                            @Html.TextBoxFor(x => x.Input.Name, new { @class = "form-control" })
+                            @Html.ValidationMessageFor(x => x.Input.Name)
+                        </div>
+                        <div class="form_item form-group col-sm-6 col-md-4">
+
+                            <label>
+                                <span class="form_item_name">Email</span>
+                            </label>
+                            @Html.TextBoxFor(x => x.Input.Email, new { @class = "form-control email", type = "email" })
+                            @Html.ValidationMessageFor(x => x.Input.Email)
+
+                        </div>
+                        <div class="form_item form-group col-sm-6 col-md-4">
+                            <label>
+                                <span class="form_item_name">Url</span>
+                            </label>
+                            @Html.TextBoxFor(x => x.Input.Url, new { @class = "form-control" })
+                            @Html.ValidationMessageFor(x => x.Input.Url)
+                        </div>
+                        <div class="form_item form-group col-sm-12">
+
+                            <label>
+                                <span class="form_item_name">
+                                    Comments
+                                </span>
+                            </label>
+                            &nbsp;
+                            <a href="#" data-toggle="modal" data-target="#markdownHelp"
+                               data-keyboard="true">
+                                <i class="glyphicon glyphicon-info-sign" ></i>
+                            </a>
+                            <div class="textarea_wrap">
+                                @Html.TextAreaFor(x => x.Input.Body, new { rows = 9, @class = "form-control" })
+
+                                <span class="lang"
+                                      data-toggle="modal"
+                                      data-target="#markdownHelp"
+                                      data-keyboard="true"></span>
+                            </div>
+                            @Html.ValidationMessageFor(x => x.Input.Body)
+                        </div>
+                        @if (Model.IsTrustedCommenter == false)
+                        {
+                            <div class="form_item form-group col-sm-12">
+                                <label>
+                                    <span class="form_item_name">Human?</span>
+                                </label>
+                                @Html.GenerateCaptcha()
+                                @Html.ValidationMessage("CaptchaNotValid")
+                            </div>
+                        }
+                    </div>
+                    <div class="pull-right">
+                        <input type="button" id="commentPreview" value="Comment Preview" class="btn btn-default">
+                        @Html.HiddenFor(x => x.Input.CommenterKey)
+                        @Html.HiddenFor(x => x.Input.Id)
+
+                        <button type="submit" id="postCommentBtn" 
+                                name="@Html.NameFor(x => x.Input.Action)" 
+                                value="post" class="btn btn-primary">
+                            Post Comment
+                        </button>
+                        <button type="submit" id="updateCommentBtn" 
+                                name="@Html.NameFor(x => x.Input.Action)" 
+                                value="update" class="btn btn-primary" >
+                            Update Comment
+                        </button>
+                    </div>
+                    <div class="clearfix"></div>
+                }
+            </div>
+        }
+    </article>
+</section>

@@ -1169,6 +1169,8 @@
     <Content Include="Views\PostDetails\NextPrevNav.cshtml" />
     <Content Include="Views\PostDetails\MarkdownHelp.cshtml" />
     <Content Include="Views\MailTemplates\RedditSubmissionFailed.cshtml" />
+    <Content Include="Views\PostDetails\Comments.cshtml" />
+    <Content Include="Views\PostDetails\MoreInSeries.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Content\images\" />

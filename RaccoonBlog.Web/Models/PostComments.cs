@@ -51,6 +51,7 @@ namespace RaccoonBlog.Web.Models
 			public string UserAgent { get; set; }
 
 			public string CommenterId { get; set; }
+            public string CommenterKey { get; set; }
 		}
 	}
 }

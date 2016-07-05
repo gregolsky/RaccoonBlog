@@ -29,6 +29,7 @@ namespace RaccoonBlog.Web.ViewModels
             public string EmailHash { get; set; }
             public string CreatedAt { get; set; }
             public bool IsImportant { get; set; }
+            public bool CommenterKey { get; set; }
         }
 
         public class PostDetails

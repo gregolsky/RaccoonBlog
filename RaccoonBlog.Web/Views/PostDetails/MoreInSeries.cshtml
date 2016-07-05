@@ -1,0 +1,31 @@
+﻿@model PostViewModel
+
+<section class="postsInSeries" data-state="closed">
+    <h4 class="text-left">
+        More posts in <a href="@Url.Series(Model.SeriesInfo.SeriesId, Model.SeriesInfo.SeriesSlug)">
+            &quot;@Html.Raw(Model.SeriesInfo.SeriesTitle)&quot;
+        </a> series:
+    </h4>
+    <ol>
+        @foreach (var post in Model.SeriesInfo.PostsInSeries)
+        {
+            if (post.PublishAt >= DateTimeOffset.Now)
+            {
+                <li><em>(@(post.PublishAt.ToString("dd MMM yyyy")))</em>&nbsp;@(post.Title)</li>
+            }
+            else
+            {
+                if (post.Id == Model.Post.Id)
+                {
+                    <li><strong><em>(@(post.PublishAt.ToString("dd MMM yyyy")))</em>&nbsp;<a href="@Url.Action("Details", new { post.Id, post.Slug })">@(post.Title)</a></strong></li>      }
+                else
+                {
+                    <li><em>(@(post.PublishAt.ToString("dd MMM yyyy")))</em>&nbsp;<a href="@Url.Action("Details", new { post.Id, post.Slug })">@(post.Title)</a></li>      }
+            }
+        }
+    </ol>
+    @if (Model.SeriesInfo.PostsInSeries.Count > 3)
+    {
+        <button class="morePosts btn btn-sm btn-default">show all</button>
+    }
+</section>

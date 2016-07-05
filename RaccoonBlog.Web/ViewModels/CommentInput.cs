@@ -7,6 +7,10 @@ namespace RaccoonBlog.Web.ViewModels
 {
 	public class CommentInput
 	{
+        public string Id { get; set; }
+
+        public string Action { get; set; }
+
 		[Required(ErrorMessage = "Name is required")]
 		[Display(Name = "Name")]
 		public string Name { get; set; }

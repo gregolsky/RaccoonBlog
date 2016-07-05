@@ -35,7 +35,8 @@ namespace RaccoonBlog.Web.Controllers
 
             SeriesInfo seriesInfo = GetSeriesInfo(post.Title);
 
-			var comments = RavenSession.Load<PostComments>(post.CommentsId) ?? new PostComments();
+			var comments = RavenSession
+                .Load<PostComments>(post.CommentsId) ?? new PostComments();
 			var vm = new PostViewModel
 			         {
 			         	Post = post.MapTo<PostViewModel.PostDetails>(),
