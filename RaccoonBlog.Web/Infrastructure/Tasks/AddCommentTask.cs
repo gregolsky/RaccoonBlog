@@ -53,7 +53,8 @@ namespace RaccoonBlog.Web.Infrastructure.Tasks
 			              	};
 			comment.IsSpam = AkismetService.CheckForSpam(comment);
 
-			var commenter = DocumentSession.GetCommenter(commentInput.CommenterKey) ?? new Commenter { Key = commentInput.CommenterKey ?? Guid.Empty };
+			var commenter = DocumentSession.GetCommenter(commentInput.CommenterKey) ?? 
+                new Commenter { Key = commentInput.CommenterKey ?? Guid.Empty };
 			SetCommenter(commenter, comment);
 
 			if (requestValues.IsAuthenticated == false && comment.IsSpam)
@@ -83,6 +84,7 @@ namespace RaccoonBlog.Web.Infrastructure.Tasks
 				commenter.NumberOfSpamComments++;
 
 			DocumentSession.Store(commenter);
+		    comment.CommenterKey = commenter.Key.MapTo<string>();
 			comment.CommenterId = commenter.Id;
 		}
 

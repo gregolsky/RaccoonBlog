@@ -12,5 +12,15 @@ namespace RaccoonBlog.Web.Helpers
 			var cookie = new HttpCookie(CommenterCookieName, commenterKey) {Expires = DateTime.Now.AddYears(1)};
 			response.Cookies.Add(cookie);
 		}
+
+	    public static string GetCurrentCommenterKey(HttpRequestBase request)
+	    {
+	        return request.Cookies[CommenterCookieName]?.Value;
+	    }
+
+	    public static string GetCurrentCommenterKey()
+	    {
+	        return GetCurrentCommenterKey(new HttpRequestWrapper(HttpContext.Current.Request));
+	    }
 	}
 }

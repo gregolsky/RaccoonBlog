@@ -7,9 +7,15 @@ namespace RaccoonBlog.Web.ViewModels
 {
 	public class CommentInput
 	{
-        public string Id { get; set; }
+	    public enum CommentAction
+	    {
+	        Post,
+            Update
+	    }
 
-        public string Action { get; set; }
+        public CommentAction? Action { get; set; }
+
+        public DateTimeOffset? CreatedAt { get; set; }
 
 		[Required(ErrorMessage = "Name is required")]
 		[Display(Name = "Name")]
