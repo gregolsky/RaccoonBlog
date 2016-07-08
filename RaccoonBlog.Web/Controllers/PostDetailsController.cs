@@ -3,12 +3,14 @@ using System.Linq;
 using System.Security.Claims;
 using System.Web;
 using System.Web.Mvc;
+using FluentScheduler;
 using HibernatingRhinos.Loci.Common.Tasks;
 using RaccoonBlog.Web.Helpers;
 using RaccoonBlog.Web.Helpers.Validation;
 using RaccoonBlog.Web.Infrastructure.AutoMapper;
 using RaccoonBlog.Web.Infrastructure.AutoMapper.Profiles.Resolvers;
 using RaccoonBlog.Web.Infrastructure.Common;
+using RaccoonBlog.Web.Infrastructure.Jobs;
 using RaccoonBlog.Web.Infrastructure.Tasks;
 using RaccoonBlog.Web.Models;
 using RaccoonBlog.Web.ViewModels;
@@ -121,11 +123,11 @@ namespace RaccoonBlog.Web.Controllers
 		    if (ModelState.IsValid == false)
 		        return PostingCommentFailed(post, input, key);
 
-            input.CreatedAt = DateTimeOffset.Now;
+            input.CreatedAt = input.Action == CommentInput.CommentAction.Post ? DateTimeOffset.Now : input.CreatedAt;
+		    JobManager.AddJob(new CommentAction(input, Request.MapTo<CommentAction.RequestValues>(), id), 
+                schedule => schedule.ToRunNow());
 
-		    TaskExecutor.ExcuteLater(new AddCommentTask(input, Request.MapTo<AddCommentTask.RequestValues>(), id));
-
-		    CommenterUtil.SetCommenterCookie(Response, input.CommenterKey.MapTo<string>());
+            CommenterUtil.SetCommenterCookie(Response, input.CommenterKey.MapTo<string>());
 
 		    OutputCacheManager.RemoveItem(SectionController.NameConst, MVC.Section.ActionNames.List);
 

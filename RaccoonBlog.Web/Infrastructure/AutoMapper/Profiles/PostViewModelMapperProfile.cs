@@ -5,6 +5,7 @@ using AutoMapper;
 using RaccoonBlog.Web.Helpers;
 using RaccoonBlog.Web.Infrastructure.AutoMapper.Profiles.Resolvers;
 using RaccoonBlog.Web.Infrastructure.Common;
+using RaccoonBlog.Web.Infrastructure.Jobs;
 using RaccoonBlog.Web.Models;
 using RaccoonBlog.Web.ViewModels;
 
@@ -65,7 +66,7 @@ namespace RaccoonBlog.Web.Infrastructure.AutoMapper.Profiles
 			//    .ForMember(x => x.CommenterKey, o => o.Ignore())
 			//    ;
 
-			Mapper.CreateMap<HttpRequestWrapper, Tasks.AddCommentTask.RequestValues>();
+			Mapper.CreateMap<HttpRequestWrapper, CommentAction.RequestValues>();
 
 			Mapper.CreateMap<User, PostViewModel.UserDetails>();
 		}

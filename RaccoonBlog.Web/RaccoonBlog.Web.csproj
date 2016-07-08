@@ -324,6 +324,8 @@
     <Compile Include="Infrastructure\AutoMapper\Profiles\Resolvers\StringToGuidConverter.cs" />
     <Compile Include="Infrastructure\AutoMapper\Profiles\SeriesMapperProfile.cs" />
     <Compile Include="Infrastructure\Common\DocumentSessionExtensions.cs" />
+    <Compile Include="Infrastructure\Jobs\CommentAction.cs" />
+    <Compile Include="Infrastructure\Jobs\JobBase.cs" />
     <Compile Include="Infrastructure\Jobs\RedditIntegration.cs" />
     <Compile Include="Infrastructure\Jobs\SocialNetworkIntegrationJobsRegistry.cs" />
     <Compile Include="LegacyPostController.generated.cs">

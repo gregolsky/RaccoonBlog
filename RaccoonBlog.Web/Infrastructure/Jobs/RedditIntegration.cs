@@ -10,52 +10,12 @@ using Raven.Client;
 
 namespace RaccoonBlog.Web.Infrastructure.Jobs
 {
-    public class RedditIntegration : IJob, IRegisteredObject
+    public class RedditIntegration : JobBase
     {
-        private static readonly NLog.Logger _log = NLog.LogManager.GetCurrentClassLogger();
-
-        private readonly object _lock = new object();
-
-        private bool _shuttingDown;
-
-        private readonly IDocumentStore _documentStore;
-
-        public RedditIntegration()
+        protected override void Run(IDocumentSession session)
         {
-            _documentStore = RavenController.DocumentStore;
-            HostingEnvironment.RegisterObject(this);
-        }
-
-        public void Execute()
-        {
-            _log.Info("Started execution Reddit integration job.");
-
-            lock (_lock)
-            {
-                if (_shuttingDown)
-                    return;
-
-                using (var session = _documentStore.OpenSession())
-                {
-                    var submitToReddit = new SubmitToRedditStrategy(session);
-                    submitToReddit.SubmitPostsToReddit(DateTimeOffset.UtcNow);
-
-                    session.SaveChanges();
-                }
-            }
-
-            _log.Info("Finished execution Reddit integration job.");
-        }
-
-
-        public void Stop(bool immediate)
-        {
-            lock (_lock)
-            {
-                _shuttingDown = true;
-            }
-
-            HostingEnvironment.UnregisterObject(this);
+            var submitToReddit = new SubmitToRedditStrategy(session);
+            submitToReddit.SubmitPostsToReddit(DateTimeOffset.UtcNow);
         }
     }
 }

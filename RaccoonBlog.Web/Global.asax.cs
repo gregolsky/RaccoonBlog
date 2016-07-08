@@ -88,11 +88,18 @@ namespace RaccoonBlog.Web
 				s.SaveChanges();
 			}
 
-            JobManager.JobException += JobExceptionHandler;
-            JobManager.Initialize(new SocialNetworkIntegrationJobsRegistry());
-        }
+            ConfigureBackgroundJobs();
+		}
 
-		public static IDocumentStore DocumentStore { get; private set; }
+	    private static void ConfigureBackgroundJobs()
+	    {
+	        JobManager.JobException += JobExceptionHandler;
+	        JobManager.JobStart += (jobInfo, args) => { _log.Info($"Job \"{jobInfo.Name}\" started."); };
+	        JobManager.JobEnd += (jobInfo, args) => { _log.Info($"Job \"{jobInfo.Name}\" finished."); };
+	        JobManager.Initialize(new SocialNetworkIntegrationJobsRegistry());
+	    }
+
+	    public static IDocumentStore DocumentStore { get; private set; }
 
         static void JobExceptionHandler(JobExceptionInfo info, FluentScheduler.UnhandledExceptionEventArgs e)
         {
