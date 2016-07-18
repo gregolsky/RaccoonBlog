@@ -85,11 +85,7 @@
     }
 
     function toggleSidebar() {
-        if ($('.container').hasClass('hideSidebar')) {
-            $('.container').removeClass('hideSidebar');
-        } else {
-            $('.container').addClass('hideSidebar');
-        }
+        if ($('.container').toggleClass('hideSidebar'));
     }
 
     function toggleMenu() {
