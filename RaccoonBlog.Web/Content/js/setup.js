@@ -33,6 +33,7 @@
         adjustSize();
         handleVisitCookies();
         setPreferredView();
+        makeTablesResponsive();
     }
 
     function initEvents() {
@@ -50,6 +51,10 @@
             $('.comments textarea').blur(updateCommentPreview);
             updateCommentPreview();
         });
+    }
+
+    function makeTablesResponsive() {
+        $('.articleContent table').addClass('table').wrap("<div class='table-responsive'></div>");
     }
 
     function initMorePostsInSeries() {
@@ -171,8 +176,10 @@
         if (visitCookieVaule == 'visited') {
             cookies.create('newVisit', 'visited');
         } else {
-            $('.container').removeClass('visited');
-            cookies.create('newVisit', 'visited');
+            if ($(document).width() > $(document).height()) {
+                $('.container').removeClass('visited');
+                cookies.create('newVisit', 'visited');
+            }
         }
     }
 
