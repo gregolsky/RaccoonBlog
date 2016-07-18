@@ -85,7 +85,7 @@
     }
 
     function toggleSidebar() {
-        if ($('.container').toggleClass('hideSidebar'));
+        $('.container').toggleClass('hideSidebar');
     }
 
     function toggleMenu() {
