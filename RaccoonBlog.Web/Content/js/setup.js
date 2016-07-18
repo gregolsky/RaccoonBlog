@@ -175,7 +175,11 @@
 
         var visitCookieVaule = cookies.read('visitStatus');
         if (visitCookieVaule != 'visited') {
+            var showCondition = false;
             if ($(window).width() > $(window).height()) {
+                showCondition = true;
+            }
+            if (showCondition) {
                 toggleSidebar();
             }
             cookies.create('visitStatus', 'visited');
