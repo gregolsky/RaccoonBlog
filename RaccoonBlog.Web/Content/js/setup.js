@@ -172,13 +172,9 @@
     }
 
     function showSidebarOnFirstVisit() {
-
         var visitCookieVaule = cookies.read('visitStatus');
         if (visitCookieVaule != 'visited') {
-            var showCondition = false;
-            if ($(window).width() > $(window).height()) {
-                showCondition = true;
-            }
+            var showCondition = $(window).width() > $(window).height();
             if (showCondition) {
                 toggleSidebar();
             }
