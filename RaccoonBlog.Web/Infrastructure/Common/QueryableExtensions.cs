@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using RaccoonBlog.Web.Models;
+using Raven.Client.Linq;
 
 namespace RaccoonBlog.Web.Infrastructure.Common
 {
@@ -11,12 +12,6 @@ namespace RaccoonBlog.Web.Infrastructure.Common
 			return query
 				.Skip((currentPage - defaultPage)*pageSize)
 				.Take(pageSize);
-		}
-
-		public static IQueryable<Post> WhereIsPublicPost(this IQueryable<Post> query)
-		{
-			return query
-				.Where(post => post.PublishAt < DateTimeOffset.Now.AsMinutes() && post.IsDeleted == false);
 		}
 	}
 }

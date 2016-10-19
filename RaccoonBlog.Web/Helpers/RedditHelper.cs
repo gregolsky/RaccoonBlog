@@ -4,6 +4,7 @@ using System.Collections.Specialized;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
+using RaccoonBlog.Web.Infrastructure;
 using RaccoonBlog.Web.Infrastructure.AutoMapper.Profiles.Resolvers;
 using RaccoonBlog.Web.Infrastructure.Common;
 using RaccoonBlog.Web.Models;
@@ -41,7 +42,7 @@ namespace RaccoonBlog.Web.Helpers
 
         public static IList<Post> GetPostsForAutomaticRedditSubmission(IDocumentSession documentSession, DateTimeOffset currentDateTimeOffset)
         {
-            return documentSession.Query<Post>()
+            return documentSession.QueryPublicPosts()
                 .Where(x => x.PublishAt <= currentDateTimeOffset &&
                             x.TagsAsSlugs.Any(t => t == SendToRedditTag) &&
                             (x.Integration == null || 
@@ -53,7 +54,7 @@ namespace RaccoonBlog.Web.Helpers
 
         public static IList<Post> GetPostsForManualRedditSubmission(IDocumentSession documentSession, DateTimeOffset currentDateTimeOffset)
         {
-            return documentSession.Query<Post>()
+            return documentSession.QueryPublicPosts()
                 .Where(x => x.PublishAt <= currentDateTimeOffset &&
                             x.TagsAsSlugs.Any(t => t == SendToRedditTag) &&
                             (x.Integration != null &&

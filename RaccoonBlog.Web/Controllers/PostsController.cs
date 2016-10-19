@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.Mvc;
+using RaccoonBlog.Web.Infrastructure;
 using RaccoonBlog.Web.Infrastructure.AutoMapper;
 using RaccoonBlog.Web.Infrastructure.AutoMapper.Profiles.Resolvers;
 using RaccoonBlog.Web.Infrastructure.Common;
@@ -20,10 +21,9 @@ namespace RaccoonBlog.Web.Controllers
 			ViewBag.IsHomePage = CurrentPage == DefaultPage;
 
 			RavenQueryStatistics stats;
-			var posts = RavenSession.Query<Post>()
+			var posts = QueryPublicPosts()
 				.Include(x => x.AuthorId)
 				.Statistics(out stats)
-				.WhereIsPublicPost()
 				.OrderByDescending(post => post.PublishAt)
 				.Paging(CurrentPage, DefaultPage, PageSize)
 				.ToList();
@@ -34,10 +34,9 @@ namespace RaccoonBlog.Web.Controllers
 		public virtual ActionResult Tag(string slug)
 		{
 			RavenQueryStatistics stats;
-			var posts = RavenSession.Query<Post>()
+			var posts = QueryPublicPosts()
 				.Include(x => x.AuthorId)
 				.Statistics(out stats)
-				.WhereIsPublicPost()
 				.Where(post => post.TagsAsSlugs.Any(postTag => postTag == slug))
 				.OrderByDescending(post => post.PublishAt)
 				.Paging(CurrentPage, DefaultPage, PageSize)
@@ -56,10 +55,9 @@ namespace RaccoonBlog.Web.Controllers
                 return HttpNotFound();
 
             RavenQueryStatistics stats;
-            var posts = RavenSession.Query<Post>()
+            var posts = QueryPublicPosts() 
                 .Include(x => x.AuthorId)
 				.Statistics(out stats)
-				.WhereIsPublicPost()
 				.Where(p => p.Id.In(serie.Posts.Select(x => x.Id)))
                 .OrderByDescending(p => p.PublishAt)
                 .Paging(CurrentPage, DefaultPage, PageSize)
@@ -71,10 +69,9 @@ namespace RaccoonBlog.Web.Controllers
 		public virtual ActionResult Archive(int year, int? month, int? day)
 		{
 			RavenQueryStatistics stats;
-			var postsQuery = RavenSession.Query<Post>()
+			var postsQuery = QueryPublicPosts()
 				.Include(x => x.AuthorId)
 				.Statistics(out stats)
-				.WhereIsPublicPost()
 				.Where(post => post.PublishAt.Year == year);
 			
 			if (month != null)

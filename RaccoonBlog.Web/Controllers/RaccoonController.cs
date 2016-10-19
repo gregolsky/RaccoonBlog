@@ -4,7 +4,9 @@ using System.Linq;
 using System.Web.Mvc;
 using HibernatingRhinos.Loci.Common.Controllers;
 using RaccoonBlog.Web.Helpers.Results;
+using RaccoonBlog.Web.Infrastructure;
 using RaccoonBlog.Web.Models;
+using Raven.Client.Linq;
 using Raven.Imports.Newtonsoft.Json;
 using Raven.Imports.Newtonsoft.Json.Serialization;
 
@@ -98,5 +100,15 @@ namespace RaccoonBlog.Web.Controllers
 			var settings = new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() };
 			return new JsonNetResult(data, settings);
 		}
+
+	    public IRavenQueryable<Post> QueryPosts()
+	    {
+	        return RavenSession.QueryPostsDefault();
+	    }
+
+	    public IRavenQueryable<Post> QueryPublicPosts()
+	    {
+	        return RavenSession.QueryPublicPosts();
+	    }
 	}
 }

@@ -69,7 +69,7 @@ namespace RaccoonBlog.Web.Models
 			}
 		}
 
-		public bool IsPublicPost(Guid key)
+		public bool IsPublicPost(Guid? key = null)
 		{
 			if (IsDeleted)
 				return false;
@@ -77,7 +77,9 @@ namespace RaccoonBlog.Web.Models
 			if (PublishAt <= DateTimeOffset.Now)
 				return true;
 
-			return key != Guid.Empty && key == ShowPostEvenIfPrivate;
+			return key.HasValue && 
+                key != Guid.Empty && 
+                key == ShowPostEvenIfPrivate;
 		}
 	}
 

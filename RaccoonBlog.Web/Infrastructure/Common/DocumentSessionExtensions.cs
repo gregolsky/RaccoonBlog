@@ -41,8 +41,7 @@ namespace RaccoonBlog.Web.Infrastructure.Common
 
 		public static PostReference GetNextPrevPost(this IDocumentSession session, Post compareTo, bool isNext)
 		{
-			var queryable = session.Query<Post>()
-				.WhereIsPublicPost();
+		    var queryable = session.QueryPublicPosts();
 
 			if (isNext)
 			{

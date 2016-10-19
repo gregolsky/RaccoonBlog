@@ -7,6 +7,7 @@ using HibernatingRhinos.Loci.Common.Extensions;
 using HibernatingRhinos.Loci.Common.Models;
 using RaccoonBlog.Web.Helpers;
 using RaccoonBlog.Web.Helpers.Attributes;
+using RaccoonBlog.Web.Infrastructure;
 using RaccoonBlog.Web.Infrastructure.AutoMapper;
 using RaccoonBlog.Web.Infrastructure.Common;
 using RaccoonBlog.Web.Models;
@@ -45,6 +46,8 @@ namespace RaccoonBlog.Web.Areas.Admin.Controllers
 			var post = RavenSession.Load<Post>(id);
 			if (post == null)
 				return HttpNotFound("Post does not exist.");
+		    if (post.IsPublicPost() == false)
+		        return HttpNotFound("Post deleted.");
 			return View(post.MapTo<PostInput>());
 		}
 
@@ -106,7 +109,7 @@ namespace RaccoonBlog.Web.Areas.Admin.Controllers
 				.Include<Post>(x => x.CommentsId)
 				.Load(id);
 
-			if (post == null)
+			if (post == null || post.IsPublicPost() == false)
 				return HttpNotFound();
 
 			var comments = RavenSession.Load<PostComments>(post.CommentsId);
@@ -130,8 +133,7 @@ namespace RaccoonBlog.Web.Areas.Admin.Controllers
 
 		public virtual ActionResult ListFeed(DateTime start, DateTime end)
 		{
-			var posts = RavenSession.Query<Post>()
-				.Where(post => post.IsDeleted == false)
+			var posts = RavenSession.QueryPostsDefault() 
 				.Where
 				(
 					post => post.PublishAt >= start &&
@@ -168,7 +170,7 @@ namespace RaccoonBlog.Web.Areas.Admin.Controllers
 				ModelState.AddModelError("CommentIdsAreEmpty", "Not comments was selected.");
 
 			var post = RavenSession.Load<Post>(id);
-			if (post == null)
+			if (post == null || post.IsPublicPost() == false)
 				return HttpNotFound();
 
 			if (ModelState.IsValid == false)

@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 using RaccoonBlog.Web.Areas.Admin.Models;
@@ -76,6 +77,11 @@ namespace RaccoonBlog.Web.Areas.Admin.Controllers
         public virtual async Task<ActionResult> SubmitToReddit(string postId, string sr)
         {
             var post = RavenSession.Load<Post>(postId);
+            if (post == null || post.IsPublicPost() == false)
+            {
+                return HttpNotFound();
+            }
+
             var redditSubmitUrl = RedditHelper.SubmitUrl(sr, post);
             var postSubmission = post.Integration.Reddit.GetPostSubmissionForSubreddit(sr);
             postSubmission.Status = Reddit.SubmissionStatus.ManualSubmissionPending;
@@ -90,6 +96,11 @@ namespace RaccoonBlog.Web.Areas.Admin.Controllers
         public virtual async Task<ActionResult> ResetFailedRedditSubmission(string postId, string sr)
         {
             var post = RavenSession.Load<Post>(postId);
+            if (post == null || post.IsPublicPost() == false)
+            {
+                return HttpNotFound();
+            }
+
             var postSubmission = post.Integration.Reddit.GetPostSubmissionForSubreddit(sr);
             postSubmission.Status = null;
             postSubmission.Attempts = 0;

@@ -8,6 +8,7 @@ using System.Web.Mvc;
 using System.Web.Routing;
 using CookComputing.XmlRpc;
 using RaccoonBlog.Web.Helpers;
+using RaccoonBlog.Web.Infrastructure;
 using RaccoonBlog.Web.Infrastructure.Common;
 using RaccoonBlog.Web.Infrastructure.Indexes;
 using RaccoonBlog.Web.Models;
@@ -166,8 +167,7 @@ namespace RaccoonBlog.Web.Services
 
 			using (var session = MvcApplication.DocumentStore.OpenSession())
 			{
-				var list = session.Query<Models.Post>()
-					.Where(p => p.IsDeleted == false)
+				var list = session.QueryPostsDefault()
 					.OrderByDescending(x => x.PublishAt)
 					.Take(numberOfPosts)
 					.ToList();

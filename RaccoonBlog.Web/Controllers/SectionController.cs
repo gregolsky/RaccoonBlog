@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.Mvc;
-
+using RaccoonBlog.Web.Infrastructure;
 using RaccoonBlog.Web.Infrastructure.AutoMapper;
 using RaccoonBlog.Web.Infrastructure.Indexes;
 using RaccoonBlog.Web.Models;
@@ -51,16 +51,15 @@ namespace RaccoonBlog.Web.Controllers
             ViewBag.SectionTitle = sectionTitle;
 
 			RavenQueryStatistics stats;
-			var futurePosts = RavenSession.Query<Post>()
+			var futurePosts = QueryPosts()
 				.Statistics(out stats)
-				.Where(x => x.PublishAt > DateTimeOffset.Now.AsMinutes() && x.IsDeleted == false)
+				.Where(x => x.PublishAt > DateTimeOffset.Now.AsMinutes())
 				.Select(x => new Post {Title = x.Title, PublishAt = x.PublishAt})
 				.OrderBy(x => x.PublishAt)
 				.Take(5)
 				.ToList();
 
-			var lastPost = RavenSession.Query<Post>()
-				.Where(x => x.IsDeleted == false)
+			var lastPost = QueryPosts()
 				.OrderByDescending(x => x.PublishAt)
 				.Select(x => new Post { PublishAt = x.PublishAt })
 				.FirstOrDefault();

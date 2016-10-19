@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using RaccoonBlog.Web.Infrastructure;
 using RaccoonBlog.Web.Infrastructure.Common;
 using RaccoonBlog.Web.Models;
 using Raven.Client.Linq;
@@ -29,7 +30,7 @@ namespace RaccoonBlog.Web.Services
 
 		public DateTimeOffset Schedule()
 		{
-			var p = session.Query<Post>()
+			var p = session.QueryPostsDefault()
 				.OrderByDescending(post => post.PublishAt)
 				.Select(post => new {post.PublishAt})
 				.FirstOrDefault();
@@ -43,7 +44,7 @@ namespace RaccoonBlog.Web.Services
 
 		public DateTimeOffset Schedule(DateTimeOffset requestedDate)
 		{
-			var postsQuery = from p in session.Query<Post>().Include(x => x.CommentsId)
+			var postsQuery = from p in session.QueryPostsDefault().Include(x => x.CommentsId)
 			                 where p.PublishAt > requestedDate && p.SkipAutoReschedule == false && p.PublishAt > now
 			                 orderby p.PublishAt
 			                 select p;

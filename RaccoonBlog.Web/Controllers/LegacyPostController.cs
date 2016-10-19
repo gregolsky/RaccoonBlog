@@ -4,6 +4,7 @@ using RaccoonBlog.Web.Infrastructure.Common;
 using RaccoonBlog.Web.Models;
 using RaccoonBlog.Web.ViewModels;
 using System.Web.Mvc;
+using RaccoonBlog.Web.Infrastructure;
 
 namespace RaccoonBlog.Web.Controllers
 {
@@ -11,19 +12,16 @@ namespace RaccoonBlog.Web.Controllers
 	{
 		public virtual ActionResult RedirectLegacyPost(int year, int month, int day, string slug)
 		{
-			// attempt to find a post with match slug in the given date, but will back off the exact date if we can't find it
-			var post = RavenSession.Query<Post>()
-						.WhereIsPublicPost()
-						.FirstOrDefault(p => p.LegacySlug == slug && (p.PublishAt.Year == year && p.PublishAt.Month == month && p.PublishAt.Day == day)) ??
-					  RavenSession.Query<Post>()
-						.WhereIsPublicPost()
-						.FirstOrDefault(p => p.LegacySlug == slug && p.PublishAt.Year == year && p.PublishAt.Month == month) ??
-					 RavenSession.Query<Post>()
-						.WhereIsPublicPost()
-						.FirstOrDefault(p => p.LegacySlug == slug && p.PublishAt.Year == year) ??
-					 RavenSession.Query<Post>()
-						.WhereIsPublicPost()
-						.FirstOrDefault(p => p.LegacySlug == slug);
+			//// attempt to find a post with match slug in the given date, but will back off the exact date if we can't find it
+			var post =  
+                QueryPublicPosts() 
+					.FirstOrDefault(p => p.LegacySlug == slug && (p.PublishAt.Year == year && p.PublishAt.Month == month && p.PublishAt.Day == day)) ??
+                QueryPublicPosts()
+                    .FirstOrDefault(p => p.LegacySlug == slug && p.PublishAt.Year == year && p.PublishAt.Month == month) ??
+                QueryPublicPosts()
+                    .FirstOrDefault(p => p.LegacySlug == slug && p.PublishAt.Year == year) ??
+                QueryPublicPosts()
+                    .FirstOrDefault(p => p.LegacySlug == slug);
 
 			if (post == null) 
 			{

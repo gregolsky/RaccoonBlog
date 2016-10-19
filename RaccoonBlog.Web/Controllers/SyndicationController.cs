@@ -12,6 +12,7 @@ using Raven.Client;
 using Raven.Client.Linq;
 using RaccoonBlog.Web.Infrastructure.Common;
 using RaccoonBlog.Web.Helpers;
+using RaccoonBlog.Web.Infrastructure;
 
 namespace RaccoonBlog.Web.Controllers
 {
@@ -55,7 +56,7 @@ namespace RaccoonBlog.Web.Controllers
         {
             RavenQueryStatistics stats;
 
-            var queryBehavior = SetQueryLimitsBasedOnToken(token, RavenSession.Query<Post>().Statistics(out stats));
+            var queryBehavior = SetQueryLimitsBasedOnToken(token, RavenSession.QueryPostsDefault().Statistics(out stats));
 
             var postsQuery = queryBehavior.PostsQuery;
 
@@ -114,6 +115,7 @@ namespace RaccoonBlog.Web.Controllers
                 Title = BlogConfig.Title,
                 Take = 20
             };
+
             if (string.IsNullOrEmpty(token))
             {
                 behavior.PostsQuery = postsQuery.Where(x => x.PublishAt < DateTimeOffset.Now.AsMinutes());
