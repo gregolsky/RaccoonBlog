@@ -3,6 +3,7 @@
 using Owin;
 
 using RaccoonBlog.Web;
+using RaccoonBlog.Web.Infrastructure;
 
 [assembly: OwinStartup(typeof(Startup))]
 namespace RaccoonBlog.Web
@@ -11,6 +12,7 @@ namespace RaccoonBlog.Web
 	{
 		public void Configuration(IAppBuilder app)
 		{
+			app.UseForwardedHeaders();
 			ConfigureAuth(app);
 		}
 	}
