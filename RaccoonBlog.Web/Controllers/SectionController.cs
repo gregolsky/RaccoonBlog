@@ -66,7 +66,7 @@ namespace RaccoonBlog.Web.Controllers
 				new FuturePostsViewModel
 				{
 					LastPostDate = lastPost == null ? null : (DateTimeOffset?)lastPost.PublishAt,
-					TotalCount = stats.TotalResults,
+					TotalCount = (int)stats.TotalResults,
 					Posts = futurePosts.MapTo<FuturePostViewModel>()
 				});
 		}

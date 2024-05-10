@@ -22,7 +22,7 @@
             {
                 PageSize = BlogConfig.PostsOnPage,
                 CurrentPage = CurrentPage,
-                PostsCount = stats.TotalResults,
+                PostsCount = (int)stats.TotalResults,
             };
 
             foreach (var result in series)

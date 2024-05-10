@@ -27,7 +27,7 @@ namespace RaccoonBlog.Web.Controllers
 				.Paging(CurrentPage, DefaultPage, PageSize)
 				.ToList();
 
-			return ListView(stats.TotalResults, posts);
+			return ListView((int)stats.TotalResults, posts);
 		}
 
 		public virtual ActionResult Tag(string slug)
@@ -41,7 +41,7 @@ namespace RaccoonBlog.Web.Controllers
 				.Paging(CurrentPage, DefaultPage, PageSize)
 				.ToList();
 
-			return ListView(stats.TotalResults, posts);
+			return ListView((int)stats.TotalResults, posts);
 		}
 
 		public virtual ActionResult Series(string seriesId, string seriesSlug)
@@ -62,7 +62,7 @@ namespace RaccoonBlog.Web.Controllers
                 .Paging(CurrentPage, DefaultPage, PageSize)
                 .ToList();
 
-            return ListView(stats.TotalResults, posts);
+            return ListView((int)stats.TotalResults, posts);
 	    }
 
 		public virtual ActionResult Archive(int year, int? month, int? day)
@@ -84,7 +84,7 @@ namespace RaccoonBlog.Web.Controllers
 				.Paging(CurrentPage, DefaultPage, PageSize)
 				.ToList();
 
-			return ListView(stats.TotalResults, posts);
+			return ListView((int)stats.TotalResults, posts);
 		}
 
 		private ActionResult ListView(int count, IList<Post> posts)
