@@ -348,6 +348,7 @@
     <Compile Include="Infrastructure\AutoMapper\Profiles\Resolvers\StringToGuidConverter.cs" />
     <Compile Include="Infrastructure\AutoMapper\Profiles\SeriesMapperProfile.cs" />
     <Compile Include="Infrastructure\Common\DocumentSessionExtensions.cs" />
+    <Compile Include="Infrastructure\ForwardedHeadersExtensions.cs" />
     <Compile Include="Infrastructure\Indexes\Posts_ByTag.cs" />
     <Compile Include="Infrastructure\Jobs\RedditIntegration.cs" />
     <Compile Include="Infrastructure\Jobs\SocialNetworkIntegrationJobsRegistry.cs" />
