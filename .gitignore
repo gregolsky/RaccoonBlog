@@ -217,3 +217,4 @@ _Pvt_Extensions
 /RaccoonBlog.Web/*.raven-topology
 /RaccoonBlog.Web/*.raven-database-topology
 
+.idea
