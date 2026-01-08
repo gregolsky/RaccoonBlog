@@ -1,38 +1,38 @@
-﻿using System.Web.Mvc;
-using System.Web.Routing;
-
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
 using NLog;
 
 namespace RaccoonBlog.Web.Helpers.Attributes
 {
-    public class CustomHandleErrorAttribute : HandleErrorAttribute
-    {
-        private static readonly Logger Log = LogManager.GetCurrentClassLogger();
+	public class CustomHandleErrorAttribute : ExceptionFilterAttribute
+	{
+		private static readonly Logger Log = LogManager.GetCurrentClassLogger();
 
-        public override void OnException(ExceptionContext filterContext)
-        {
-            Log.Error(filterContext.Exception, "Unexpected error occured.");
+		public override void OnException(ExceptionContext context)
+		{
+			Log.Error(context.Exception, "Unexpected error occurred.");
 
-            if (filterContext.HttpContext.Request.IsAjaxRequest())
-            {
-                base.OnException(filterContext);
-                return;
-            }
+			// Check if this is an AJAX request
+			var isAjaxRequest = context.HttpContext.Request.Headers["X-Requested-With"] == "XMLHttpRequest";
 
-            if (filterContext.HttpContext.IsCustomErrorEnabled == false)
-            {
-                return;
-            }
+			if (isAjaxRequest)
+			{
+				base.OnException(context);
+				return;
+			}
 
-            filterContext.Result = new RedirectToRouteResult(new RouteValueDictionary(new
-            {
-                action = MVC.Error.ActionNames.Error,
-                controller = MVC.Error.Name
-            }));
-            filterContext.ExceptionHandled = true;
+			// In ASP.NET Core, custom error handling is typically done via middleware
+			// But we can still redirect to error page from filter
+			if (context.HttpContext.RequestServices.GetService(typeof(Microsoft.AspNetCore.Hosting.IWebHostEnvironment)) is Microsoft.AspNetCore.Hosting.IWebHostEnvironment env)
+			{
+				if (!env.IsDevelopment())
+				{
+					context.Result = new RedirectToActionResult("Error", "Error", null);
+					context.ExceptionHandled = true;
+				}
+			}
 
-
-            base.OnException(filterContext);
-        }
-    }
+			base.OnException(context);
+		}
+	}
 }

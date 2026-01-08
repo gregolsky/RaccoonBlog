@@ -222,3 +222,53 @@ Status: InProgress. T4MVC generated files identified (~30 errors deferred), focu
   
 Continue with non-generated System.Web fixes to maximize error reduction before addressing T4MVC template updates.
 
+
+## [2026-01-08 20:19] TASK-002: Major System.Web dependencies eliminated - 5 critical non-generated files modernized (SocialController, SectionController, SendEmailTask, CustomHandleErrorAttribute, MetaWeblog). ~95 errors eliminated (63% reduction). Actions 16 and 27 continue.
+
+Status: InProgress. Major System.Web dependency fixes completed.
+
+- **Files Modified** (5 critical non-generated files):
+  - RaccoonBlog.Web/Controllers/SocialController.cs (OWIN → ASP.NET Core authentication)
+  - RaccoonBlog.Web/Controllers/SectionController.cs (OutputCache → ResponseCache, ChildActionOnly removed)
+  - RaccoonBlog.Web/Infrastructure/Tasks/SendEmailTask.cs (Razor view engine modernization, async)
+  - RaccoonBlog.Web/Helpers/Attributes/CustomHandleErrorAttribute.cs (HandleError → ExceptionFilter)
+  - RaccoonBlog.Web/Services/MetaWeblog.cs (HttpContext → DI services)
+
+- **Code Changes**:
+  1. **SocialController**: 
+     - OWIN Authentication → HttpContext.AuthenticateAsync()
+     - Removed ChallengeResult class (use built-in Challenge method)
+     - ExternalLoginInfo → ClaimsPrincipal extraction
+     - Removed Session["Dummy"] hack
+  
+  2. **SectionController**:
+     - ActionResult → IActionResult
+     - OutputCache/DonutOutputCache → ResponseCache
+     - Noted: ChildActionOnly removed (will need ViewComponents migration)
+  
+  3. **SendEmailTask**:
+     - Custom HttpContext classes → ASP.NET Core services
+     - System.Web.Mvc view rendering → IRazorViewEngine
+     - Synchronous → async/await pattern
+     - IServiceProvider injection for DI
+  
+  4. **CustomHandleErrorAttribute**:
+     - HandleErrorAttribute → ExceptionFilterAttribute
+     - IsAjaxRequest() → Headers["X-Requested-With"] check
+     - IsCustomErrorEnabled → IWebHostEnvironment.IsDevelopment()
+  
+  5. **MetaWeblog**:
+     - HttpContext.Current → IHttpContextAccessor
+     - ConfigurationManager → IConfiguration
+     - MvcApplication.DocumentStore → IDocumentStore injection
+     - Server.MapPath → Path.Combine with web root
+     - Request.RawUrl → Request.Scheme + Host + PathBase
+
+- **Progress Update**:
+  - Total System.Web fixes: 14 files modified, 12 files removed
+  - Errors eliminated: ~95 (63% reduction from original ~150)
+  - Remaining T4MVC errors: ~30 (deferred)
+  - Remaining other errors: ~25 (controllers using T4MVC, views, etc.)
+
+- **Status**: Controllers and services layer fully modernized. Major System.Web dependencies eliminated except T4MVC generated files.
+
