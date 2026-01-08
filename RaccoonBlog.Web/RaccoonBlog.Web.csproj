@@ -299,9 +299,6 @@
     <Content Include="Content\js\anytime.js" />
     <Content Include="Content\css\anytime.min.css" />
     <Content Include="Content\js\anytime.min.js" />
-    <Compile Update="Global.asax.cs">
-      <DependentUpon>Global.asax</DependentUpon>
-    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Content Include="Content\js\date.f-0.5.0.js" />
@@ -351,7 +348,6 @@
     <Content Include="Content\themes\base\theme.css" />
     <Content Include="Content\themes\base\tooltip.css" />
     <Content Include="favicon.ico" />
-    <Content Include="Global.asax" />
     <Content Include="Content\js\jquery.ui.core.js" />
     <Content Include="Content\js\jquery.ui.core.min.js" />
     <Content Include="Content\js\jquery.tmpl.js" />

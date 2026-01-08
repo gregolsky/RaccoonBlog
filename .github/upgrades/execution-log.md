@@ -87,3 +87,32 @@ Status: InProgress. Build attempted - revealed comprehensive error inventory.
 
 Build provided clear roadmap for remaining work.
 
+
+## [2026-01-08 19:38] TASK-002: Action 21 complete (obsolete files removed). Actions 16 and 27 in progress (controller updates and error fixes).
+
+Status: Complete. Action 21 successfully completed.
+
+- **Files Deleted** (8 obsolete ASP.NET Framework files):
+  - RaccoonBlog.Web/Global.asax
+  - RaccoonBlog.Web/Global.asax.cs
+  - RaccoonBlog.Web/Startup.cs
+  - RaccoonBlog.Web/App_Start/Startup.Auth.cs
+  - RaccoonBlog.Web/App_Start/BundleConfig.cs
+  - RaccoonBlog.Web/App_Start/AttributeRoutingConfig.cs
+  - RaccoonBlog.Web/App_Start/RouteConfigurator.cs
+  - RaccoonBlog.Web/App_Start/FilterConfig.cs
+
+- **Impact**: 
+  - Eliminated ~20 compilation errors related to obsolete files
+  - Removed OWIN-based startup (replaced by Program.cs)
+  - Removed ASP.NET MVC bundling/optimization (to be replaced with ASP.NET Core equivalents)
+  - Removed AttributeRouting library configuration (replaced by ASP.NET Core routing)
+  - Removed legacy routing and filter configuration
+
+- **Code Changes**:
+  - All removed files were ASP.NET Framework-specific
+  - Functionality already migrated to Program.cs (startup, authentication, routing)
+  - Bundling/minification will be handled differently in ASP.NET Core
+
+Success - Obsolete files removed, reducing error count significantly.
+
