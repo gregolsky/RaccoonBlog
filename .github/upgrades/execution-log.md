@@ -57,3 +57,33 @@ Status: InProgress. Action 16 significantly progressed - base and key controller
 
 Note: ~91 controller files remain (T4MVC generated files + remaining controllers). T4MVC generated files will need updating after T4MVC templates are regenerated for ASP.NET Core.
 
+
+## [2026-01-08 19:33] TASK-002: Action 26 complete (build attempted). Comprehensive error inventory identified. Action 16 remains in progress with clear path forward.
+
+Status: InProgress. Build attempted - revealed comprehensive error inventory.
+
+- **Build Attempted**: First build of RaccoonBlog.Web project
+- **Result**: Failed with ~150 compilation errors (expected for mid-migration state)
+
+- **Error Categories Identified**:
+  1. T4MVC generated files (~30 errors) - Need template regeneration
+  2. Obsolete ASP.NET Framework files (~20 errors) - Need removal per Action 21
+  3. Missing packages (~15 errors) - DevTrends.MvcDonutCaching, DataAnnotationsExtensions, MarkdownDeep, RedditSharp 2.0
+  4. Razor view @helper directives (~5 errors) - Not supported in ASP.NET Core  
+  5. System.Web dependencies (~80 errors) - Controllers, helpers, infrastructure needing namespace updates
+
+- **Positive Findings**:
+  - NuGet restore successful after package fixes
+  - Base controller updates working
+  - Program.cs/appsettings.json infrastructure in place
+  - .NET 8.0 targeting working
+
+- **Next Steps Identified**:
+  - Action 21: Remove obsolete files (Global.asax, Startup.cs, BundleConfig, AttributeRoutingConfig, RouteConfigurator)
+  - Add missing NuGet packages
+  - Continue controller namespace updates (Action 16)
+  - Update views to remove @helper (Action 17)
+  - Deal with T4MVC regeneration
+
+Build provided clear roadmap for remaining work.
+

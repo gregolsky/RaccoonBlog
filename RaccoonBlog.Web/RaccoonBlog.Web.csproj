@@ -768,7 +768,7 @@
     <PackageReference Include="Nito.AsyncEx.Tasks" Version="5.1.2" />
     <PackageReference Include="Nito.Collections.Deque" Version="1.1.1" />
     <PackageReference Include="Nito.Disposables" Version="2.2.1" />
-    <PackageReference Include="System.Collections.Immutable" Version="8.0.0" />
+    <PackageReference Include="System.Collections.Immutable" Version="9.0.5" />
     <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.1.2" />
     <PackageReference Include="T4MVC" Version="4.1.0" />
     <PackageReference Include="Twitter.Bootstrap.Less" Version="3.3.2" />
@@ -789,8 +789,8 @@
     <PackageReference Include="RavenDB.Embedded" Version="6.0.104" />
     <PackageReference Include="RavenDB.TestDriver" Version="6.0.104" />
     
-    <!-- CookComputing.XmlRpcV2 as replacement for xmlrpcnet -->
-    <PackageReference Include="CookComputing.XmlRpcV2" Version="3.0.0" />
+    <!-- XML-RPC package (replacement for old xmlrpcnet) - use version 2.5.0 which exists -->
+    <PackageReference Include="xmlrpcnet" Version="2.5.0" />
   </ItemGroup>
   <ItemGroup Label="Compile items now included by globbing that were not in the original project file">
     <Compile Remove="ViewModels\BlogConfigurationInput.cs" />
