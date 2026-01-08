@@ -272,3 +272,15 @@ Status: InProgress. Major System.Web dependency fixes completed.
 
 - **Status**: Controllers and services layer fully modernized. Major System.Web dependencies eliminated except T4MVC generated files.
 
+
+## [2026-01-08 20:26] TASK-002: Starting T4MVC to R4MVC migration sub-task
+
+Status: InProgress. Starting T4MVC to R4MVC migration.
+
+- **Current State**: ~55 remaining errors (30 T4MVC + 25 other)
+- **Goal**: Eliminate all T4MVC System.Web dependencies
+- **Approach**: Migrate to R4MVC (Roslyn-based alternative)
+- **Phase**: 1 - Preparation & Backup
+
+Starting systematic migration process.
+

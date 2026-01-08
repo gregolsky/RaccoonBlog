@@ -1,0 +1,11 @@
+{
+  "$schema": "https://raw.githubusercontent.com/T4MVC/R4MVC/master/src/R4Mvc.Tools/r4mvc-schema.json",
+  "StaticFilesPath": "wwwroot",
+  "ExcludedStaticFileExtensions": "json,xml,md,txt,config",
+  "HelpersPrefix": "MVC",
+  "IncludeR4MvcInProject": true,
+  "R4MvcNamespace": "RaccoonBlog.Web",
+  "LinksNamespace": "Links",
+  "SplitIntoMultipleFiles": true,
+  "GenerateParamsForActionMethods": true
+}
