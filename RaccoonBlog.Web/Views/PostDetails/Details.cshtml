@@ -12,15 +12,15 @@
 {
     @{
         var description = PostHelper.GetMetaDescription(Model.Post.Body);
-        var url = Request.Url.AbsoluteUri;
+        var url = $"{Context.Request.Scheme}://{Context.Request.Host}{Context.Request.Path}{Context.Request.QueryString}";
     }
     <meta name="description" content="@description">
 
-    <meta name="og:site_name" content="@ViewBag.BlogConfig.Title">
-    <meta name="og:type" content="website">
-    <meta name="og:title" content="@title">
-    <meta name="og:description" content="@description">
-    <meta name="og:url" content="@url">
+    <meta property="og:site_name" content="@ViewBag.BlogConfig.Title">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="@title">
+    <meta property="og:description" content="@description">
+    <meta property="og:url" content="@url">
 
     <meta name="twitter:card" content="summary">
     <meta name="twitter:creator" content="@("@")@ViewBag.BlogConfig.TwitterLogin">
@@ -54,7 +54,7 @@
             <strong>@Model.Post.PublishedAt.ToString("MMM dd")</strong>
             <span>@Model.Post.PublishedAt.ToString("yyyy")</span>
         </time>
-        <a href="@Url.Action("Details", new { Model.Post.Id, Model.Post.Slug })">
+        <a asp-controller="PostDetails" asp-action="Details" asp-route-id="@Model.Post.Id" asp-route-slug="@Model.Post.Slug">
             @if (Model.SeriesInfo == null)
             {
                 <h2>@Model.Post.Title</h2>
@@ -81,13 +81,13 @@
         </div>
     </div>
     <div class="postData">
-        <a style='text-decoration:none;' href='@string.Format("http://twitter.com/intent/tweet?status={0}+{1} via @{2}", Model.Post.Title, Request.Url.OriginalString, Model.Post.Author.TwitterNick)'>
+        <a style='text-decoration:none;' href='@string.Format("http://twitter.com/intent/tweet?status={0}+{1} via @{2}", Model.Post.Title, url, Model.Post.Author.TwitterNick)'>
             <span class="icomoon icon-twitter"></span><span>Tweet</span>
         </a>
-        <a style='text-decoration:none;' type="icon_link" onclick="window.open('@string.Format("http://www.facebook.com/sharer/sharer.php?u={0}&title={1}", Request.Url.OriginalString, Model.Post.Title)','sharer','toolbar=0,status=0,width=580,height=325');" href="javascript: void(0)">
+        <a style='text-decoration:none;' type="icon_link" onclick="window.open('@string.Format("http://www.facebook.com/sharer/sharer.php?u={0}&title={1}", url, Model.Post.Title)','sharer','toolbar=0,status=0,width=580,height=325');" href="javascript: void(0)">
             <span class="icomoon icon-facebook"></span><span>Share</span>
         </a>
-        <a style='text-decoration:none;' type="icon_link" onclick="popUp=window.open('@string.Format("https://www.linkedin.com/shareArticle?mini=true&url={0}&title={1}", Request.Url.OriginalString, Model.Post.Title)', 'popupwindow', 'scrollbars=yes,width=600,height=400');popUp.focus();return false" href="javascript: void(0)">
+        <a style='text-decoration:none;' type="icon_link" onclick="popUp=window.open('@string.Format("https://www.linkedin.com/shareArticle?mini=true&url={0}&title={1}", url, Model.Post.Title)', 'popupwindow', 'scrollbars=yes,width=600,height=400');popUp.focus();return false" href="javascript: void(0)">
             <span class="icomoon icon-linkedin"></span><span>Share</span>
         </a>
         <a href="#comments">
@@ -100,7 +100,7 @@
                 <ul>
                     @foreach (var tag in Model.Post.Tags)
                     {
-                        <li><a href="@Url.Action("Tag", "Posts", new {tag.Slug})">@tag.Name</a></li>
+                        <li><a asp-controller="Posts" asp-action="Tag" asp-route-slug="@tag.Slug">@tag.Name</a></li>
                     }
                 </ul>
             </div>
@@ -138,7 +138,7 @@
                                 var tag = tagList[i];
                                 var tagSlug = SlugConverter.TitleToSlug(tag);
                                 var extraClass = i >= maxTags ? "related-posts_tag--extra" : "";
-                                <a class="related-posts_tag @extraClass" href="@Url.Action("Tag", "Posts", new { slug = tagSlug })">@tag</a>
+                                <a class="related-posts_tag @extraClass" asp-controller="Posts" asp-action="Tag" asp-route-slug="@tagSlug">@tag</a>
                             }
                             @if (tagList.Count > maxTags)
                             {
@@ -387,7 +387,7 @@
                 </div>
             </div>
             <div class="modal-body">
-                @Html.Partial("MarkdownHelp")
+                @await Html.PartialAsync("MarkdownHelp")
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
