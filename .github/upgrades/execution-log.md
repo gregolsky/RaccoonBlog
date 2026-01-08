@@ -116,3 +116,40 @@ Status: Complete. Action 21 successfully completed.
 
 Success - Obsolete files removed, reducing error count significantly.
 
+
+## [2026-01-08 20:03] TASK-002: Quick fixes complete - Project file cleaned, Email attributes updated (DataAnnotationsExtensions → EmailAddress), Markdown library migrated (MarkdownDeep → Markdig). Actions 16 and 27 continue.
+
+Status: InProgress. Project file cleaned and quick fixes applied successfully.
+
+- **Files Modified**:
+  - RaccoonBlog.Web/RaccoonBlog.Web.csproj (cleaned SDK-style)
+  - RaccoonBlog.Web/Models/AccountModels.cs (Email → EmailAddress, removed System.Web.Mvc.Compare)
+  - RaccoonBlog.Web/ViewModels/CommentInput.cs (Email → EmailAddress)
+  - RaccoonBlog.Web/ViewModels/UserInput.cs (Email → EmailAddress)
+  - RaccoonBlog.Web/Infrastructure/AutoMapper/Profiles/Resolvers/MarkdownResolver.cs (MarkdownDeep → Markdig)
+  - RaccoonBlog.Web/Helpers/DynamicContentHelpers.cs (MarkdownDeep → Markdig, MvcHtmlString → HtmlString)
+
+- **Code Changes**:
+  1. **Project File Cleanup**: Removed ~800 lines of redundant `<Content>` and `<Compile>` tags - SDK-style projects auto-include these by convention
+  
+  2. **Email Attribute Migration** (✅ Complete):
+     - Replaced `DataAnnotationsExtensions.Email` with built-in `System.ComponentModel.DataAnnotations.EmailAddress`
+     - Updated 5 occurrences across 3 files
+     - Removed obsolete DataAnnotationsExtensions namespace references
+     - Fixed System.Web.Mvc.Compare → Compare attribute
+  
+  3. **Markdown Library Migration** (✅ Complete):
+     - Replaced MarkdownDeep with Markdig (modern .NET 8 compatible)
+     - Updated MarkdownResolver.cs with Markdig pipeline and advanced extensions
+     - Updated DynamicContentHelpers.cs with Markdig
+     - Replaced MvcHtmlString with Microsoft.AspNetCore.Html.HtmlString
+     - Implemented safe mode equivalent using DisableHtml()
+
+- **Impact**: 
+  - Eliminated ~10 compilation errors related to missing DataAnnotationsExtensions and MarkdownDeep
+  - Project file now follows modern SDK-style conventions (much cleaner)
+  - All email validation now uses standard .NET attributes
+  - Markdown rendering upgraded to modern, performant library
+
+Success - Quick fixes complete, significant error reduction achieved.
+

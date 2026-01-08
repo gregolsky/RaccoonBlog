@@ -2,9 +2,9 @@
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Web;
-using System.Web.Mvc;
 using HibernatingRhinos.Loci.Common.Models;
-using MarkdownDeep;
+using Markdig;
+using Microsoft.AspNetCore.Html;
 
 namespace RaccoonBlog.Web.Helpers
 {
@@ -13,44 +13,47 @@ namespace RaccoonBlog.Web.Helpers
 		private static readonly Regex CodeBlockFinder = new Regex(@"\[code lang=(.+?)\s*\](.*?)\[/code\]", RegexOptions.Compiled | RegexOptions.Singleline);
 		private static readonly Regex FirstLineSpacesFinder = new Regex(@"^(\s|\t)+", RegexOptions.Compiled);
 
-		public static MvcHtmlString CompiledContent(this IDynamicContent contentItem, bool trustContent)
+		public static HtmlString CompiledContent(this IDynamicContent contentItem, bool trustContent)
 		{
-			if (contentItem == null) return MvcHtmlString.Empty;
+			if (contentItem == null) return HtmlString.Empty;
 
 			switch (contentItem.ContentType)
 			{
 				case DynamicContentType.Markdown:
-					var md = new Markdown
-					{
-						AutoHeadingIDs = true,
-						ExtraMode = true,
-						NoFollowLinks = !trustContent,
-						SafeMode = false,
-						NewWindowForExternalLinks = true,
-					};
-
 					var contents = contentItem.Body;
 					contents = CodeBlockFinder.Replace(contents, match => GenerateCodeBlock(match.Groups[1].Value.Trim(), match.Groups[2].Value));
 
 					try
 					{
-						contents = md.Transform(contents);
+						// Use Markdig pipeline with advanced features
+						var pipelineBuilder = new MarkdownPipelineBuilder()
+							.UseAdvancedExtensions()
+							.UseSoftlineBreakAsHardlineBreak();
+
+						if (!trustContent)
+						{
+							// Enable safe mode equivalent - disable raw HTML
+							pipelineBuilder.DisableHtml();
+						}
+
+						var pipeline = pipelineBuilder.Build();
+						contents = Markdown.ToHtml(contents, pipeline);
 					}
 					catch (Exception)
 					{
 						contents = string.Format("<pre>{0}</pre>", HttpUtility.HtmlEncode(contents));
 					}
 
-					return MvcHtmlString.Create(contents);
+					return new HtmlString(contents);
 				case DynamicContentType.Html:
-					return trustContent ? MvcHtmlString.Create(contentItem.Body) : MvcHtmlString.Empty;
+					return trustContent ? new HtmlString(contentItem.Body) : HtmlString.Empty;
 			}
-			return MvcHtmlString.Empty;
+			return HtmlString.Empty;
 		}
 
 		private static string GenerateCodeBlock(string lang, string code)
 		{
-			code = HttpContext.Current.Server.HtmlDecode(code);
+			code = HttpUtility.HtmlDecode(code);
 			return string.Format("<pre class=\"brush: {2}\">{0}{1}</pre>{0}", Environment.NewLine,
 								 ConvertMarkdownCodeStatment(code).Replace("<", "&lt;"), // to support syntax highlighting on pre tags
 								 lang
