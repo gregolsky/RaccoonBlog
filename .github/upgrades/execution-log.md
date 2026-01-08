@@ -189,3 +189,36 @@ Status: InProgress. Significant System.Web dependency fixes completed.
 
 Success - Major System.Web dependencies eliminated from helper layer.
 
+
+## [2026-01-08 20:12] TASK-002: T4MVC errors identified and deferred (~30 errors). Continuing with non-generated System.Web fixes in controllers and services. Actions 16 and 27 in progress.
+
+Status: InProgress. T4MVC generated files identified (~30 errors deferred), focusing on remaining non-generated System.Web dependencies.
+
+- **Assessment**: 
+  - T4MVC generated files contain ~30 System.Web errors (deferred - requires template regeneration)
+  - Identified remaining non-generated files needing fixes:
+    * SocialController.cs
+    * SectionController.cs  
+    * MetaWeblogAPI.ashx
+    * SendEmailTask.cs
+    * CustomHandleErrorAttribute.cs
+
+- **Current Status**:
+  - Helper layer: ✅ Complete (9 files updated, 3 removed)
+  - T4MVC files: ⏸️ Deferred (auto-generated, need template update)
+  - Remaining: Controllers, services, infrastructure attributes
+
+- **Next Actions**:
+  - Fix remaining controllers (Social, Section)
+  - Update MetaWeblog service
+  - Fix CustomHandleErrorAttribute
+  - Update SendEmailTask
+
+- **Progress Summary**:
+  - Total errors eliminated: ~80 (53% reduction)
+  - Remaining errors: ~70 (30 T4MVC + ~40 other)
+  - Helper layer fully modernized
+  - Controllers partially updated
+  
+Continue with non-generated System.Web fixes to maximize error reduction before addressing T4MVC template updates.
+
