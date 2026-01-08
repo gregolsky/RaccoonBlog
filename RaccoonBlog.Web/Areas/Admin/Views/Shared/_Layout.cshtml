@@ -1,5 +1,5 @@
-﻿<!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
+﻿<!DOCTYPE html>
+<html>
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1 user-scalable=no" />
@@ -11,9 +11,10 @@
 	<title>RaccoonBlog :: @ViewBag.Title</title>
 
 	<link href='//fonts.googleapis.com/css?family=Lato:300,400,700&subset=latin,latin-ext' rel='stylesheet' type='text/css' />
-	@Styles.Render("~/Areas/Admin/Content/css/styles")
+	@* ASP.NET Core: Direct CSS references *@
+	<link rel="stylesheet" href="~/Areas/Admin/Content/css/admin.styles.css" />
 	@Html.RenderAdminTheme()
-	@RenderSection("Style", false)
+	@await RenderSectionAsync("Style", required: false)
 </head>
 <body>
 	<section class="main-nav">
@@ -25,14 +26,14 @@
 					<span class="icon-bar"></span>
 					<span class="icon-bar"></span>
 				</button>
-				<a class="navbar-brand" href="@Url.RouteUrl("homepage")">Raccoon Blog</a>
+				<a class="navbar-brand" asp-route="homepage">Raccoon Blog</a>
 			</div>
 			<div id="navbar" class="navbar-collapse collapse">
 				<ul class="nav navbar-nav">
-					@{Html.RenderPartial("RenderMenu", RaccoonBlog.Web.Areas.Admin.Helpers.MenuUtil.GetTopMenu(Url));}
+					@await Html.PartialAsync("RenderMenu", RaccoonBlog.Web.Areas.Admin.Helpers.MenuUtil.GetTopMenu(Url))
 				</ul>
 				<ul class="nav navbar-nav navbar-right">
-					<li><a href="@Url.Action("Logout", "Login")"><span class="glyphicon glyphicon-user" aria-hidden="true"></span> Logout</a></li>
+					<li><a asp-area="Admin" asp-controller="Login" asp-action="Logout"><span class="glyphicon glyphicon-user" aria-hidden="true"></span> Logout</a></li>
 				</ul>
 			</div>
 		</div>
@@ -44,20 +45,17 @@
 	</div>
 	<footer>
 		<div class="container">
-			<span class="small">Copyright © Raccoon Blog 2011 - 2015</span>
+			<span class="small">Copyright © Raccoon Blog 2011 - @DateTime.Now.Year</span>
 		</div>
 	</footer>
 
-	<!--[if IE 8]>
-		<script type="text/javascript" src="~/Content/js/respond.src.js"></script>
-	<![endif]-->
-	@Scripts.Render("~/Content/js/jquery")
-	@Scripts.Render("~/Content/js/jquery-migrate")
-	@Scripts.Render("~/Content/js/bootstrap")
-	@Scripts.Render("~/Areas/Admin/Content/js/tinymce/scripts")
-	@Scripts.Render("~/Content/js/admin/main")
-	@RenderSection("Script", false)
-  
+	@* ASP.NET Core: Direct script references *@
+	<script src="~/Content/js/jquery.min.js"></script>
+	<script src="~/Content/js/jquery-migrate.min.js"></script>
+	<script src="~/Content/js/bootstrap.min.js"></script>
+	<script src="~/Areas/Admin/Content/js/tinymce/tinymce.min.js"></script>
+	<script src="~/Content/js/admin/main.js"></script>
+	@await RenderSectionAsync("Script", required: false)
 
 </body>
 </html>

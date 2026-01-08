@@ -39,7 +39,7 @@
     @{
         ViewBag.Message = TempData["Message"] as string;
     }
-    @if (string.IsNullOrWhiteSpace(Context.Request.QueryString["key"]) == false)
+    @if (string.IsNullOrWhiteSpace(Context.Request.Query["key"]) == false)
     {
         <meta name="robots" content="noindex" />
     }
@@ -49,7 +49,9 @@
     </title>
 
     @RenderSection("HeaderAdditions", false)
-    @Styles.Render("~/Content/css/styles")
+    
+    @* ASP.NET Core: Direct CSS references instead of bundling *@
+    <link rel="stylesheet" href="~/Content/css/styles.css" />
     @Html.RenderTheme(ViewBag.BlogConfig.CustomCss as string)
     @RenderSection("Style", false)
 </head>
@@ -57,7 +59,7 @@
 <body class="show-grid">
     @{
         var containerClass = "body-container";
-        if (SidebarHelper.ShouldShowSidebar() == false)
+        if (SidebarHelper.ShouldShowSidebar(Context.Request) == false)
         {
             containerClass += " hideSidebar";
         }
@@ -65,22 +67,21 @@
     <div class="@containerClass">
         <div class="leftSide">
             <header>
-                <a href="@Url.Action("Index", "Posts")" class="logo">
+                <a asp-controller="Posts" asp-action="Index" class="logo">
                     <h1>Oren Eini</h1>
                     <span class="lead">aka Ayende Rahien</span>
                 </a>
                 <button class="menu-button" id="open-button"><i class="icon-arrow-down hide-sm" aria-hidden="true"></i></button>
             </header>
-            <!--<a href="@Url.Action("Index", "Posts")" style="display: block;"><img src="~/Content/css/img/rihno.svg" class="rihno" /></a>-->
 
-            <a href="@Url.Action("Index", "Posts")" class="logo-vertical">
+            <a asp-controller="Posts" asp-action="Index" class="logo-vertical">
                 <h1>Oren Eini</h1>
             </a>
 
             <button class="menu-enlarge" id="enlarge-button"><i class="icon-circle-arrow-left hide-sm" aria-hidden="true"></i></button>
             <div class="collapseMobile flex-grow">
                 <div class="about flex-grow @(ViewBag.IsHomePage ? "home" : string.Empty)">
-                    @Html.RenderSection("Contact Me")
+                    @await Html.PartialAsync("Section/ContactMe")
                 </div>
                 <div class="flex-grow"></div>
                 <div class="rewards margin-top">
@@ -88,22 +89,21 @@
                     <a class="dzone-profile-vertical" href="https://dzone.com/users/750579/ayende.html" title="DZone 2020 Hall of Fame Award Winner" target="_blank" rel="nofollow"><img src="~/Content/css/img/dzone-vertical.svg" /></a>
                 </div>
                 <div class="pull-down">
-                    @Html.RenderSection("Stats")
+                    @await Html.PartialAsync("Section/PostsStatistics")
                     <p class="copyright">Copyright ©️ Ayende Rahien 2004 — @DateTime.Now.Year.ToString()</p>
-                    <small class="text-muted"><a href="@Url.Action("Index", "privacy-policy")" class="legal-link">Privacy Policy</a></small>
+                    <small class="text-muted"><a asp-controller="Legal" asp-action="PrivacyPolicy" class="legal-link">Privacy Policy</a></small>
                     <span class="separator margin-left-sm margin-right-sm">·</span>
-                    <small class="text-muted"><a href="@Url.Action("Index", "terms")" class="legal-link">Terms</a></small>
+                    <small class="text-muted"><a asp-controller="Legal" asp-action="Terms" class="legal-link">Terms</a></small>
                 </div>
             </div>
         </div>
         <div id="content" class="centerCol flex-grow">
             <header class="body-header">
                 <div class="search">
-                    @using (Html.BeginForm("SearchResult", "Search", FormMethod.Get))
-                    {
+                    <form asp-controller="Search" asp-action="SearchResult" method="get">
                         <input name="q" type="search" placeholder="search" class="form-control" value="@ViewBag.SearchTerm" />
                         <input type="submit" />
-                    }
+                    </form>
                 </div>
                 <div style="display:inline-block">
                     @if (Html.IsSectionActive("Tags"))
@@ -125,8 +125,8 @@
                 </nav>
 
                 <div class="clearfix"></div>
-                @Html.RenderSection("Tags")
-                @Html.RenderSection("Archive")
+                @await Html.PartialAsync("Section/TagsList")
+                @await Html.PartialAsync("Section/ArchivesList")
             </header>
             <div class="bnr-carousel">
                 <a href="@bannerToDisplay.ResourceUrl" target="_blank"><img src="~/@bannerToDisplay.ImageSrc" class="img-responsive img-center" title="@bannerToDisplay.AltText" alt="@bannerToDisplay.AltText" /></a>
@@ -134,11 +134,11 @@
             @RenderBody()
         </div>
         <section class="rightSide">
-            @if (HttpContext.Current.Request.IsAuthenticated)
+            @if (Context.User.Identity.IsAuthenticated)
             {
-                @Html.Action(MVC.Section.ActionNames.AdministrationPanel, MVC.Section.Name)
+                @await Html.PartialAsync("Section/AdministrationPanel")
             }
-            @{Html.RenderAction(MVC.Section.ActionNames.List, MVC.Section.Name);}
+            @await Html.PartialAsync("Section/List")
         </section>
     </div>
 
@@ -147,21 +147,18 @@
         <script type="text/javascript">
             window.RaccoonRoutes = {};
         </script>
-        <!--[if IE 8]>
-            <script type="text/javascript" src="~/Content/js/respond.src.js"></script>
-        <![endif]-->
-        @Scripts.Render("~/Content/js/jquery")
-        @Scripts.Render("~/Content/js/jquery-migrate")
-        @Scripts.Render("~/Content/js/bootstrap")
-        @Scripts.Render("~/Content/js/main")
-        @RenderSection("Script")
+        @* ASP.NET Core: Direct script references instead of bundling *@
+        <script src="~/Content/js/jquery.min.js"></script>
+        <script src="~/Content/js/jquery-migrate.min.js"></script>
+        <script src="~/Content/js/bootstrap.min.js"></script>
+        <script src="~/Content/js/raccoon-blog.js"></script>
+        @await RenderSectionAsync("Script", required: false)
         <script async src="https://www.googletagmanager.com/gtag/js?id=G-JWD0V24RSP"></script>
         <script>
             window.dataLayer = window.dataLayer || [];
             function gtag() { dataLayer.push(arguments); }
             gtag('js', new Date()); gtag('config', 'G-JWD0V24RSP');
         </script>
-    }
     }
 </body>
 </html>

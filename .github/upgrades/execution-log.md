@@ -284,3 +284,51 @@ Status: InProgress. Starting T4MVC to R4MVC migration.
 
 Starting systematic migration process.
 
+
+## [2026-01-08 20:49] TASK-002: View updates started - _ViewImports created, layouts modernized (5 files). Actions 17 and 27 in progress.
+
+Status: InProgress. View updates for ASP.NET Core in progress.
+
+**Phase: View Modernization Started**
+
+**Actions Completed**:
+1. ✅ Created _ViewImports.cshtml files (2 files)
+   - Views/_ViewImports.cshtml (main site)
+   - Areas/Admin/Views/_ViewImports.cshtml (admin area)
+   - Added ASP.NET Core using statements
+   - Configured TagHelpers
+
+2. ✅ Updated Layout Files (2 files)
+   - Views/Shared/_Layout.cshtml
+   - Areas/Admin/Views/Shared/_Layout.cshtml
+   
+3. ✅ Updated Error View
+   - Views/Shared/Error.cshtml
+
+**Key Changes Made**:
+- **Bundling → Direct References**: Removed @Styles.Render/@Scripts.Render, added direct <link>/<script> tags
+- **Html.Action → Html.PartialAsync**: Updated child action calls
+- **HttpContext.Current → Context**: Updated HTTP context references
+- **Url.Action → Tag Helpers**: Using asp-controller/asp-action attributes
+- **Html.BeginForm → <form> Tag Helpers**: Using asp-controller/asp-action on form tags
+- **RenderSection → RenderSectionAsync**: Made sections async where appropriate
+- **Html.RenderPartial → Html.PartialAsync**: Updated partial rendering
+
+**Remaining View Updates** (~50 views):
+- Individual view files need updating
+- Editor templates
+- Display templates
+- Partial views
+
+**Estimated Impact**:
+- ~10-15 errors fixed with layout and _ViewImports
+- Remaining view files will fix additional ~10-15 errors
+
+**Next Steps**:
+1. Update key individual view files
+2. Update partial views used in layouts
+3. Create wwwroot structure
+4. Build and verify
+
+Progress: View modernization 15% complete (5 of ~56 files updated).
+

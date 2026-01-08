@@ -8,6 +8,6 @@
             #@ViewBag.ErrorCode
         </div>
         <img src="~/Content/css/img/error.png" class="error-image">
-        <a href="@Url.Action(MVC.Posts.ActionNames.Index, MVC.Posts.Name)" class="btn-home">Go to home page</a>
+        <a asp-controller="Posts" asp-action="Index" class="btn-home">Go to home page</a>
     </div>
 </div>
