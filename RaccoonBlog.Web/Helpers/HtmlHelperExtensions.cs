@@ -1,26 +1,23 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web;
-using System.Web.Mvc;
-using System.Web.Mvc.Html;
-using System.Web.Optimization;
-
+using Microsoft.AspNetCore.Html;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using RaccoonBlog.Web.Models;
-using RaccoonBlog.Web.ViewModels;
 
 namespace RaccoonBlog.Web.Helpers
 {
 	public static class HtmlHelperExtensions
 	{
-		private static readonly MvcHtmlString Empty = new MvcHtmlString(string.Empty);
+		private static readonly HtmlString Empty = new HtmlString(string.Empty);
 
-	    public static MvcHtmlString Glyphicon(this HtmlHelper helper, string iconName)
-	    {
-	        return MvcHtmlString.Create($"<i class=\"glyphicon glyphicon-{iconName}\"></i>");
-	    }
+		public static HtmlString Glyphicon(this IHtmlHelper helper, string iconName)
+		{
+			return new HtmlString($"<i class=\"glyphicon glyphicon-{iconName}\"></i>");
+		}
 
-		public static bool IsSectionActive(this HtmlHelper helper, string sectionTitle)
+		public static bool IsSectionActive(this IHtmlHelper helper, string sectionTitle)
 		{
 			var sections = helper.ViewBag.Sections as List<Section>;
 			if (sections == null)
@@ -33,7 +30,7 @@ namespace RaccoonBlog.Web.Helpers
 			return true;
 		}
 
-		public static MvcHtmlString RenderSection(this HtmlHelper helper, string sectionTitle)
+		public static IHtmlContent RenderSection(this IHtmlHelper helper, string sectionTitle)
 		{
 			var sections = helper.ViewBag.Sections as List<Section>;
 			if (sections == null)
@@ -46,10 +43,10 @@ namespace RaccoonBlog.Web.Helpers
 			if (string.IsNullOrEmpty(section.ActionName) == false && string.IsNullOrEmpty(section.ControllerName) == false)
 				return helper.Action(section.ActionName, section.ControllerName);
 
-			return new MvcHtmlString(section.Body);
+			return new HtmlString(section.Body);
 		}
 
-		public static string ConvertSectionTitleToId(this HtmlHelper helper, string sectionTitle)
+		public static string ConvertSectionTitleToId(this IHtmlHelper helper, string sectionTitle)
 		{
 			if (string.IsNullOrEmpty(sectionTitle))
 				return string.Empty;
@@ -60,50 +57,44 @@ namespace RaccoonBlog.Web.Helpers
 				.ToLowerInvariant();
 		}
 
-		public static MvcHtmlString Link(this HtmlHelper helper, string text, string href, object htmlAttributes)
+		public static HtmlString Link(this IHtmlHelper helper, string text, string href, object htmlAttributes)
 		{
 			var tag = new TagBuilder("a");
-			tag.InnerHtml = text;
+			tag.InnerHtml.SetContent(text);
 
 			if (string.IsNullOrEmpty(href) == false)
 				tag.Attributes["href"] = href;
 
-			IDictionary<string, object> attributes = HtmlHelper.AnonymousObjectToHtmlAttributes(htmlAttributes);
+			var attributes = HtmlHelper.AnonymousObjectToHtmlAttributes(htmlAttributes);
 			foreach (var attribute in attributes)
 			{
-				var val = attribute.Value.ToString();
+				var val = attribute.Value?.ToString();
 				if (string.IsNullOrEmpty(val) == false)
 					tag.Attributes[attribute.Key] = val;
 			}
 
-			return MvcHtmlString.Create(tag.ToString(TagRenderMode.Normal));
+			using (var writer = new System.IO.StringWriter())
+			{
+				tag.WriteTo(writer, System.Text.Encodings.Web.HtmlEncoder.Default);
+				return new HtmlString(writer.ToString());
+			}
 		}
 
-		public static IHtmlString RenderTheme(this HtmlHelper helper, string themeName)
+		public static IHtmlContent RenderTheme(this IHtmlHelper helper, string themeName)
 		{
-			return RenderThemeInternal(BundleConfig.ThemeDirectory, themeName);
-		}
-
-		public static IHtmlString RenderAdminTheme(this HtmlHelper helper)
-		{
-			return RenderThemeInternal(BundleConfig.AdminThemeDirectory, "admin");
-		}
-
-		private static IHtmlString RenderThemeInternal(string themeDirectory, string themeName)
-		{
+			// In ASP.NET Core, static file serving handles CSS
+			// Theme CSS files should be referenced directly in views or via link tags
 			if (string.IsNullOrEmpty(themeName))
-				return null;
+				return HtmlString.Empty;
 
-			var oldValue = BundleTable.EnableOptimizations;
-			try
-			{
-				BundleTable.EnableOptimizations = true;
-				return Styles.Render(themeDirectory + themeName);
-			}
-			finally
-			{
-				BundleTable.EnableOptimizations = oldValue;
-			}
+			// Return a link tag for the theme CSS
+			return new HtmlString($"<link rel=\"stylesheet\" href=\"/Content/css/custom/{themeName}.css\" />");
+		}
+
+		public static IHtmlContent RenderAdminTheme(this IHtmlHelper helper)
+		{
+			// Return a link tag for the admin theme CSS
+			return new HtmlString("<link rel=\"stylesheet\" href=\"/Areas/Admin/Content/css/admin.styles.css\" />");
 		}
 	}
 }

@@ -153,3 +153,39 @@ Status: InProgress. Project file cleaned and quick fixes applied successfully.
 
 Success - Quick fixes complete, significant error reduction achieved.
 
+
+## [2026-01-08 20:09] TASK-002: System.Web dependency fixes in progress - 9 helper files updated, 3 obsolete files removed. Major helper layer modernization complete. Actions 16 and 27 continue.
+
+Status: InProgress. Significant System.Web dependency fixes completed.
+
+- **Files Modified** (9 helper/infrastructure files):
+  - RaccoonBlog.Web/Helpers/UrlHelperExtensions.cs (System.Web → ASP.NET Core)
+  - RaccoonBlog.Web/Helpers/HtmlHelperExtensions.cs (System.Web.Mvc → ASP.NET Core)
+  - RaccoonBlog.Web/Helpers/CookieJar.cs (HttpContext.Current → HttpRequest parameter)
+  - RaccoonBlog.Web/Helpers/SidebarHelper.cs (HttpContext.Current → HttpRequest parameter)
+  - RaccoonBlog.Web/Helpers/CommenterUtil.cs (HttpCookie → CookieOptions)
+  - RaccoonBlog.Web/Helpers/SignInHelper.cs (OWIN → ASP.NET Core authentication)
+  - RaccoonBlog.Web/Infrastructure/Jobs/RedditIntegration.cs (removed IRegisteredObject)
+
+- **Files Deleted** (3 obsolete files):
+  - RaccoonBlog.Web/Helpers/RouteCollectionExtension.cs (AttributeRouting - obsolete)
+  - RaccoonBlog.Web/Helpers/ThemeLessTransform.cs (System.Web.Optimization - obsolete)
+  - RaccoonBlog.Web/Infrastructure/ForwardedHeadersExtensions.cs (OWIN - replaced by built-in)
+
+- **Code Changes**:
+  1. **UrlHelperExtensions**: UrlHelper → IUrlHelper, HttpContext.Current → HttpRequest parameter, RouteValueDictionary updates
+  2. **HtmlHelperExtensions**: HtmlHelper → IHtmlHelper, MvcHtmlString → HtmlString, removed bundling (System.Web.Optimization)
+  3. **CookieJar**: Static properties → methods with HttpRequest parameter, HttpCookieCollection → IRequestCookieCollection
+  4. **SidebarHelper**: Refactored to accept HttpRequest parameter instead of using HttpContext.Current
+  5. **CommenterUtil**: HttpCookie → CookieOptions with modern settings (HttpOnly, Secure, SameSite)
+  6. **SignInHelper**: OWIN IAuthenticationManager → ASP.NET Core HttpContext, synchronous → async methods, CookieAuthenticationDefaults
+  7. **RedditIntegration**: Removed System.Web.Hosting.IRegisteredObject (not needed in ASP.NET Core)
+
+- **Impact**: 
+  - Eliminated ~25 compilation errors related to System.Web helper dependencies
+  - All helper classes now use ASP.NET Core patterns
+  - Authentication migrated from OWIN to ASP.NET Core
+  - Cookie handling modernized with security best practices
+
+Success - Major System.Web dependencies eliminated from helper layer.
+

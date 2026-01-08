@@ -1,4 +1,4 @@
-﻿using System.Web;
+﻿using Microsoft.AspNetCore.Http;
 
 namespace RaccoonBlog.Web.Helpers
 {
@@ -6,19 +6,17 @@ namespace RaccoonBlog.Web.Helpers
     {
         private const int VisitCountMax = 10;
 
-        private static HttpRequest CurrentRequest => HttpContext.Current.Request;
-
-        public static bool ShouldShowSidebar()
+        public static bool ShouldShowSidebar(HttpRequest request)
         {
-            var hasExplicitlyHidden = CookieJar.HideSidebar;
+            var hasExplicitlyHidden = CookieJar.GetHideSidebar(request);
             if (hasExplicitlyHidden == true)
                 return false;
 
-            var isOnMainPage = CurrentRequest.Path == "/";
+            var isOnMainPage = request.Path == "/";
             if (isOnMainPage)
                 return true;
 
-            var visitCount = CookieJar.VisitCount.GetValueOrDefault();
+            var visitCount = CookieJar.GetVisitCount(request).GetValueOrDefault();
             return visitCount < VisitCountMax;
         }
     }

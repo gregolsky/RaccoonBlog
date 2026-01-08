@@ -1,5 +1,5 @@
 using System;
-using System.Web;
+using Microsoft.AspNetCore.Http;
 
 namespace RaccoonBlog.Web.Helpers
 {
@@ -7,10 +7,16 @@ namespace RaccoonBlog.Web.Helpers
 	{
 		public const string CommenterCookieName = "commenter";
 
-		public static void SetCommenterCookie(HttpResponseBase response, string commenterKey)
+		public static void SetCommenterCookie(HttpResponse response, string commenterKey)
 		{
-			var cookie = new HttpCookie(CommenterCookieName, commenterKey) {Expires = DateTime.Now.AddYears(1)};
-			response.Cookies.Add(cookie);
+			var cookieOptions = new CookieOptions
+			{
+				Expires = DateTimeOffset.Now.AddYears(1),
+				HttpOnly = true,
+				Secure = true,
+				SameSite = SameSiteMode.Lax
+			};
+			response.Cookies.Append(CommenterCookieName, commenterKey, cookieOptions);
 		}
 	}
 }

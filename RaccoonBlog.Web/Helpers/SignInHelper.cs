@@ -1,50 +1,52 @@
 ﻿using System.Security.Claims;
-using System.Security.Principal;
-
+using System.Threading.Tasks;
 using HibernatingRhinos.Loci.Common.Models;
-
-using Microsoft.AspNet.Identity;
-using Microsoft.Owin.Security;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Http;
 
 namespace RaccoonBlog.Web.Helpers
 {
 	public class SignInHelper
 	{
-		private readonly IAuthenticationManager authenticationManager;
+		private readonly HttpContext httpContext;
 
-		public SignInHelper(IAuthenticationManager authenticationManager)
+		public SignInHelper(HttpContext httpContext)
 		{
-			this.authenticationManager = authenticationManager;
+			this.httpContext = httpContext;
 		}
 
-		public void SignIn(LogOnModel logOn, bool isPersistent)
+		public async Task SignInAsync(LogOnModel logOn, bool isPersistent)
 		{
-			authenticationManager.SignOut(DefaultAuthenticationTypes.ExternalCookie, DefaultAuthenticationTypes.TwoFactorCookie);
+			// Sign out any existing authentication
+			await httpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
 
-			var identity = new ClaimsIdentity(DefaultAuthenticationTypes.ApplicationCookie);
-			identity.AddClaim(new Claim(ClaimTypes.Email, logOn.Login));
-
-			if (logOn.RememberMe)
+			var claims = new[]
 			{
-				var rememberBrowserIdentity =
-					authenticationManager.CreateTwoFactorRememberBrowserIdentity(logOn.Login);
+				new Claim(ClaimTypes.Email, logOn.Login),
+				new Claim(ClaimTypes.Name, logOn.Login)
+			};
 
-				authenticationManager.SignIn(
-					new AuthenticationProperties { IsPersistent = isPersistent },
-					identity,
-					rememberBrowserIdentity);
-			}
-			else
+			var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+			var claimsPrincipal = new ClaimsPrincipal(claimsIdentity);
+
+			var authProperties = new AuthenticationProperties
 			{
-				authenticationManager.SignIn(
-					new AuthenticationProperties { IsPersistent = isPersistent },
-					identity);
-			}
+				IsPersistent = isPersistent || logOn.RememberMe,
+				ExpiresUtc = logOn.RememberMe 
+					? System.DateTimeOffset.UtcNow.AddDays(30) 
+					: System.DateTimeOffset.UtcNow.AddHours(2)
+			};
+
+			await httpContext.SignInAsync(
+				CookieAuthenticationDefaults.AuthenticationScheme,
+				claimsPrincipal,
+				authProperties);
 		}
 
-		public void SignOut()
+		public async Task SignOutAsync()
 		{
-			authenticationManager.SignOut();
+			await httpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
 		}
 	}
 }
