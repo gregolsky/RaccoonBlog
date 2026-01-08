@@ -1,0 +1,180 @@
+using FluentScheduler;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.Facebook;
+using Microsoft.AspNetCore.Authentication.Google;
+using Microsoft.AspNetCore.Authentication.MicrosoftAccount;
+using Microsoft.AspNetCore.Authentication.Twitter;
+using NLog.Web;
+using Raven.Client.Documents;
+using Raven.Client.Documents.Conventions;
+using Raven.Client.Documents.Indexes;
+using Raven.Client.Http;
+using RaccoonBlog.Web.Helpers.Binders;
+using RaccoonBlog.Web.Infrastructure.AutoMapper;
+using RaccoonBlog.Web.Infrastructure.Indexes;
+using RaccoonBlog.Web.Infrastructure.Jobs;
+using System.Net;
+using System.Net.Security;
+using System.Security.Cryptography.X509Certificates;
+
+var builder = WebApplication.CreateBuilder(args);
+
+// Configure NLog
+builder.Logging.ClearProviders();
+builder.Host.UseNLog();
+
+// Add services to the container
+builder.Services.AddControllersWithViews(options =>
+{
+    options.ModelBinderProviders.Insert(0, new GuidBinderProvider());
+})
+.AddRazorRuntimeCompilation();
+
+builder.Services.AddHttpContextAccessor();
+
+// Configure RavenDB DocumentStore
+var ravenUrls = builder.Configuration["Raven:Urls"]?.Split(',', StringSplitOptions.RemoveEmptyEntries) ?? new[] { "http://localhost:8080" };
+var ravenDatabase = builder.Configuration["Raven:Database"] ?? "blog.ayende.com";
+
+ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+ServicePointManager.CheckCertificateRevocationList = false;
+ServicePointManager.ServerCertificateValidationCallback += (sender, certificate, chain, sslPolicyErrors) => true;
+
+var documentStore = new DocumentStore
+{
+    Urls = ravenUrls,
+    Database = ravenDatabase,
+    Conventions = new DocumentConventions
+    {
+        AggressiveCache = { Mode = AggressiveCacheMode.DoNotTrackChanges }
+    }
+};
+
+// Certificate configuration
+var certificatePath = builder.Configuration["Raven:CertificatePath"];
+if (!string.IsNullOrEmpty(certificatePath))
+{
+    var certificatePassword = builder.Configuration["Raven:CertificatePassword"];
+    documentStore.Certificate = new X509Certificate2(certificatePath, certificatePassword);
+}
+
+// Request timeout configuration
+if (int.TryParse(builder.Configuration["Raven:RequestsTimeoutInSec"], out int timeoutSeconds))
+{
+    documentStore.Conventions.RequestTimeout = TimeSpan.FromSeconds(timeoutSeconds);
+}
+
+documentStore.Initialize();
+builder.Services.AddSingleton<IDocumentStore>(documentStore);
+
+// Configure Authentication
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/admin/login";
+        options.AccessDeniedPath = "/admin/login";
+    })
+    .AddGoogle(options =>
+    {
+        var clientId = builder.Configuration["Raccoon:OAuth:Google:ClientId"];
+        var clientSecret = builder.Configuration["Raccoon:OAuth:Google:ClientSecret"];
+        if (!string.IsNullOrEmpty(clientId) && !string.IsNullOrEmpty(clientSecret))
+        {
+            options.ClientId = clientId;
+            options.ClientSecret = clientSecret;
+        }
+    })
+    .AddMicrosoftAccount(options =>
+    {
+        var clientId = builder.Configuration["Raccoon:OAuth:Microsoft:ClientId"];
+        var clientSecret = builder.Configuration["Raccoon:OAuth:Microsoft:ClientSecret"];
+        if (!string.IsNullOrEmpty(clientId) && !string.IsNullOrEmpty(clientSecret))
+        {
+            options.ClientId = clientId;
+            options.ClientSecret = clientSecret;
+        }
+    })
+    .AddFacebook(options =>
+    {
+        var appId = builder.Configuration["Raccoon:OAuth:Facebook:AppId"];
+        var appSecret = builder.Configuration["Raccoon:OAuth:Facebook:AppSecret"];
+        if (!string.IsNullOrEmpty(appId) && !string.IsNullOrEmpty(appSecret))
+        {
+            options.AppId = appId;
+            options.AppSecret = appSecret;
+        }
+    })
+    .AddTwitter(options =>
+    {
+        var consumerKey = builder.Configuration["Raccoon:OAuth:Twitter:ConsumerKey"];
+        var consumerSecret = builder.Configuration["Raccoon:OAuth:Twitter:ConsumerSecret"];
+        if (!string.IsNullOrEmpty(consumerKey) && !string.IsNullOrEmpty(consumerSecret))
+        {
+            options.ConsumerKey = consumerKey;
+            options.ConsumerSecret = consumerSecret;
+        }
+    });
+
+// Configure AutoMapper
+AutoMapperConfiguration.Configure();
+
+// Initialize FluentScheduler jobs
+JobManager.JobException += info =>
+{
+    var logger = LogManager.GetCurrentClassLogger();
+    logger.Fatal(info.Exception, $"Error executing background job {info.Name}.");
+};
+JobManager.Initialize(new SocialNetworkIntegrationJobsRegistry());
+
+var app = builder.Build();
+
+// Configure the HTTP request pipeline
+if (app.Environment.IsDevelopment())
+{
+    app.UseDeveloperExceptionPage();
+}
+else
+{
+    app.UseExceptionHandler("/Error/Index");
+    app.UseStatusCodePagesWithReExecute("/Error/{0}");
+    app.UseHsts();
+}
+
+app.UseHttpsRedirection();
+app.UseStaticFiles();
+
+app.UseRouting();
+
+app.UseAuthentication();
+app.UseAuthorization();
+
+// RavenDB session management per request
+app.Use(async (context, next) =>
+{
+    var session = documentStore.OpenSession();
+    context.Items["CurrentRequestRavenSession"] = session;
+    
+    try
+    {
+        await next();
+        
+        if (context.Response.StatusCode < 400)
+        {
+            session.SaveChanges();
+        }
+    }
+    finally
+    {
+        session?.Dispose();
+    }
+});
+
+app.MapControllerRoute(
+    name: "areas",
+    pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}");
+
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Posts}/{action=Index}/{id?}");
+
+app.Run();
