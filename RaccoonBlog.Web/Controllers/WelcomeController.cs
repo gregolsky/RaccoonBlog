@@ -1,4 +1,4 @@
-﻿using System.Web.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using RaccoonBlog.Web.Models;
 
 namespace RaccoonBlog.Web.Controllers

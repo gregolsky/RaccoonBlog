@@ -30,3 +30,30 @@ Status: Complete. Actions 13-14 successfully completed.
 
 Success - Program.cs and appsettings.json created and configured for ASP.NET Core 8.0
 
+
+## [2026-01-08 19:26] TASK-002: Action 16 in progress - Base controllers and key controllers updated to ASP.NET Core MVC
+
+Status: InProgress. Action 16 significantly progressed - base and key controllers updated.
+
+- **Files Modified**:
+  - RaccoonBlog.Web/Controllers/RaccoonController.cs
+  - RaccoonBlog.Web/Areas/Admin/Controllers/AdminController.cs
+  - RaccoonBlog.Web/Controllers/AggresivelyCachingRacconController.cs
+  - RaccoonBlog.Web/Controllers/PostsController.cs
+  - RaccoonBlog.Web/Controllers/ErrorController.cs
+  - RaccoonBlog.Web/Controllers/WelcomeController.cs
+
+- **Code Changes**:
+  - Updated all base controllers (RaccoonController, AdminController, AggresivelyCachingRacconController)
+  - Changed namespace from System.Web.Mvc → Microsoft.AspNetCore.Mvc
+  - Changed namespace for filters to Microsoft.AspNetCore.Mvc.Filters
+  - Updated filter method signatures (OnActionExecuting, OnActionExecuted) from `protected override` to `public override`
+  - Replaced HttpStatusCodeResult with StatusCodeResult and StatusCode() method
+  - Updated HttpContext.Response.Redirect → Response.Redirect and removed endResponse parameter
+  - Updated Request.QueryString → Request.Query for ASP.NET Core
+  - Removed TrySkipIisCustomErrors (IIS-specific, not in ASP.NET Core)
+  - Updated PostsController, ErrorController, WelcomeController namespaces
+  - Added Microsoft.AspNetCore.Authorization for [Authorize] attribute
+
+Note: ~91 controller files remain (T4MVC generated files + remaining controllers). T4MVC generated files will need updating after T4MVC templates are regenerated for ASP.NET Core.
+

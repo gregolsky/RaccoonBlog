@@ -1,5 +1,5 @@
 using System;
-using System.Web.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace RaccoonBlog.Web.Controllers
 {
@@ -7,7 +7,7 @@ namespace RaccoonBlog.Web.Controllers
 	{
 		IDisposable aggressivelyCacheFor;
 
-		protected override void OnActionExecuting(ActionExecutingContext filterContext)
+		public override void OnActionExecuting(ActionExecutingContext filterContext)
 		{
 			base.OnActionExecuting(filterContext);
 
@@ -16,7 +16,7 @@ namespace RaccoonBlog.Web.Controllers
 
 		protected abstract TimeSpan CacheDuration { get; }
 
-		protected override void OnActionExecuted(ActionExecutedContext filterContext)
+		public override void OnActionExecuted(ActionExecutedContext filterContext)
 		{
 			base.OnActionExecuted(filterContext);
 

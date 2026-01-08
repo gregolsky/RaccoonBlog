@@ -1,10 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web.Mvc;
 using System.Xml.Linq;
 using DevTrends.MvcDonutCaching;
 using HibernatingRhinos.Loci.Common.Extensions;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using RaccoonBlog.Web.Helpers.Results;
@@ -20,9 +21,9 @@ namespace RaccoonBlog.Web.Controllers
 
         public IDocumentSession RavenSession { get; set; }
 
-        protected HttpStatusCodeResult HttpNotModified()
+        protected StatusCodeResult HttpNotModified()
         {
-            return new HttpStatusCodeResult(304);
+            return StatusCode(304);
         }
 
         protected ActionResult Xml(XDocument xml, string etag)
@@ -46,7 +47,7 @@ namespace RaccoonBlog.Web.Controllers
 
                     if (blogConfig == null && "welcome".Equals((string)RouteData.Values["controller"], StringComparison.OrdinalIgnoreCase) == false) // first launch
                     {
-                        HttpContext.Response.Redirect("~/welcome", true);
+                        Response.Redirect("~/welcome");
                     }
                 }
                 return blogConfig;
@@ -74,13 +75,14 @@ namespace RaccoonBlog.Web.Controllers
         private OutputCacheManager outputCacheManager;
         protected OutputCacheManager OutputCacheManager => outputCacheManager ?? (outputCacheManager = new OutputCacheManager());
 
-        protected override void OnActionExecuting(ActionExecutingContext filterContext)
+        public override void OnActionExecuting(ActionExecutingContext filterContext)
         {
             ViewBag.IsHomePage = false;
             RavenSession = (IDocumentSession)HttpContext.Items["CurrentRequestRavenSession"];
+            base.OnActionExecuting(filterContext);
         }
 
-        protected override void OnActionExecuted(ActionExecutedContext filterContext)
+        public override void OnActionExecuted(ActionExecutedContext filterContext)
         {
             base.OnActionExecuted(filterContext);
 
@@ -97,7 +99,7 @@ namespace RaccoonBlog.Web.Controllers
         {
             get
             {
-                var s = Request.QueryString["page"];
+                var s = Request.Query["page"].ToString();
                 int result;
                 if (int.TryParse(s, out result))
                     return Math.Max(DefaultPage, result);

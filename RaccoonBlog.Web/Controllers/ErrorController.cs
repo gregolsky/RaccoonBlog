@@ -1,5 +1,4 @@
-﻿using System.Web.Mvc;
-
+﻿using Microsoft.AspNetCore.Mvc;
 using NLog;
 
 namespace RaccoonBlog.Web.Controllers
@@ -13,7 +12,6 @@ namespace RaccoonBlog.Web.Controllers
         public virtual ActionResult Error()
         {
             HttpContext.Response.StatusCode = ViewBag.ErrorCode = 500;
-            HttpContext.Response.TrySkipIisCustomErrors = true;
             ViewBag.ErrorMessage = "error";
 
             return View(MVC.Shared.Views.Error);
@@ -29,7 +27,6 @@ namespace RaccoonBlog.Web.Controllers
             }
 
             HttpContext.Response.StatusCode = ViewBag.ErrorCode = 404;
-            HttpContext.Response.TrySkipIisCustomErrors = true;
             ViewBag.ErrorMessage = "not found";
 
             return View(MVC.Shared.Views.Error);
