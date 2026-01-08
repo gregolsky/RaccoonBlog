@@ -1,39 +1,41 @@
 ﻿@model PostViewModel
 
+@{
+    // ASP.NET Core: Convert @helper to @functions (local functions)
+    void PreviousSeriesArticleLink(PostViewModel model)
+    {
+        var prev = model.GetPreviousPostInSeries();
+        if (prev != null)
+        {
+            <a href="@Url.Post(prev.Id, prev.Slug)" class="pull-left series">
+                <span class="icomoon-position icon-chevron-left"></span>
+                <span class="hidden-xs">&nbsp; previous series post</span>
+            </a>
+        }
+    }
 
-@helper PreviousSeriesArticleLink(PostViewModel model)
-{
-var prev = model.GetPreviousPostInSeries();
-if (prev != null)
-{
-        <a href="@Url.Post(prev.Id, prev.Slug)" class="pull-left series">
-            <span class="icomoon-position icon-chevron-left"></span>
-            <span class="hidden-xs">&nbsp; previous series post</span>
-        </a>
-}
-}
+    void NextSeriesArticleLink(PostViewModel model)
+    {
+        var next = model.GetNextPostInSeries();
+        if (next != null)
+        {
+            <a href="@Url.Post(next.Id, next.Slug)" class="pull-right series">
+                <span class="hidden-xs">&nbsp; next series post</span>
+                <span class="icomoon-position icon-chevron-right"></span>
+            </a>
+        }
+    }
 
-@helper NextSeriesArticleLink(PostViewModel model)
-{
-var next = model.GetNextPostInSeries();
-if (next != null)
-{
-        <a href="@Url.Post(next.Id, next.Slug)" class="pull-right series">
-            <span class="hidden-xs">&nbsp; next series post</span>
-            <span class="icomoon-position icon-chevron-right"></span>
-        </a>
-}
-}
-
-@helper SeriesLink(PostViewModel model)
-{
-if (model.IsSeriesArticle())
-{
-        <a href="@Url.Series(Model.SeriesInfo.SeriesId, Model.SeriesInfo.SeriesSlug)" class="pull-left series">
-            <i class="icon-book"></i>
-            &nbsp;<span class="hidden-xs">all </span>series<span class="hidden-xs"> posts</span>
-        </a>
-}
+    void SeriesLink(PostViewModel model)
+    {
+        if (model.IsSeriesArticle())
+        {
+            <a href="@Url.Series(Model.SeriesInfo.SeriesId, Model.SeriesInfo.SeriesSlug)" class="pull-left series">
+                <i class="icon-book"></i>
+                &nbsp;<span class="hidden-xs">all </span>series<span class="hidden-xs"> posts</span>
+            </a>
+        }
+    }
 }
 
 <nav class="nextPrev">
@@ -52,11 +54,11 @@ if (model.IsSeriesArticle())
         </a>
     }
 
-    @PreviousSeriesArticleLink(Model)
+    @{ PreviousSeriesArticleLink(Model); }
 
-    @SeriesLink(Model)
+    @{ SeriesLink(Model); }
 
-    @NextSeriesArticleLink(Model)
+    @{ NextSeriesArticleLink(Model); }
 
     <div class="clearfix"></div>
 </nav>

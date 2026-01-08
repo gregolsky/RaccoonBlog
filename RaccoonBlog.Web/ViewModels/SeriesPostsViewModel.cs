@@ -2,7 +2,6 @@
 {
     using System;
     using System.Collections.Generic;
-    using Antlr.Runtime.Misc;
     using RaccoonBlog.Web.Helpers;
     using RaccoonBlog.Web.Infrastructure.Common;
 
@@ -22,7 +21,8 @@
     {
         public SeriesInfo()
         {
-            PostsInSeries = new ListStack<PostInSeries>();
+            // ASP.NET Core: Replaced Antlr.Runtime.Misc.ListStack with standard List
+            PostsInSeries = new List<PostInSeries>();
         }
 
         public string SeriesId { get; set; }

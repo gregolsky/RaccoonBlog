@@ -4,10 +4,10 @@ namespace RaccoonBlog.Web.ViewModels
 {
 	public class UserInput
 	{
-		[HiddenInput]
 		public string Id { get; set; }
 
 		[Display(Name = "Full Name")]
+		[Required]
 		public string FullName { get; set; }
 
 		[Required]

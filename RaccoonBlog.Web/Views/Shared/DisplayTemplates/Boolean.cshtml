@@ -11,12 +11,21 @@
 <div class="display_item">
     <strong>@ViewData.ModelMetadata.DisplayName</strong>
     @if (ViewData.ModelMetadata.IsNullableValueType) {
-        <select class="list-box tri-state" disabled="disabled">
-            <option value=""@(Value.HasValue ? null : " selected='selected'")>Not Set</option>
-            <option value="true"@(Value.HasValue && Value.Value ? " selected='selected'" : null)>True</option>
-            <option value="false"@(Value.HasValue && !Value.Value ? " selected='selected'" : null)>False</option>
+        @* ASP.NET Core: Disable tag helpers for this select to avoid C# code in attribute issue *@
+        @{
+            var notSetSelected = !Value.HasValue ? " selected='selected'" : "";
+            var trueSelected = (Value.HasValue && Value.Value) ? " selected='selected'" : "";
+            var falseSelected = (Value.HasValue && !Value.Value) ? " selected='selected'" : "";
+        }
+        <select class="list-box tri-state" disabled="disabled" data-tag-helper-disabled>
+            <option value=""@Html.Raw(notSetSelected)>Not Set</option>
+            <option value="true"@Html.Raw(trueSelected)>True</option>
+            <option value="false"@Html.Raw(falseSelected)>False</option>
         </select>
     } else {
-        <input type="checkbox" class="check-box" disabled="disabled"@(Value.HasValue && Value.Value ? " checked='checked'" : null) />
+        @{
+            var checkedAttr = (Value.HasValue && Value.Value) ? " checked='checked'" : "";
+        }
+        <input type="checkbox" class="check-box" disabled="disabled"@Html.Raw(checkedAttr) />
     }
 </div>

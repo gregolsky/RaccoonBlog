@@ -4,7 +4,6 @@ namespace HibernatingRhinos.Loci.Common.Models
 {
 	public class ChangePasswordModel
 	{
-		[HiddenInput]
 		public string Id { get; set; }
 
 		[Required]

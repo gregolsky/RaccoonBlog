@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Linq;
-using DevTrends.MvcDonutCaching;
 using HibernatingRhinos.Loci.Common.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -72,9 +71,6 @@ namespace RaccoonBlog.Web.Controllers
             }
         }
 
-        private OutputCacheManager outputCacheManager;
-        protected OutputCacheManager OutputCacheManager => outputCacheManager ?? (outputCacheManager = new OutputCacheManager());
-
         public override void OnActionExecuting(ActionExecutingContext filterContext)
         {
             ViewBag.IsHomePage = false;
@@ -114,3 +110,4 @@ namespace RaccoonBlog.Web.Controllers
         }
     }
 }
+
