@@ -58,7 +58,7 @@ namespace RaccoonBlog.Web.Areas.Admin.Controllers
 			input.MapPropertiesToInstance(post);
 
 			// Be able to record the user making the actual post
-			var user = RavenSession.GetCurrentUser();
+			var user = RavenSession.GetCurrentUser(User);
 			if (string.IsNullOrEmpty(post.AuthorId))
 			{
 				post.AuthorId = user.Id;

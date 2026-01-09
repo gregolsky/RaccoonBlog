@@ -147,7 +147,7 @@ namespace RaccoonBlog.Web.Controllers
 
 		public virtual IActionResult AdministrationPanel()
 		{
-			var user = RavenSession.GetCurrentUser();
+			var user = RavenSession.GetCurrentUser(User);
 
 			var vm = new CurrentUserViewModel();
 			if (user != null)
