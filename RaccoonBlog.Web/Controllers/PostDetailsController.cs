@@ -67,10 +67,14 @@ namespace RaccoonBlog.Web.Controllers
             {
                 var newCommentEmailHash = EmailHashResolver.Resolve(comment.Email);
                 var newCommentContent = MarkdownResolver.Resolve(comment.Body);
+                
+                // ASP.NET Core: Convert IHtmlContent to string for comparison
+                var newCommentContentString = newCommentContent?.ToString() ?? string.Empty;
+                
                 if (vm.Comments.Any(x =>
                     x.Author == comment.Name
                     && x.EmailHash == newCommentEmailHash
-                    && x.Body.ToString() == newCommentContent.ToString()) == false)
+                    && x.Body.ToString() == newCommentContentString) == false)
                 {
                     vm.Comments.Add(new PostViewModel.Comment
                     {
