@@ -7,13 +7,14 @@ namespace RaccoonBlog.Web.Controllers
 	{
 		//
 		// GET: /Welcome/
-		public virtual ActionResult Index()
+		public virtual IActionResult Index()
 		{
 			return AssertConfigurationIsNeeded() ?? View(BlogConfig.New());
 		}
 
 		[HttpPost]
-		public virtual ActionResult CreateBlog(BlogConfig config)
+		[ValidateAntiForgeryToken]
+		public virtual IActionResult CreateBlog(BlogConfig config)
 		{
 			var result = AssertConfigurationIsNeeded();
 			if (result != null)
@@ -42,7 +43,7 @@ namespace RaccoonBlog.Web.Controllers
 			return RedirectToAction("Success", config);
 		}
 
-		public virtual ActionResult Success()
+		public virtual IActionResult Success()
 		{
 			BlogConfig bc;
 
@@ -56,7 +57,7 @@ namespace RaccoonBlog.Web.Controllers
 			return bc == null ? View("Index") : View(bc);
 		}
 
-		private ActionResult AssertConfigurationIsNeeded()
+		private IActionResult AssertConfigurationIsNeeded()
 		{
 			BlogConfig bc;
 

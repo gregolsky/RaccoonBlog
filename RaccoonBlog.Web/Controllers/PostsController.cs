@@ -15,7 +15,7 @@ namespace RaccoonBlog.Web.Controllers
 {
 	public partial class PostsController : AggresivelyCachingRacconController
 	{
-		public virtual ActionResult Index()
+		public virtual IActionResult Index()
 		{
 			ViewBag.IsHomePage = CurrentPage == DefaultPage;
 
@@ -30,7 +30,7 @@ namespace RaccoonBlog.Web.Controllers
 			return ListView((int)stats.TotalResults, posts);
 		}
 
-		public virtual ActionResult Tag(string slug)
+		public virtual IActionResult Tag(string slug)
 		{
 			var posts = RavenSession.Query<Post>()
 				.Include(x => x.AuthorId)
@@ -44,14 +44,14 @@ namespace RaccoonBlog.Web.Controllers
 			return ListView((int)stats.TotalResults, posts);
 		}
 
-		public virtual ActionResult Series(string seriesId, string seriesSlug)
+		public virtual IActionResult Series(string seriesId, string seriesSlug)
 	    {
 			var serie = RavenSession
 				.Query<Posts_Series.Result, Posts_Series>()
 				.FirstOrDefault(x => x.SeriesId == seriesId);
 
 			if (serie == null)
-                return HttpNotFound();
+                return NotFound(); // ASP.NET Core: HttpNotFound() ? NotFound()
 
             var posts = RavenSession.Query<Post>()
                 .Include(x => x.AuthorId)
@@ -65,7 +65,7 @@ namespace RaccoonBlog.Web.Controllers
             return ListView((int)stats.TotalResults, posts);
 	    }
 
-		public virtual ActionResult Archive(int year, int? month, int? day)
+		public virtual IActionResult Archive(int year, int? month, int? day)
 		{
 			var postsQuery = RavenSession.Query<Post>()
 				.Include(x => x.AuthorId)
@@ -87,7 +87,7 @@ namespace RaccoonBlog.Web.Controllers
 			return ListView((int)stats.TotalResults, posts);
 		}
 
-		private ActionResult ListView(int count, IList<Post> posts)
+		private IActionResult ListView(int count, IList<Post> posts)
 		{
 		    ViewBag.ChangeViewStyle = true;
 
