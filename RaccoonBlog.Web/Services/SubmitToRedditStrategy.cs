@@ -1,4 +1,9 @@
-﻿using System;
+﻿// TODO: Reddit integration temporarily disabled due to RedditSharp API breaking changes
+// Needs update to RedditSharp 2.0+ API when time permits
+// See: https://github.com/sirkris/Reddit.NET for migration guide
+
+#if FALSE // Temporarily disabled Reddit integration
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
@@ -205,3 +210,4 @@ namespace RaccoonBlog.Web.Services
         }
     }
 }
+#endif

@@ -1,4 +1,6 @@
-﻿using System;
+﻿// TODO: Reddit integration temporarily disabled due to RedditSharp API breaking changes
+#if FALSE // Temporarily disabled
+using System;
 using FluentScheduler;
 using RaccoonBlog.Web.Controllers;
 using RaccoonBlog.Web.Services;
@@ -52,3 +54,4 @@ namespace RaccoonBlog.Web.Infrastructure.Jobs
 		}
 	}
 }
+#endif

@@ -1,5 +1,6 @@
 using System;
-using System.Web;
+using System.Net;
+using Microsoft.Extensions.DependencyInjection;
 using HibernatingRhinos.Loci.Common.Tasks;
 using RaccoonBlog.Web.Infrastructure.AutoMapper;
 using RaccoonBlog.Web.Infrastructure.AutoMapper.Profiles.Resolvers;
@@ -22,12 +23,14 @@ namespace RaccoonBlog.Web.Infrastructure.Tasks
 		private readonly CommentInput commentInput;
 		private readonly RequestValues requestValues;
 		private readonly string postId;
+		private readonly IServiceProvider serviceProvider;
 
-		public AddCommentTask(CommentInput commentInput, RequestValues requestValues, string postId)
+		public AddCommentTask(CommentInput commentInput, RequestValues requestValues, string postId, IServiceProvider serviceProvider = null)
 		{
 			this.commentInput = commentInput;
 			this.requestValues = requestValues;
 			this.postId = postId;
+			this.serviceProvider = serviceProvider;
 		}
 
 		public override void Execute()
@@ -53,7 +56,8 @@ namespace RaccoonBlog.Web.Infrastructure.Tasks
 			              	};
 			comment.IsSpam = AkismetService.CheckForSpam(comment);
 
-			var commenter = DocumentSession.GetCommenter(commentInput.CommenterKey) ?? new Commenter { Key = commentInput.CommenterKey ?? Guid.Empty };
+			var commenterKey = commentInput.CommenterKey ?? Guid.Empty;
+			var commenter = DocumentSession.GetCommenter(commenterKey.ToString()) ?? new Commenter { Key = commenterKey };
 			SetCommenter(commenter, comment);
 
 			if (requestValues.IsAuthenticated == false && comment.IsSpam)
@@ -93,17 +97,18 @@ namespace RaccoonBlog.Web.Infrastructure.Tasks
 
 			var viewModel = comment.MapTo<NewCommentEmailViewModel>();
 			viewModel.PostId = post.GetIdForUrl();
-			viewModel.PostTitle = HttpUtility.HtmlDecode(post.Title);
+			viewModel.PostTitle = WebUtility.HtmlDecode(post.Title);
 			viewModel.PostSlug = SlugConverter.TitleToSlug(post.Title);
 			viewModel.BlogName = DocumentSession.Load<BlogConfig>(BlogConfig.Key).Title;
-			viewModel.Key = post.ShowPostEvenIfPrivate.MapTo<string>();
+			viewModel.Key = post.ShowPostEvenIfPrivate.ToString();
 		    viewModel.IsSpam = comment.IsSpam;
             viewModel.IpAddress = comment.UserHostAddress;
             viewModel.UserAgent = comment.UserAgent;
 
 			var subject = string.Format("{2}Comment on: {0} from {1}", viewModel.PostTitle, viewModel.BlogName, viewModel.IsSpam ? "[DETECTED SPAM] " : string.Empty);
 
-			TaskExecutor.ExcuteLater(new SendEmailTask(viewModel.Email, subject, "NewComment", postAuthor.Email, viewModel));
+			// TODO: IServiceProvider should be passed from controller context
+			TaskExecutor.ExcuteLater(new SendEmailTask(viewModel.Email, subject, "NewComment", postAuthor.Email, viewModel, serviceProvider));
 		}
 	}
 }
