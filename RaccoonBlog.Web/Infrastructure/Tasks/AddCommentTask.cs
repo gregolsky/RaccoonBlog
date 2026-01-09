@@ -56,8 +56,12 @@ namespace RaccoonBlog.Web.Infrastructure.Tasks
 			              	};
 			comment.IsSpam = AkismetService.CheckForSpam(comment);
 
-			var commenterKey = commentInput.CommenterKey ?? Guid.Empty;
-			var commenter = DocumentSession.GetCommenter(commenterKey.ToString()) ?? new Commenter { Key = commenterKey };
+			var commenter = DocumentSession.GetCommenter(commentInput.CommenterKey);
+			if (commenter == null)
+			{
+				Guid.TryParse(commentInput.CommenterKey, out var parsedKey);
+				commenter = new Commenter { Key = parsedKey };
+			}
 			SetCommenter(commenter, comment);
 
 			if (requestValues.IsAuthenticated == false && comment.IsSpam)

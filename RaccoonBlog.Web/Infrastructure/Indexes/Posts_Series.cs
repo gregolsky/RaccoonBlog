@@ -48,7 +48,7 @@ namespace RaccoonBlog.Web.Infrastructure.Indexes
                            select new
                            {
                                Series = series,
-                               SeriesId = p.Id.Substring("posts/".Length),
+                               SeriesId = p.Id.Substring(6), // "posts/".Length = 6, avoid optional parameter in expression tree
                                Posts = new[] {new {p.Id, p.Title, p.PublishAt}},
                                Count = 1,
                                MaxDate = p.PublishAt,
