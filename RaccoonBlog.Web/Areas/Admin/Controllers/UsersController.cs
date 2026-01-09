@@ -1,5 +1,5 @@
 using System.Linq;
-using System.Web.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using HibernatingRhinos.Loci.Common.Models;
 using RaccoonBlog.Web.Infrastructure.AutoMapper;
 using RaccoonBlog.Web.Models;
@@ -9,7 +9,7 @@ namespace RaccoonBlog.Web.Areas.Admin.Controllers
 {
 	public partial class UsersController : AdminController
 	{
-		public virtual ActionResult Index()
+		public virtual IActionResult Index()
 		{
 			var users = RavenSession.Query<User>()
 				.OrderBy(u => u.FullName)
@@ -20,13 +20,14 @@ namespace RaccoonBlog.Web.Areas.Admin.Controllers
 		}
 
 		[HttpGet]
-		public virtual ActionResult Add()
+		public virtual IActionResult Add()
 		{
 			return View("Edit", new UserInput());
 		}
 
 		[HttpPost]
-		public virtual ActionResult Add(UserInput input)
+		[ValidateAntiForgeryToken]
+		public virtual IActionResult Add(UserInput input)
 		{
 			if (!ModelState.IsValid)
 				return View("Edit", input);
@@ -38,16 +39,17 @@ namespace RaccoonBlog.Web.Areas.Admin.Controllers
 		}
 
 		[HttpGet]
-		public virtual ActionResult Edit(string id)
+		public virtual IActionResult Edit(string id)
 		{
 			var user = RavenSession.Load<User>("users/" + id);
 			if (user == null)
-				return HttpNotFound("User does not exist.");
+				return NotFound("User does not exist.");
 			return View(user.MapTo<UserInput>());
 		}
 
 		[HttpPost]
-		public virtual ActionResult Update(UserInput input)
+		[ValidateAntiForgeryToken]
+		public virtual IActionResult Update(UserInput input)
 		{
 			if (!ModelState.IsValid)
 				return View("Edit", input);
@@ -59,24 +61,25 @@ namespace RaccoonBlog.Web.Areas.Admin.Controllers
 		}
 
 		[HttpGet]
-		public virtual ActionResult ChangePassword(string id)
+		public virtual IActionResult ChangePassword(string id)
 		{
 			var user = RavenSession.Load<User>("users/" + id);
 			if (user == null)
-				return HttpNotFound("User does not exist.");
+				return NotFound("User does not exist.");
 
 			return View(new ChangePasswordModel());
 		}
 
 		[HttpPost]
-		public virtual ActionResult ChangePassword(ChangePasswordModel input)
+		[ValidateAntiForgeryToken]
+		public virtual IActionResult ChangePassword(ChangePasswordModel input)
 		{
 			if (!ModelState.IsValid)
 				return View("ChangePassword", input);
 
 			var user = RavenSession.Load<User>("users/" + input.Id);
 			if (user == null)
-				return HttpNotFound("User does not exist.");
+				return NotFound("User does not exist.");
 
 			if (user.ValidatePassword(input.OldPassword) == false)
 			{
@@ -91,11 +94,12 @@ namespace RaccoonBlog.Web.Areas.Admin.Controllers
 		}
 
 		[HttpPost]
-		public virtual ActionResult SetActivation(string id, bool isActive)
+		[ValidateAntiForgeryToken]
+		public virtual IActionResult SetActivation(string id, bool isActive)
 		{
 			var user = RavenSession.Load<User>("users/" + id);
 			if (user == null)
-				return HttpNotFound("User does not exist.");
+				return NotFound("User does not exist.");
 
 			user.Enabled = isActive;
 

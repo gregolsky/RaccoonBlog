@@ -5,11 +5,11 @@
     using RaccoonBlog.Web.Infrastructure.Indexes;
     using ViewModels;
     using System.Linq;
-    using System.Web.Mvc;
+    using Microsoft.AspNetCore.Mvc;
 
 	public partial class SeriesController : RaccoonController
     {
-		public virtual ActionResult PostsSeries()
+		public virtual IActionResult PostsSeries()
         {
             var series = RavenSession.Query<Posts_Series.Result, Posts_Series>()
                 .Statistics(out var stats)

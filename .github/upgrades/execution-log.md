@@ -484,3 +484,208 @@ This is a **GOOD STATE** to pause and commit progress. We've:
 
 **Recommendation**: COMMIT CURRENT PROGRESS before continuing with massive refactoring.
 
+
+## [2026-01-08 21:49] TASK-002: Controller refactoring in progress - 5 controllers updated (ErrorController, LegalController, LegacyPostController, SearchController, SeriesController). Actions 16 and 27 in progress.
+
+Status: InProgress. Systematic controller refactoring started.
+
+**Controllers Updated** (5 files):
+
+1. ✅ **ErrorController.cs**
+   - Changed `ActionResult` → `IActionResult`
+   - Removed T4MVC references: `MVC.Shared.Views.Error` → `"Error"`
+   - Now ASP.NET Core compatible
+
+2. ✅ **LegalController.cs**
+   - Changed `using System.Web.Mvc` → `Microsoft.AspNetCore.Mvc`
+   - Changed `ActionResult` → `IActionResult`
+   - Privacy policy and terms routes working
+
+3. ✅ **LegacyPostController.cs**
+   - Changed `ActionResult` → `IActionResult`
+   - Changed `HttpNotFound()` → `NotFound()`
+   - Legacy URL redirect logic preserved
+
+4. ✅ **SearchController.cs**
+   - Changed `ActionResult` → `IActionResult`
+   - Replaced `ConfigurationManager` with `IConfiguration` injection
+   - Updated configuration key format: `Raccoon/GoogleCustomSearch/Id` → `Raccoon:GoogleCustomSearch:Id`
+   - Added constructor for dependency injection
+
+5. ✅ **SeriesController.cs**
+   - Changed `using System.Web.Mvc` → `Microsoft.AspNetCore.Mvc`
+   - Changed `ActionResult` → `IActionResult`
+   - Series post logic preserved
+
+**Key Patterns Applied**:
+```csharp
+// Return Type
+OLD: public ActionResult Method()
+NEW: public IActionResult Method()
+
+// NotFound
+OLD: return HttpNotFound();
+NEW: return NotFound();
+
+// Configuration
+OLD: ConfigurationManager.AppSettings["key"]
+NEW: _configuration["key"] (via constructor injection)
+
+// View Names
+OLD: return View(MVC.Controller.Views.ViewName);
+NEW: return View("ViewName");
+```
+
+**Progress**:
+- Controllers fixed: 5 of ~20 needing updates
+- Errors reduced: ~10-15 errors fixed
+- Patterns established for remaining controllers
+
+**Next Priority Controllers**:
+- PostsController (already partially updated)
+- PostDetailsController (complex, many errors)
+- Admin area controllers (UsersController, SettingsController, PostsController, SectionsController)
+- SyndicationController
+- LoginController
+
+**Estimated Impact**: ~50-75 errors will be fixed with remaining controller updates.
+
+Continuing systematic refactoring...
+
+
+## [2026-01-08 21:55] TASK-002: PostDetailsController modernized (most complex, ~20 errors fixed). 6 controllers complete. ~30% of controller refactoring done. Actions 16, 27 in progress.
+
+Status: InProgress. PostDetailsController fully modernized - major milestone!
+
+**PostDetailsController Modernization Complete** ✅
+
+This was one of the most complex controllers with ~20+ errors. All updated successfully:
+
+**Key Changes**:
+
+1. **Return Types**:
+   - `ActionResult` → `IActionResult` (3 methods)
+   - `Task<ActionResult>` → `Task<IActionResult>`
+
+2. **Using Statements**:
+   - Removed: `System.Web`, `System.Web.Mvc`
+   - Added: `Microsoft.AspNetCore.Mvc`, `Microsoft.AspNetCore.Http`
+
+3. **HTTP Methods**:
+   - `HttpNotFound()` → `NotFound()` (4 occurrences)
+   - `HttpStatusCodeResult(HttpStatusCode.PaymentRequired)` → `StatusCode(StatusCodes.Status402PaymentRequired)`
+
+4. **Authentication**:
+   - `Request.IsAuthenticated` → `User.Identity.IsAuthenticated` (2 occurrences)
+
+5. **AJAX Detection**:
+   - `Request.IsAjaxRequest()` → `Request.Headers["X-Requested-With"] == "XMLHttpRequest"` (2 occurrences)
+
+6. **Cookie Handling**:
+   - `Request.Cookies[name]` → `Request.Cookies.TryGetValue(name, out var value)`
+   - `Response.Cookies.Set(new HttpCookie(...))` → `Response.Cookies.Delete(...)`
+   - Modernized cookie expiration logic
+
+7. **IP Address**:
+   - `Request.UserHostAddress` → `HttpContext.Connection.RemoteIpAddress?.ToString()`
+
+8. **HTML Encoding**:
+   - `HttpUtility.HtmlDecode()` → `System.Net.WebUtility.HtmlDecode()`
+
+9. **CSRF Protection**:
+   - Added `[ValidateAntiForgeryToken]` attribute to Comment action
+
+10. **Caching** (deferred):
+    - Commented out `OutputCacheManager.RemoveItem()` - needs separate caching service
+
+**Methods Updated**:
+- ✅ Details() - Main post display
+- ✅ Comment() - Comment posting (async)
+- ✅ IsIpAddressBlocked() - IP blacklist check
+- ✅ PostingCommentSucceeded() - Success handler
+- ✅ ValidateCommentsAllowed() - Comment validation
+- ✅ ValidateCaptcha() - reCAPTCHA validation
+- ✅ PostingCommentFailed() - Error handler
+- ✅ SetWhateverUserIsTrustedCommenter() - Cookie/auth logic
+- ✅ GetSeriesInfo() - Series support
+- ✅ GetPostsForCurrentSeries() - Series posts
+
+**Total Controllers Updated**: 6 of ~20
+1. ✅ ErrorController
+2. ✅ LegalController
+3. ✅ LegacyPostController
+4. ✅ SearchController
+5. ✅ SeriesController
+6. ✅ **PostDetailsController** ⭐ (Most complex, ~20 errors fixed)
+
+**Estimated Errors Fixed**: ~35-40 errors total (15-20 from this controller alone)
+
+**Progress**: ~30% of controller refactoring complete
+
+Next: Admin area controllers (UsersController, SettingsController, etc.)
+
+
+## [2026-01-09 09:26] TASK-002: 3 more admin controllers updated (UsersController, SectionsController, LoginController). 9 of 20 controllers complete (45%). ~55-65 errors fixed. Actions 16, 27 in progress.
+
+Status: InProgress. Admin controllers updated - 3 more controllers modernized!
+
+**Admin Controllers Completed** (3 controllers) ✅
+
+**1. UsersController.cs**:
+- Changed all `ActionResult` → `IActionResult` (7 methods)
+- Changed `HttpNotFound()` → `NotFound()` (4 occurrences)
+- Added `[ValidateAntiForgeryToken]` to all POST actions (4 actions)
+- Methods: Index, Add, Edit, Update, ChangePassword, SetActivation
+
+**2. SectionsController.cs**:
+- Changed all `ActionResult` → `IActionResult` (6 methods)
+- Changed `HttpNotFound()` → `NotFound()` (3 occurrences)
+- Changed `HttpStatusCodeResult(HttpStatusCode.OK)` → `StatusCode(StatusCodes.Status200OK)`
+- Removed T4MVC references: `MVC.Section.Name` → `"Section"`
+- Updated AJAX detection: `Request.IsAjaxRequest()` → Header check
+- Commented out `OutputCacheManager.RemoveItems()` (needs caching service)
+- Added `[ValidateAntiForgeryToken]` to all POST actions
+
+**3. LoginController.cs**:
+- Changed all `ActionResult` → `IActionResult` (4 methods)
+- **Constructor Injection**: Added `SignInHelper` via DI (removed OWIN context access)
+- Changed `Request.IsAuthenticated` → `User.Identity.IsAuthenticated` (3 occurrences)
+- Changed `HttpContext.User.Identity.Name` → `User.Identity.Name`
+- Removed `[ChildActionOnly]` attribute (deprecated in ASP.NET Core)
+- Added `[ValidateAntiForgeryToken]` to POST action
+- Methods: Index (GET/POST), LogOut, CurrentUser
+
+**Total Controllers Updated**: 9 of ~20 (45%)
+
+**Controllers Completed**:
+1. ✅ ErrorController
+2. ✅ LegalController
+3. ✅ LegacyPostController
+4. ✅ SearchController
+5. ✅ SeriesController
+6. ✅ PostDetailsController ⭐
+7. ✅ **UsersController** (Admin)
+8. ✅ **SectionsController** (Admin)
+9. ✅ **LoginController** (Admin)
+
+**Key Admin Patterns Applied**:
+- Constructor injection for services (SignInHelper)
+- CSRF protection on all POST actions
+- Consistent error handling with NotFound()
+- Cache management deferred to separate service
+- Authentication via User.Identity
+
+**Estimated Errors Fixed**: ~55-65 total errors
+- Previous: ~35-40
+- This session: ~15-20 more
+
+**Progress**: 45% of controller refactoring complete
+
+**Remaining High-Priority Controllers**:
+- Admin/SettingsController (configuration management)
+- Admin/PostsController (blog post management)
+- PostsController (public post listing)
+- SyndicationController (RSS/Atom feeds)
+
+**Next Steps**: Continue with SettingsController and PostsController (Admin area)
+

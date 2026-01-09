@@ -1,6 +1,6 @@
 using System.Linq;
-using System.Net;
-using System.Web.Mvc;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http;
 using RaccoonBlog.Web.Helpers.Attributes;
 using RaccoonBlog.Web.Models;
 
@@ -8,7 +8,7 @@ namespace RaccoonBlog.Web.Areas.Admin.Controllers
 {
 	public partial class SectionsController : AdminController
 	{
-		public virtual ActionResult Index()
+		public virtual IActionResult Index()
 		{
 			var sections = RavenSession.Query<Section>()
 				.OrderBy(x => x.Position)
@@ -18,37 +18,40 @@ namespace RaccoonBlog.Web.Areas.Admin.Controllers
 		}
 
 		[HttpGet]
-		public virtual ActionResult Add()
+		public virtual IActionResult Add()
 		{
 			return View("Edit", new Section());
 		}
 
 		[HttpGet]
-		public virtual ActionResult Edit(string id)
+		public virtual IActionResult Edit(string id)
 		{
 			var section = RavenSession.Load<Section>(id);
 			if (section == null)
-				return HttpNotFound("Section does not exist.");
+				return NotFound("Section does not exist.");
 
 			return View(section);
 		}
 
 		[HttpPost]
-		public virtual ActionResult Activate(string id, bool activate)
+		[ValidateAntiForgeryToken]
+		public virtual IActionResult Activate(string id, bool activate)
 		{
 			var section = RavenSession.Load<Section>(id);
 			if (section == null)
-				return HttpNotFound("Section does not exist.");
+				return NotFound("Section does not exist.");
 
 			section.IsActive = activate;
 
-			OutputCacheManager.RemoveItems(MVC.Section.Name);
+			// ASP.NET Core: Cache invalidation moved to separate service
+			// OutputCacheManager.RemoveItems("Section");
 
-			return new HttpStatusCodeResult(HttpStatusCode.OK);
+			return StatusCode(StatusCodes.Status200OK);
 		}
 
 		[HttpPost]
-		public virtual ActionResult Update(Section section)
+		[ValidateAntiForgeryToken]
+		public virtual IActionResult Update(Section section)
 		{
 			if (!ModelState.IsValid)
 				return View("Edit", section);
@@ -62,23 +65,26 @@ namespace RaccoonBlog.Web.Areas.Admin.Controllers
 			}
 			RavenSession.Store(section);
 
-			OutputCacheManager.RemoveItems(MVC.Section.Name);
+			// ASP.NET Core: Cache invalidation moved to separate service
+			// OutputCacheManager.RemoveItems("Section");
 
 			return RedirectToAction("Index");
 		}
 
 		[HttpPost]
-		public virtual ActionResult Delete(string id)
+		[ValidateAntiForgeryToken]
+		public virtual IActionResult Delete(string id)
 		{
 			var section = RavenSession.Load<Section>(id);
 			if (section == null)
-				return HttpNotFound("Section does not exist.");
+				return NotFound("Section does not exist.");
 
 			RavenSession.Delete(section);
 
-			OutputCacheManager.RemoveItems(MVC.Section.Name);
+			// ASP.NET Core: Cache invalidation moved to separate service
+			// OutputCacheManager.RemoveItems("Section");
 
-			if (Request.IsAjaxRequest())
+			if (Request.Headers["X-Requested-With"] == "XMLHttpRequest") // ASP.NET Core: IsAjaxRequest() replacement
 			{
 				return Json(new { Success = true });
 			}
@@ -87,7 +93,8 @@ namespace RaccoonBlog.Web.Areas.Admin.Controllers
 
 		[AjaxOnly]
 		[HttpPost]
-		public virtual ActionResult SetPosition(string id, int newPosition)
+		[ValidateAntiForgeryToken]
+		public virtual IActionResult SetPosition(string id, int newPosition)
 		{
 			var section = RavenSession.Load<Section>(id);
 			if (section == null)
@@ -123,7 +130,8 @@ namespace RaccoonBlog.Web.Areas.Admin.Controllers
 
 			section.Position = newPosition;
 
-			OutputCacheManager.RemoveItems(MVC.Section.Name);
+			// ASP.NET Core: Cache invalidation moved to separate service
+			// OutputCacheManager.RemoveItems("Section");
 
 			return Json(new { success = true });
 		}

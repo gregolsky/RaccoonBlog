@@ -9,17 +9,17 @@ namespace RaccoonBlog.Web.Controllers
 
         [HttpGet]
         [Route("error")]
-        public virtual ActionResult Error()
+        public virtual IActionResult Error()
         {
             HttpContext.Response.StatusCode = ViewBag.ErrorCode = 500;
             ViewBag.ErrorMessage = "error";
 
-            return View(MVC.Shared.Views.Error);
+            return View("Error"); // ASP.NET Core: Direct view name instead of T4MVC
         }
 
         [HttpGet]
         [Route("error/404")]
-        public virtual ActionResult Error404(string aspxerrorpath)
+        public virtual IActionResult Error404(string aspxerrorpath)
         {
             if (string.IsNullOrEmpty(aspxerrorpath) == false)
             {
@@ -29,7 +29,7 @@ namespace RaccoonBlog.Web.Controllers
             HttpContext.Response.StatusCode = ViewBag.ErrorCode = 404;
             ViewBag.ErrorMessage = "not found";
 
-            return View(MVC.Shared.Views.Error);
+            return View("Error"); // ASP.NET Core: Direct view name instead of T4MVC
         }
     }
 }

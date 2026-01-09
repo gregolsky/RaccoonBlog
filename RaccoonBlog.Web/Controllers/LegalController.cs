@@ -1,4 +1,4 @@
-﻿using System.Web.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 
 namespace RaccoonBlog.Web.Controllers
 {
@@ -6,14 +6,14 @@ namespace RaccoonBlog.Web.Controllers
     {
         [HttpGet]
         [Route("privacy-policy")]
-        public virtual ActionResult PrivacyPolicy()
+        public virtual IActionResult PrivacyPolicy()
         {
             return View("PrivacyPolicy");
         }
 
         [HttpGet]
         [Route("terms")]
-        public virtual ActionResult Terms()
+        public virtual IActionResult Terms()
         {
             return View("Terms");
         }
