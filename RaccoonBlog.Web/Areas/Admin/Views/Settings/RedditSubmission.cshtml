@@ -1,7 +1,6 @@
 ﻿@using RaccoonBlog.Web.Models.SocialNetwork
 @using RaccoonBlog.Web.Models
 @using RaccoonBlog.Web.Helpers;
-@using RaccoonBlog.Web.Infrastructure.AutoMapper.Profiles.Resolvers
 @using RaccoonBlog.Web.Infrastructure.Common
 @model RaccoonBlog.Web.Areas.Admin.ViewModels.RedditManualSubmissionViewModel
 
@@ -84,7 +83,7 @@
                             <tr>
                                 <td>
                                     <a asp-area="" asp-controller="PostDetails" asp-action="Details"
-                                       asp-route-id="@RavenIdResolver.Resolve(post.Id)"
+                                       asp-route-id="@Post.GetIdForUrl(post.Id)"
                                        asp-route-slug="@SlugConverter.TitleToSlug(post.Title)">
                                         @post.Title
                                     </a>
