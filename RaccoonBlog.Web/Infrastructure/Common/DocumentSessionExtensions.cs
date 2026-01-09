@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
-using System.Web;
 using RaccoonBlog.Web.Infrastructure.AutoMapper;
 using RaccoonBlog.Web.Infrastructure.Indexes;
 using RaccoonBlog.Web.Models;
@@ -71,18 +70,22 @@ namespace RaccoonBlog.Web.Infrastructure.Common
 			return postReference.MapTo<PostReference>();
 		}
 
-		public static User GetCurrentUser(this IDocumentSession session)
+		public static User GetCurrentUser(this IDocumentSession session, ClaimsPrincipal user)
 		{
-			if (HttpContext.Current.Request.IsAuthenticated == false)
+			if (user?.Identity?.IsAuthenticated != true)
 				return null;
 
-			var claimsIdentity = HttpContext.Current.User.Identity as ClaimsIdentity;
+			var claimsIdentity = user.Identity as ClaimsIdentity;
 			if (claimsIdentity == null) 
 				return null;
 
-			var email = claimsIdentity.FindFirst(ClaimTypes.Email).Value;
-			var user = session.GetUserByEmail(email);
-			return user;
+			var emailClaim = claimsIdentity.FindFirst(ClaimTypes.Email);
+			if (emailClaim == null)
+				return null;
+
+			var email = emailClaim.Value;
+			var userEntity = session.GetUserByEmail(email);
+			return userEntity;
 		}
 
 		public static User GetUserByEmail(this IDocumentSession session, string email)

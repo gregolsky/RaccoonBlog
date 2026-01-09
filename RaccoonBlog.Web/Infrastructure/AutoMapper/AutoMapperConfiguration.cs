@@ -1,5 +1,5 @@
 using System;
-using System.Web.Mvc;
+using Microsoft.AspNetCore.Html;
 using AutoMapper;
 using RaccoonBlog.Web.Infrastructure.AutoMapper.Profiles;
 using RaccoonBlog.Web.Infrastructure.AutoMapper.Profiles.Resolvers;
@@ -12,9 +12,7 @@ namespace RaccoonBlog.Web.Infrastructure.AutoMapper
 	    {
 	        Mapper.Initialize(cfg =>
 	        {
-	            cfg.CreateMap<string, MvcHtmlString>().ConvertUsing<MvcHtmlStringConverter>();
-	            cfg.CreateMap<Guid, string>().ConvertUsing<GuidToStringConverter>();
-
+	            cfg.CreateMap<string, IHtmlContent>().ConvertUsing<MvcHtmlStringConverter>();
 	            cfg.CreateMap<Guid, string>().ConvertUsing<GuidToStringConverter>();
 
 	            cfg.CreateMap<DateTimeOffset, DateTime>().ConvertUsing<DateTimeTypeConverter>();

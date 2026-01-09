@@ -197,7 +197,7 @@ namespace RaccoonBlog.Web.Controllers
         {
             if (User.Identity.IsAuthenticated) // ASP.NET Core: Request.IsAuthenticated ? User.Identity.IsAuthenticated
             {
-                var user = RavenSession.GetCurrentUser();
+                var user = RavenSession.GetCurrentUser(User);
                 vm.Input = user.MapTo<CommentInput>();
                 vm.IsTrustedCommenter = true;
                 vm.IsLoggedInCommenter = true;
