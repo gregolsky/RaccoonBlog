@@ -117,7 +117,7 @@ namespace RaccoonBlog.Web.Controllers
             var commenter = RavenSession.GetCommenter(input.CommenterKey);
             if (commenter == null)
             {
-                input.CommenterKey = Guid.NewGuid();
+                input.CommenterKey = Guid.NewGuid().ToString(); // ASP.NET Core: Convert Guid to string
             }
 
             ValidateCommentsAllowed(post, comments);
@@ -128,7 +128,7 @@ namespace RaccoonBlog.Web.Controllers
 
             TaskExecutor.ExcuteLater(new AddCommentTask(input, Request.MapTo<AddCommentTask.RequestValues>(), id));
 
-            CommenterUtil.SetCommenterCookie(Response, input.CommenterKey.ToString()); // ASP.NET Core: Guid.ToString()
+            CommenterUtil.SetCommenterCookie(Response, input.CommenterKey); // ASP.NET Core: Already a string
 
             // ASP.NET Core: Cache invalidation moved to separate service
             // OutputCacheManager.RemoveItem(SectionController.NameConst, "List");
