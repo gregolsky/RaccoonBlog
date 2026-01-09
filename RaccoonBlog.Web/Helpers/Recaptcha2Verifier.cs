@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
-using System.Web;
+using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json.Linq;
 using NLog;
 
@@ -14,15 +14,16 @@ namespace RaccoonBlog.Web.Helpers
 
         private const string RecaptchaResponseFieldName = "g-recaptcha-response";
 
-        public static async Task<CaptchaVerificationResult> VerifyResponse(string recaptchaSecret)
+        public static async Task<CaptchaVerificationResult> VerifyResponse(HttpContext httpContext, string recaptchaSecret)
         {
-            var request = HttpContext.Current.Request;
-            if (request == null || !request.Form.HasKeys())
+            if (httpContext?.Request?.HasFormContentType != true)
             {
                 return CaptchaVerificationResult.Error("Captcha response not supplied.");
             }
 
-            var response = request.Form[RecaptchaResponseFieldName];
+            var form = await httpContext.Request.ReadFormAsync();
+            var response = form[RecaptchaResponseFieldName].ToString();
+            
             if (string.IsNullOrEmpty(response))
             {
                 return CaptchaVerificationResult.Error("Captcha response not supplied.");
@@ -56,7 +57,7 @@ namespace RaccoonBlog.Web.Helpers
             }
             catch (Exception err)
             {
-                _log.ErrorException("Error validating captcha.", err);
+                _log.Error(err, "Error validating captcha.");
             }
 
             return CaptchaVerificationResult.Error("Captcha response is invalid. Please try again.");

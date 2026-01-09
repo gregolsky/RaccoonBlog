@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Html;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace RaccoonBlog.Web.Helpers
@@ -13,14 +14,14 @@ namespace RaccoonBlog.Web.Helpers
 
         public const string ModelStateErrorKey = "CaptchaNotValid";
 
-        public static async Task<bool> Validate(ModelStateDictionary modelState)
+        public static async Task<bool> Validate(HttpContext httpContext, ModelStateDictionary modelState)
         {
             // For now, skip recaptcha validation during migration
             // TODO: Implement proper recaptcha validation with IConfiguration
             return await Task.FromResult(true);
             
             /*
-            var result = await Recaptcha2Verifier.VerifyResponse(RecaptchaSecret);
+            var result = await Recaptcha2Verifier.VerifyResponse(httpContext, RecaptchaSecret);
             if (result.IsValid)
             {
                 return true;
@@ -29,6 +30,12 @@ namespace RaccoonBlog.Web.Helpers
             modelState.AddModelError(ModelStateErrorKey, result.ErrorMessage);
             return false;
             */
+        }
+
+        // Overload for backward compatibility - uses default validation skip
+        public static async Task<bool> Validate(ModelStateDictionary modelState)
+        {
+            return await Task.FromResult(true);
         }
 
         public static IHtmlContent ScriptRef()
