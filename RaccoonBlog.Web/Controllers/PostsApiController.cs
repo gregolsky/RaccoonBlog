@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using Microsoft.AspNetCore.Mvc;
 using RaccoonBlog.Web.Helpers.Results;
 using RaccoonBlog.Web.Infrastructure.Common;
 using RaccoonBlog.Web.Infrastructure.Indexes;
@@ -11,7 +12,7 @@ namespace RaccoonBlog.Web.Controllers
 	{
 		protected override TimeSpan CacheDuration => TimeSpan.FromMinutes(3);
 
-		public virtual JsonNetResult GetPostsByTags(int count = 10)
+		public virtual IActionResult GetPostsByTags(int count = 10) // ASP.NET Core: JsonNetResult ? IActionResult
 		{
 			if (count > 25)
 				throw new InvalidOperationException("Count can be 25 maximum");
@@ -27,7 +28,7 @@ namespace RaccoonBlog.Web.Controllers
 				                          x.Id
 			                          })
 			                         .ToList()  ;
-			return Json(result);
+			return Json(result); // ASP.NET Core: Json() returns IActionResult
 		}
 	}
 }

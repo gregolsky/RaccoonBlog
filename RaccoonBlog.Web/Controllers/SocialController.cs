@@ -29,7 +29,7 @@ namespace RaccoonBlog.Web.Controllers
 			return Challenge(properties, provider);
 		}
 
-		private const string XsrfKey = "XsrfId";
+		private const string XsrfKey = "XsrfId"; // ASP.NET Core: XSRF key for potential future use
 
 		private static void SetCommenterValuesFromResponse(ClaimsPrincipal principal, Commenter commenter)
 		{

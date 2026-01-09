@@ -1,13 +1,14 @@
 using System;
 using System.Diagnostics;
 using System.Text;
-using System.Web;
-using System.Web.Mvc;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 
 namespace RaccoonBlog.Web.Helpers.Results
 {
-	public class JsonNetResult : ActionResult
+	public class JsonNetResult : IActionResult
 	{
 		public JsonNetResult()
 		{
@@ -46,14 +47,14 @@ namespace RaccoonBlog.Web.Helpers.Results
 		/// Serialises the response and writes it out to the response object 
 		/// </summary> 
 		/// <param name="context">The execution context</param> 
-		public override void ExecuteResult(ControllerContext context)
+		public async Task ExecuteResultAsync(ActionContext context)
 		{
 			if (context == null)
 			{
-				throw new ArgumentNullException("context");
+				throw new ArgumentNullException(nameof(context));
 			}
 
-			HttpResponseBase response = context.HttpContext.Response;
+			HttpResponse response = context.HttpContext.Response;
 
 			// set content type 
 			if (!string.IsNullOrEmpty(ContentType))
@@ -65,15 +66,20 @@ namespace RaccoonBlog.Web.Helpers.Results
 				response.ContentType = "application/json";
 			}
 
-			// set content encoding 
-			if (ContentEncoding != null)
-			{
-				response.ContentEncoding = ContentEncoding;
-			}
-
 			if (ResponseBody != null)
 			{
-				response.Write(JsonConvert.SerializeObject(ResponseBody, Formatting, Settings));
+				var json = JsonConvert.SerializeObject(ResponseBody, Formatting, Settings);
+				
+				// set content encoding if specified
+				if (ContentEncoding != null)
+				{
+					var bytes = ContentEncoding.GetBytes(json);
+					await response.Body.WriteAsync(bytes, 0, bytes.Length);
+				}
+				else
+				{
+					await response.WriteAsync(json);
+				}
 			}
 		}
 	}

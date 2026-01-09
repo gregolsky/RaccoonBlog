@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Web.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using HibernatingRhinos.Loci.Common.Extensions;
 using HibernatingRhinos.Loci.Common.Models;
 using RaccoonBlog.Web.Areas.Admin.ViewModels;
@@ -19,14 +19,14 @@ namespace RaccoonBlog.Web.Areas.Admin.Controllers
 {
 	public partial class PostsController : AdminController
 	{
-		public virtual ActionResult Index()
+		public virtual IActionResult Index()
 		{
 			// the actual UI is handled via JavaScript
 			return View("List");
 		}
 
 		[HttpGet]
-		public virtual ActionResult Add()
+		public virtual IActionResult Add()
 		{
 			return View("Edit", new PostInput
 			{
@@ -38,17 +38,18 @@ namespace RaccoonBlog.Web.Areas.Admin.Controllers
 		}
 
 		[HttpGet]
-		public virtual ActionResult Edit(string id)
+		public virtual IActionResult Edit(string id)
 		{
 			var post = RavenSession.Load<Post>("posts/" + id);
 			if (post == null)
-				return HttpNotFound("Post does not exist.");
+				return NotFound("Post does not exist.");
 			return View(post.MapTo<PostInput>());
 		}
 
 		[HttpPost]
-		[ValidateInput(false)]
-		public virtual ActionResult Update(PostInput input)
+		[ValidateAntiForgeryToken]
+		// ASP.NET Core: No [ValidateInput(false)] - use [AllowHtml] on model properties instead
+		public virtual IActionResult Update(PostInput input)
 		{
 			if (!ModelState.IsValid)
 				return View("Edit", input);
@@ -98,14 +99,14 @@ namespace RaccoonBlog.Web.Areas.Admin.Controllers
 			return RedirectToAction("Details", new {Id = post.MapTo<PostReference>().DomainId});
 		}
 
-		public virtual ActionResult Details(string id)
+		public virtual IActionResult Details(string id)
 		{
 			var post = RavenSession
 				.Include<Post>(x => x.CommentsId)
 				.Load("posts/" + id);
 
 			if (post == null)
-				return HttpNotFound();
+				return NotFound();
 
 			var comments = RavenSession.Load<PostComments>(post.CommentsId);
 
@@ -126,7 +127,7 @@ namespace RaccoonBlog.Web.Areas.Admin.Controllers
 			return View("Details", vm);
 		}
 
-		public virtual ActionResult ListFeed(DateTime start, DateTime end)
+		public virtual IActionResult ListFeed(DateTime start, DateTime end)
 		{
 			var posts = RavenSession.Query<Post>()
 				.Where
@@ -144,7 +145,8 @@ namespace RaccoonBlog.Web.Areas.Admin.Controllers
 
 		[HttpPost]
 		[AjaxOnly]
-		public virtual ActionResult SetPostDate(string id, long date)
+		[ValidateAntiForgeryToken]
+		public virtual IActionResult SetPostDate(string id, long date)
 		{
 			var post = RavenSession
 				.Include<Post>(x => x.CommentsId)
@@ -159,18 +161,19 @@ namespace RaccoonBlog.Web.Areas.Admin.Controllers
 		}
 
 		[HttpPost]
-		public virtual ActionResult CommentsAdmin(string id, CommentCommandOptions command, int[] commentIds)
+		[ValidateAntiForgeryToken]
+		public virtual IActionResult CommentsAdmin(string id, CommentCommandOptions command, int[] commentIds)
 		{
 			if (commentIds == null || commentIds.Length == 0)
 				ModelState.AddModelError("CommentIdsAreEmpty", "Not comments was selected.");
 
 			var post = RavenSession.Load<Post>("posts/" + id);
 			if (post == null)
-				return HttpNotFound();
+				return NotFound();
 
 			if (ModelState.IsValid == false)
 			{
-				if (Request.IsAjaxRequest())
+				if (Request.Headers["X-Requested-With"] == "XMLHttpRequest") // ASP.NET Core: IsAjaxRequest() replacement
 					return Json(new {Success = false, message = ModelState.FirstErrorMessage()});
 
 				return Details(id);
@@ -220,7 +223,7 @@ namespace RaccoonBlog.Web.Areas.Admin.Controllers
 
 			post.CommentsCount = comments.Comments.Count;
 
-			if (Request.IsAjaxRequest())
+			if (Request.Headers["X-Requested-With"] == "XMLHttpRequest") // ASP.NET Core: IsAjaxRequest() replacement
 			{
 				return Json(new {Success = true});
 			}
@@ -238,7 +241,8 @@ namespace RaccoonBlog.Web.Areas.Admin.Controllers
 		}
 
 		[HttpPost]
-		public virtual ActionResult Delete(string id)
+		[ValidateAntiForgeryToken]
+		public virtual IActionResult Delete(string id)
 		{
             var post = RavenSession.Load<Post>("posts/" + id);
 		    if (post == null)
@@ -254,9 +258,9 @@ namespace RaccoonBlog.Web.Areas.Admin.Controllers
             return SuccessResponse();
         }
 
-        private ActionResult SuccessResponse()
+        private IActionResult SuccessResponse()
         {
-            if (Request.IsAjaxRequest())
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest") // ASP.NET Core: IsAjaxRequest() replacement
             {
                 return Json(new { Success = true });
             }
@@ -264,13 +268,14 @@ namespace RaccoonBlog.Web.Areas.Admin.Controllers
         }
 
         [HttpGet]
-		public virtual ActionResult DeleteAllSpamComments()
+		public virtual IActionResult DeleteAllSpamComments()
 		{
 			return View();
 		}
 
 		[HttpPost]
-		public virtual async Task<ActionResult> DeleteAllSpamCommentsAsync(bool deleteAll)
+		[ValidateAntiForgeryToken]
+		public virtual async Task<IActionResult> DeleteAllSpamCommentsAsync(bool deleteAll)
 		{
 		    await DocumentStore.Operations.SendAsync(new PatchByQueryOperation(@"
 from PostComments
@@ -283,7 +288,7 @@ update {
 		}
 
         [HttpGet]
-        public virtual ActionResult AddIpToBlackList(string ipAddress)
+        public virtual IActionResult AddIpToBlackList(string ipAddress)
         {
             var id = BlackList.GetId(ipAddress);
             var alreadyExists = RavenSession.Advanced.Exists(id);
@@ -298,7 +303,8 @@ update {
         }
 
         [HttpPost]
-        public virtual ActionResult AddIpToBlackList(AddIpToBlackListViewModel viewModel)
+        [ValidateAntiForgeryToken]
+        public virtual IActionResult AddIpToBlackList(AddIpToBlackListViewModel viewModel)
         {
             var ipAddress = viewModel.IpAddress;
 

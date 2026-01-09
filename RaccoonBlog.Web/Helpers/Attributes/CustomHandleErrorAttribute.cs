@@ -1,5 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using NLog;
 
 namespace RaccoonBlog.Web.Helpers.Attributes
@@ -23,13 +26,11 @@ namespace RaccoonBlog.Web.Helpers.Attributes
 
 			// In ASP.NET Core, custom error handling is typically done via middleware
 			// But we can still redirect to error page from filter
-			if (context.HttpContext.RequestServices.GetService(typeof(Microsoft.AspNetCore.Hosting.IWebHostEnvironment)) is Microsoft.AspNetCore.Hosting.IWebHostEnvironment env)
+			var env = context.HttpContext.RequestServices.GetService<IWebHostEnvironment>();
+			if (env != null && !env.IsDevelopment())
 			{
-				if (!env.IsDevelopment())
-				{
-					context.Result = new RedirectToActionResult("Error", "Error", null);
-					context.ExceptionHandled = true;
-				}
+				context.Result = new RedirectToActionResult("Error", "Error", null);
+				context.ExceptionHandled = true;
 			}
 
 			base.OnException(context);

@@ -53,7 +53,7 @@ namespace RaccoonBlog.Web.Helpers
 		}
 
 
-		public static HtmlString ActionLinkWithArray(this IUrlHelper url, [AspMvcAction] string action, [AspMvcController] string controller, object routeData)
+		public static IHtmlContent ActionLinkWithArray(this IUrlHelper url, [AspMvcAction] string action, [AspMvcController] string controller, object routeData)
 		{
 			string href = url.Action(action, controller, new {area = ""});
 

@@ -40,7 +40,7 @@
 
 				var queryString = "?id=" + id + "&activate=" + value;
 
-				$.post('@Url.Action(MVC.Admin.Sections.ActionNames.Activate, MVC.Admin.Sections.Name)' + queryString);
+				$.post('@Url.Action("Activate", "Sections")' + queryString);
 			});
 		</script>
 	}

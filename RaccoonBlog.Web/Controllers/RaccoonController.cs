@@ -25,7 +25,7 @@ namespace RaccoonBlog.Web.Controllers
             return StatusCode(304);
         }
 
-        protected ActionResult Xml(XDocument xml, string etag)
+        protected IActionResult Xml(XDocument xml, string etag) // ASP.NET Core: ActionResult ? IActionResult
         {
             return new XmlResult(xml, etag);
         }

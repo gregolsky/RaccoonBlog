@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Web.Mvc;
+using Microsoft.AspNetCore.Html;
 using HtmlAgilityPack;
 using RaccoonBlog.Web.Infrastructure.AutoMapper.Profiles.Resolvers;
 using RaccoonBlog.Web.Infrastructure.Common;
@@ -9,7 +9,7 @@ namespace RaccoonBlog.Web.Helpers
 {
 	public static class PostHelper
 	{
-		public static TimeToRead CalculateTimeToRead(MvcHtmlString body)
+		public static TimeToRead CalculateTimeToRead(IHtmlContent body)
 		{
 			if (body == null)
 				return TimeToRead.Empty;
@@ -31,7 +31,7 @@ namespace RaccoonBlog.Web.Helpers
 			};
 		}
 
-        public static string GetMetaDescription(MvcHtmlString body)
+        public static string GetMetaDescription(IHtmlContent body)
         {
             const int maxLength = 160;
             const string ellipsis = "...";

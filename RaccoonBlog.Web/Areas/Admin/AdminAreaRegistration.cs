@@ -1,4 +1,9 @@
-﻿using System.Web.Mvc;
+﻿// ASP.NET Core: Area registration is no longer needed
+// Areas are configured in Program.cs using app.MapControllerRoute with area pattern
+// Keeping this file for reference only
+
+/*
+using System.Web.Mvc;
 
 namespace RaccoonBlog.Web.Areas.Admin
 {
@@ -20,3 +25,4 @@ namespace RaccoonBlog.Web.Areas.Admin
 		}
 	}
 }
+*/

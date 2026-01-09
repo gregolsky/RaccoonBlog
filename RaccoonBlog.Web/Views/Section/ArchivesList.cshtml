@@ -5,7 +5,7 @@
 <nav id="archive">
 	<ul>
 		@{
-			var url = Url.Action(MVC.Posts.ActionNames.Archive, MVC.Posts.Name, new { Year = 9999, Month = 99 }); // Url.Action is slow
+			var url = Url.Action("Archive", "Posts", new { Year = 9999, Month = 99 }); // Url.Action is slow
 
 			foreach (var g in Model.GroupBy(x => x.Year))
 			{

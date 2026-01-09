@@ -1,10 +1,11 @@
-﻿using System.Web.Mvc;
+﻿using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Linq;
+using Microsoft.AspNetCore.Mvc;
 
 namespace HibernatingRhinos.Loci.Common.Extensions
 {
-	public class XmlResult : ActionResult
+	public class XmlResult : IActionResult
 	{
 		private readonly XDocument _document;
 		private readonly string _etag;
@@ -15,17 +16,23 @@ namespace HibernatingRhinos.Loci.Common.Extensions
 			_etag = etag;
 		}
 
-		public override void ExecuteResult(ControllerContext context)
+		public async Task ExecuteResultAsync(ActionContext context)
 		{
 			if (_etag != null)
-				context.HttpContext.Response.AddHeader("ETag", _etag);
+			{
+				context.HttpContext.Response.Headers["ETag"] = _etag;
+			}
 
 			context.HttpContext.Response.ContentType = "text/xml";
 
-			using (var xmlWriter = XmlWriter.Create(context.HttpContext.Response.OutputStream))
+			using (var xmlWriter = XmlWriter.Create(context.HttpContext.Response.Body, new XmlWriterSettings
+			{
+				Async = true,
+				Indent = false
+			}))
 			{
 				_document.WriteTo(xmlWriter);
-				xmlWriter.Flush();
+				await xmlWriter.FlushAsync();
 			}
 		}
 	}

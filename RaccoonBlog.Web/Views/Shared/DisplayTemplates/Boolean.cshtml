@@ -10,22 +10,38 @@
 }
 <div class="display_item">
     <strong>@ViewData.ModelMetadata.DisplayName</strong>
-    @if (ViewData.ModelMetadata.IsNullableValueType) {
-        @* ASP.NET Core: Disable tag helpers for this select to avoid C# code in attribute issue *@
-        @{
-            var notSetSelected = !Value.HasValue ? " selected='selected'" : "";
-            var trueSelected = (Value.HasValue && Value.Value) ? " selected='selected'" : "";
-            var falseSelected = (Value.HasValue && !Value.Value) ? " selected='selected'" : "";
-        }
-        <select class="list-box tri-state" disabled="disabled" data-tag-helper-disabled>
-            <option value=""@Html.Raw(notSetSelected)>Not Set</option>
-            <option value="true"@Html.Raw(trueSelected)>True</option>
-            <option value="false"@Html.Raw(falseSelected)>False</option>
+    @if (ViewData.ModelMetadata.IsNullableValueType) 
+    {
+        <select class="list-box tri-state" disabled="disabled">
+            @if (!Value.HasValue)
+            {
+                <option value="" selected="selected">Not Set</option>
+                <option value="true">True</option>
+                <option value="false">False</option>
+            }
+            else if (Value.Value)
+            {
+                <option value="">Not Set</option>
+                <option value="true" selected="selected">True</option>
+                <option value="false">False</option>
+            }
+            else
+            {
+                <option value="">Not Set</option>
+                <option value="true">True</option>
+                <option value="false" selected="selected">False</option>
+            }
         </select>
-    } else {
-        @{
-            var checkedAttr = (Value.HasValue && Value.Value) ? " checked='checked'" : "";
+    } 
+    else 
+    {
+        @if (Value.HasValue && Value.Value)
+        {
+            <input type="checkbox" class="check-box" disabled="disabled" checked="checked" />
         }
-        <input type="checkbox" class="check-box" disabled="disabled"@Html.Raw(checkedAttr) />
+        else
+        {
+            <input type="checkbox" class="check-box" disabled="disabled" />
+        }
     }
 </div>

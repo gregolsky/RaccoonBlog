@@ -16,6 +16,14 @@ namespace RaccoonBlog.Web.Helpers
 			this.httpContext = httpContext;
 		}
 
+		/// <summary>
+		/// Synchronous wrapper for SignInAsync
+		/// </summary>
+		public void SignIn(LogOnModel logOn, bool isPersistent)
+		{
+			SignInAsync(logOn, isPersistent).GetAwaiter().GetResult();
+		}
+
 		public async Task SignInAsync(LogOnModel logOn, bool isPersistent)
 		{
 			// Sign out any existing authentication
@@ -42,6 +50,14 @@ namespace RaccoonBlog.Web.Helpers
 				CookieAuthenticationDefaults.AuthenticationScheme,
 				claimsPrincipal,
 				authProperties);
+		}
+
+		/// <summary>
+		/// Synchronous wrapper for SignOutAsync
+		/// </summary>
+		public void SignOut()
+		{
+			SignOutAsync().GetAwaiter().GetResult();
 		}
 
 		public async Task SignOutAsync()

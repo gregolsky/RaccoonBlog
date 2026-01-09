@@ -1,6 +1,7 @@
 using System;
-using System.Configuration;
 using Joel.Net;
+using RaccoonBlog.Web.Controllers;
+using RaccoonBlog.Web.Helpers;
 using RaccoonBlog.Web.Models;
 
 namespace RaccoonBlog.Web.Services
@@ -14,7 +15,7 @@ namespace RaccoonBlog.Web.Services
 			{
 				if (string.IsNullOrWhiteSpace(akismetKey))
 				{
-					using (var session = MvcApplication.DocumentStore.OpenSession())
+					using (var session = RaccoonController.DocumentStore.OpenSession())
 					{
 						akismetKey = session.Load<BlogConfig>(BlogConfig.Key).AkismetKey;
 					}
@@ -25,7 +26,7 @@ namespace RaccoonBlog.Web.Services
 
 		private static string BlogUrl
 		{
-			get { return ConfigurationManager.AppSettings["MainUrl"]; }
+			get { return ConfigurationHelper.MainBlogUrl; }
 		}
 
 		public static bool CheckForSpam(PostComments.Comment comment)
