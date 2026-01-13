@@ -27,6 +27,11 @@
 
     <!-- Exclude files not needed -->
     <Compile Remove="ViewModels\BlogConfigurationInput.cs" />
+    
+    <!-- Exclude MetaWeblog service - uses XmlRpcService from xmlrpcnet which references System.Web -->
+    <!-- This needs to be rewritten for ASP.NET Core if XML-RPC support is required -->
+    <Compile Remove="Services\MetaWeblog.cs" />
+    <None Include="Services\MetaWeblog.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -36,8 +41,11 @@
     <PackageReference Include="Microsoft.AspNetCore.Authentication.MicrosoftAccount" Version="8.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Twitter" Version="8.0.0" />
     
+    <!-- AutoMapper packages - Upgraded to 12.x for .NET 8 compatibility -->
+    <PackageReference Include="AutoMapper" Version="12.0.1" />
+    <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1" />
+    
     <!-- Keep compatible packages -->
-    <PackageReference Include="AutoMapper" Version="6.2.2" />
     <PackageReference Include="FluentScheduler" Version="5.3.0" />
     <PackageReference Include="HtmlAgilityPack" Version="1.6.16" />
     <PackageReference Include="JetBrains.Annotations" Version="11.1.0" />
@@ -74,7 +82,7 @@
     <PackageReference Include="RavenDB.Embedded" Version="6.0.104" />
     <PackageReference Include="RavenDB.TestDriver" Version="6.0.104" />
     
-    <!-- XML-RPC -->
+    <!-- XML-RPC - Keep for potential future use, but MetaWeblog.cs is excluded -->
     <PackageReference Include="xmlrpcnet" Version="2.5.0" />
   </ItemGroup>
 

@@ -69,7 +69,7 @@ namespace RaccoonBlog.Web.Controllers
                 var newCommentContent = MarkdownResolver.Resolve(comment.Body);
                 
                 // ASP.NET Core: Convert IHtmlContent to string for comparison
-                var newCommentContentString = newCommentContent?.ToString() ?? string.Empty;
+                var newCommentContentString = newCommentContent ?? string.Empty;
                 
                 if (vm.Comments.Any(x =>
                     x.Author == comment.Name
@@ -80,7 +80,7 @@ namespace RaccoonBlog.Web.Controllers
                     {
                         CreatedAt = DateTimeOffset.Now.UtcDateTime.ToString(),
                         Author = comment.Name,
-                        Body = newCommentContent,
+                        Body = new Microsoft.AspNetCore.Html.HtmlString(newCommentContent),
                         Id = -1,
                         Url = UrlResolver.Resolve(comment.Url),
                         Tooltip = "Comment by " + comment.Name,

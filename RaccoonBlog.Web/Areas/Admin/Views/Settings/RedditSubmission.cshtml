@@ -4,9 +4,9 @@
 @using RaccoonBlog.Web.Infrastructure.Common
 @model RaccoonBlog.Web.Areas.Admin.ViewModels.RedditManualSubmissionViewModel
 
-@{
-    // ASP.NET Core: Convert @helper to local function
-    void ManualSubmissionAction(Post post, Reddit.PostSubmission postSubmission)
+@functions {
+    // ASP.NET Core: Convert @helper to async local function
+    async Task ManualSubmissionAction(Post post, Reddit.PostSubmission postSubmission)
     {
         if (postSubmission.IsManualSubmissionPending == false)
         {
@@ -20,6 +20,8 @@
            asp-route-sr="@postSubmission.Subreddit" asp-route-postId="@post.Id">
             Reset status
         </a>
+        
+        await Task.CompletedTask;
     }
 }
 
@@ -91,7 +93,7 @@
                                 <td>/r/@failedSubmission.Subreddit</td>
                                 <td>@failedSubmission.Status</td>
                                 <td class="actions">
-                                    @{ ManualSubmissionAction(post, failedSubmission); }
+                                    @{ await ManualSubmissionAction(post, failedSubmission); }
                                 </td>
                             </tr>
                         }

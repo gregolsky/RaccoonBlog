@@ -10,7 +10,7 @@
 }
 <h3>Settings</h3>
 <hr />
-@using (Html.BeginForm("Index", "Settings", FormMethod.Post, new { @class = "form-horizontal" }))
+@using (Html.BeginForm("Index", "Settings", Microsoft.AspNetCore.Mvc.Rendering.FormMethod.Post, new { @class = "form-horizontal" }))
 {
     <h4>General</h4>
     @Html.EditorFor(x => x.Title, "TextLong")

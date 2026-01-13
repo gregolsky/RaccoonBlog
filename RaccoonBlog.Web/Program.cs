@@ -25,6 +25,7 @@ using System;
 using System.Net;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
+using AutoMapper;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -126,8 +127,22 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         }
     });
 
-// Configure AutoMapper
-AutoMapperConfiguration.Configure();
+// Configure AutoMapper using modern DI pattern for AutoMapper 12.x
+// This automatically registers IMapper in DI and scans for profiles
+builder.Services.AddAutoMapper(cfg =>
+{
+    // Add only specific profiles to avoid scanning classes that reference System.Web
+    // Don't use assembly scanning as it will scan ALL types including MetaWeblog which has System.Web dependencies
+    cfg.AddProfile<RaccoonBlog.Web.Infrastructure.AutoMapper.AutoMapperConfiguration>();
+    cfg.AddProfile<RaccoonBlog.Web.Infrastructure.AutoMapper.Profiles.PostViewModelMapperProfile>();
+    cfg.AddProfile<RaccoonBlog.Web.Infrastructure.AutoMapper.Profiles.PostsViewModelMapperProfile>();
+    cfg.AddProfile<RaccoonBlog.Web.Infrastructure.AutoMapper.Profiles.TagsListViewModelMapperProfile>();
+    cfg.AddProfile<RaccoonBlog.Web.Infrastructure.AutoMapper.Profiles.SectionMapperProfile>();
+    cfg.AddProfile<RaccoonBlog.Web.Infrastructure.AutoMapper.Profiles.EmailViewModelMapperProfile>();
+    cfg.AddProfile<RaccoonBlog.Web.Infrastructure.AutoMapper.Profiles.SeriesMapperProfile>();
+    cfg.AddProfile<RaccoonBlog.Web.Infrastructure.AutoMapper.Profiles.UserAdminMapperProfile>();
+    cfg.AddProfile<RaccoonBlog.Web.Infrastructure.AutoMapper.Profiles.PostsAdminViewModelMapperProfile>();
+});
 
 // Initialize FluentScheduler jobs
 JobManager.JobException += info =>
@@ -138,6 +153,13 @@ JobManager.JobException += info =>
 JobManager.Initialize(new SocialNetworkIntegrationJobsRegistry());
 
 var app = builder.Build();
+
+// Initialize AutoMapper extensions with the IMapper instance from DI
+using (var scope = app.Services.CreateScope())
+{
+    var mapper = scope.ServiceProvider.GetRequiredService<AutoMapper.IMapper>();
+    RaccoonBlog.Web.Infrastructure.AutoMapper.AutoMapperExtensions.Initialize(mapper);
+}
 
 // Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())

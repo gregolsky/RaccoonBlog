@@ -47,7 +47,7 @@
     }
         <br />
 
-    @using (Html.BeginForm("RssFutureAccess", "Settings", FormMethod.Post, new { @class = "form-horizontal" }))
+    @using (Html.BeginForm("RssFutureAccess", "Settings", Microsoft.AspNetCore.Mvc.Rendering.FormMethod.Post, new { @class = "form-horizontal" }))
     {
         @Html.EditorFor(x => x.User, "NameWithDescription")
         @Html.EditorFor(x => x.ExpiredOn, "NameWithDescription")

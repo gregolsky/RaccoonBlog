@@ -7,7 +7,7 @@
 {
 	if (section.IsActionSection())
 	{
-		@{ await Html.RenderActionAsync(section.ActionName, section.ControllerName, new { sectionTitle = section.Title }); }
+		@await Html.PartialAsync($"{section.ControllerName}/{section.ActionName}", new { sectionTitle = section.Title })
 	}
 	else
 	{

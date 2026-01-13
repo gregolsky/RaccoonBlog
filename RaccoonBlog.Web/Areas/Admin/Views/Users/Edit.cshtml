@@ -16,7 +16,7 @@
 <div class="clearfix"></div>
 <hr />
 
-@using (Html.BeginForm("Update", "Users", FormMethod.Post, new { @class = "form-horizontal" }))
+@using (Html.BeginForm("Update", "Users", Microsoft.AspNetCore.Mvc.Rendering.FormMethod.Post, new { @class = "form-horizontal" }))
 {
     @Html.EditorFor(x => x.Id)
     @Html.EditorFor(x => x.FullName, "TextLong")

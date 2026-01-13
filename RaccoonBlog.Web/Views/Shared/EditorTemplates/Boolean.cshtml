@@ -1,10 +1,11 @@
-﻿@functions{
-    private List<SelectListItem> TriStateValues {
+﻿@using Microsoft.AspNetCore.Mvc.Rendering
+@functions{
+    private List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem> TriStateValues {
         get {
-            return new List<SelectListItem> {
-                new SelectListItem { Text = "Not Set", Value = String.Empty, Selected = !Value.HasValue },
-                new SelectListItem { Text = "True", Value = "true", Selected = Value.HasValue && Value.Value },
-                new SelectListItem { Text = "False", Value = "false", Selected = Value.HasValue && !Value.Value },
+            return new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem> {
+                new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem { Text = "Not Set", Value = String.Empty, Selected = !Value.HasValue },
+                new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem { Text = "True", Value = "true", Selected = Value.HasValue && Value.Value },
+                new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem { Text = "False", Value = "false", Selected = Value.HasValue && !Value.Value },
             };
         }
     }
