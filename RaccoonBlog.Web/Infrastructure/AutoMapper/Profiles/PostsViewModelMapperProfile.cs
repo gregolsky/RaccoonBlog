@@ -1,5 +1,5 @@
 using AutoMapper;
-using RaccoonBlog.Web.Infrastructure.AutoMapper.Profiles.Resolvers;
+using Microsoft.AspNetCore.Html;
 using RaccoonBlog.Web.Infrastructure.Common;
 using RaccoonBlog.Web.Models;
 using RaccoonBlog.Web.ViewModels;
@@ -10,8 +10,9 @@ namespace RaccoonBlog.Web.Infrastructure.AutoMapper.Profiles
 	{
 	    public PostsViewModelMapperProfile()
 	    {
-			CreateMap<string, Microsoft.AspNetCore.Html.IHtmlContent>()
-				.ConvertUsing<MvcHtmlStringConverter>();
+			// Use inline lambda instead of MvcHtmlStringConverter for AutoMapper 12.x compatibility
+			CreateMap<string, IHtmlContent>()
+				.ConvertUsing((src, dest, context) => new HtmlString(src ?? string.Empty));
 
 			CreateMap<Post, PostsViewModel.PostSummary>()
 				.ForMember(x => x.Id, o => o.MapFrom(m => Post.GetIdForUrl(m.Id)))

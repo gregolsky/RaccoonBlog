@@ -1,10 +1,12 @@
 using System;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using RaccoonBlog.Web.Controllers;
 
 namespace RaccoonBlog.Web.Areas.Admin.Controllers
 {
+	[Area("Admin")]
 	[Authorize]
 	public abstract partial class AdminController : RaccoonController
 	{

@@ -9,10 +9,16 @@ namespace RaccoonBlog.Web.Infrastructure.AutoMapper
 	{
 	    public AutoMapperConfiguration()
 	    {
-	        // Global type converters
-	        CreateMap<string, IHtmlContent>().ConvertUsing<MvcHtmlStringConverter>();
-	        CreateMap<Guid, string>().ConvertUsing<GuidToStringConverter>();
-	        CreateMap<DateTimeOffset, DateTime>().ConvertUsing<DateTimeTypeConverter>();
+	        // Global type converters - use ConvertUsing with lambda for AutoMapper 12.x compatibility
+	        // This avoids DI resolution issues with the converters
+	        CreateMap<string, IHtmlContent>().ConvertUsing((src, dest, context) => 
+	            new HtmlString(src ?? string.Empty));
+	        
+	        CreateMap<Guid, string>().ConvertUsing((src, dest, context) => 
+	            src.ToString());
+	        
+	        CreateMap<DateTimeOffset, DateTime>().ConvertUsing((src, dest, context) => 
+	            src.DateTime);
 	    }
 	}
 }

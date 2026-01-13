@@ -80,52 +80,57 @@ documentStore.Initialize();
 builder.Services.AddSingleton<IDocumentStore>(documentStore);
 
 // Configure Authentication
-builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+var authBuilder = builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
         options.LoginPath = "/admin/login";
         options.AccessDeniedPath = "/admin/login";
-    })
-    .AddGoogle(options =>
-    {
-        var clientId = builder.Configuration["Raccoon:OAuth:Google:ClientId"];
-        var clientSecret = builder.Configuration["Raccoon:OAuth:Google:ClientSecret"];
-        if (!string.IsNullOrEmpty(clientId) && !string.IsNullOrEmpty(clientSecret))
-        {
-            options.ClientId = clientId;
-            options.ClientSecret = clientSecret;
-        }
-    })
-    .AddMicrosoftAccount(options =>
-    {
-        var clientId = builder.Configuration["Raccoon:OAuth:Microsoft:ClientId"];
-        var clientSecret = builder.Configuration["Raccoon:OAuth:Microsoft:ClientSecret"];
-        if (!string.IsNullOrEmpty(clientId) && !string.IsNullOrEmpty(clientSecret))
-        {
-            options.ClientId = clientId;
-            options.ClientSecret = clientSecret;
-        }
-    })
-    .AddFacebook(options =>
-    {
-        var appId = builder.Configuration["Raccoon:OAuth:Facebook:AppId"];
-        var appSecret = builder.Configuration["Raccoon:OAuth:Facebook:AppSecret"];
-        if (!string.IsNullOrEmpty(appId) && !string.IsNullOrEmpty(appSecret))
-        {
-            options.AppId = appId;
-            options.AppSecret = appSecret;
-        }
-    })
-    .AddTwitter(options =>
-    {
-        var consumerKey = builder.Configuration["Raccoon:OAuth:Twitter:ConsumerKey"];
-        var consumerSecret = builder.Configuration["Raccoon:OAuth:Twitter:ConsumerSecret"];
-        if (!string.IsNullOrEmpty(consumerKey) && !string.IsNullOrEmpty(consumerSecret))
-        {
-            options.ConsumerKey = consumerKey;
-            options.ConsumerSecret = consumerSecret;
-        }
     });
+
+// Only add OAuth providers if credentials are configured
+var googleClientId = builder.Configuration["Raccoon:OAuth:Google:ClientId"];
+var googleClientSecret = builder.Configuration["Raccoon:OAuth:Google:ClientSecret"];
+if (!string.IsNullOrEmpty(googleClientId) && !string.IsNullOrEmpty(googleClientSecret))
+{
+    authBuilder.AddGoogle(options =>
+    {
+        options.ClientId = googleClientId;
+        options.ClientSecret = googleClientSecret;
+    });
+}
+
+var microsoftClientId = builder.Configuration["Raccoon:OAuth:Microsoft:ClientId"];
+var microsoftClientSecret = builder.Configuration["Raccoon:OAuth:Microsoft:ClientSecret"];
+if (!string.IsNullOrEmpty(microsoftClientId) && !string.IsNullOrEmpty(microsoftClientSecret))
+{
+    authBuilder.AddMicrosoftAccount(options =>
+    {
+        options.ClientId = microsoftClientId;
+        options.ClientSecret = microsoftClientSecret;
+    });
+}
+
+var facebookAppId = builder.Configuration["Raccoon:OAuth:Facebook:AppId"];
+var facebookAppSecret = builder.Configuration["Raccoon:OAuth:Facebook:AppSecret"];
+if (!string.IsNullOrEmpty(facebookAppId) && !string.IsNullOrEmpty(facebookAppSecret))
+{
+    authBuilder.AddFacebook(options =>
+    {
+        options.AppId = facebookAppId;
+        options.AppSecret = facebookAppSecret;
+    });
+}
+
+var twitterConsumerKey = builder.Configuration["Raccoon:OAuth:Twitter:ConsumerKey"];
+var twitterConsumerSecret = builder.Configuration["Raccoon:OAuth:Twitter:ConsumerSecret"];
+if (!string.IsNullOrEmpty(twitterConsumerKey) && !string.IsNullOrEmpty(twitterConsumerSecret))
+{
+    authBuilder.AddTwitter(options =>
+    {
+        options.ConsumerKey = twitterConsumerKey;
+        options.ConsumerSecret = twitterConsumerSecret;
+    });
+}
 
 // Configure AutoMapper using modern DI pattern for AutoMapper 12.x
 // This automatically registers IMapper in DI and scans for profiles
@@ -154,12 +159,11 @@ JobManager.Initialize(new SocialNetworkIntegrationJobsRegistry());
 
 var app = builder.Build();
 
-// Initialize AutoMapper extensions with the IMapper instance from DI
-using (var scope = app.Services.CreateScope())
-{
-    var mapper = scope.ServiceProvider.GetRequiredService<AutoMapper.IMapper>();
-    RaccoonBlog.Web.Infrastructure.AutoMapper.AutoMapperExtensions.Initialize(mapper);
-}
+// Initialize AutoMapper extensions with the IMapper instance from the ROOT service provider
+// IMPORTANT: Do NOT use a scoped service provider here, as it will be disposed
+// and AutoMapper will try to use the disposed provider for type converters
+var mapper = app.Services.GetRequiredService<AutoMapper.IMapper>();
+RaccoonBlog.Web.Infrastructure.AutoMapper.AutoMapperExtensions.Initialize(mapper);
 
 // Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
@@ -201,6 +205,12 @@ app.Use(async (context, next) =>
         session?.Dispose();
     }
 });
+
+// Map controller routes - Area routes must be mapped first to avoid ambiguity
+app.MapControllerRoute(
+    name: "admin_default",
+    pattern: "admin/{controller=Posts}/{action=Index}/{id?}",
+    defaults: new { area = "Admin" });
 
 app.MapControllerRoute(
     name: "areas",

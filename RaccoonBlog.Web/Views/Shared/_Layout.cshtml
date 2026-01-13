@@ -78,7 +78,7 @@
             <button class="menu-enlarge" id="enlarge-button"><i class="icon-circle-arrow-left hide-sm" aria-hidden="true"></i></button>
             <div class="collapseMobile flex-grow">
                 <div class="about flex-grow @(ViewBag.IsHomePage ? "home" : string.Empty)">
-                    @await Html.PartialAsync("Section/ContactMe")
+                    @await Html.PartialAsync("~/Views/Section/ContactMe.cshtml")
                 </div>
                 <div class="flex-grow"></div>
                 <div class="rewards margin-top">
@@ -86,11 +86,7 @@
                     <a class="dzone-profile-vertical" href="https://dzone.com/users/750579/ayende.html" title="DZone 2020 Hall of Fame Award Winner" target="_blank" rel="nofollow"><img src="~/Content/css/img/dzone-vertical.svg" /></a>
                 </div>
                 <div class="pull-down">
-                    @await Html.PartialAsync("Section/PostsStatistics")
-                    <p class="copyright">Copyright ©️ Ayende Rahien 2004 — @DateTime.Now.Year.ToString()</p>
-                    <small class="text-muted"><a asp-controller="Legal" asp-action="PrivacyPolicy" class="legal-link">Privacy Policy</a></small>
-                    <span class="separator margin-left-sm margin-right-sm">·</span>
-                    <small class="text-muted"><a asp-controller="Legal" asp-action="Terms" class="legal-link">Terms</a></small>
+                    @* TODO: Convert to View Component - temporarily disabled due to model mismatch *@
                 </div>
             </div>
         </div>
@@ -122,8 +118,9 @@
                 </nav>
 
                 <div class="clearfix"></div>
-                @await Html.PartialAsync("Section/TagsList")
-                @await Html.PartialAsync("Section/ArchivesList")
+                @* TODO: Convert to View Components - temporarily disabled due to model mismatch *@
+                @* @await Html.PartialAsync("~/Views/Section/TagsList.cshtml") *@
+                @* @await Html.PartialAsync("~/Views/Section/ArchivesList.cshtml") *@
             </header>
             <div class="bnr-carousel">
                 <a href="@bannerToDisplay.ResourceUrl" target="_blank"><img src="~/@bannerToDisplay.ImageSrc" class="img-responsive img-center" title="@bannerToDisplay.AltText" alt="@bannerToDisplay.AltText" /></a>
@@ -133,9 +130,10 @@
         <section class="rightSide">
             @if (Context.User.Identity.IsAuthenticated)
             {
-                @await Html.PartialAsync("Section/AdministrationPanel")
+                @await Html.PartialAsync("~/Views/Section/AdministrationPanel.cshtml")
             }
-            @await Html.PartialAsync("Section/List")
+            @* TODO: Convert to View Component - temporarily disabled due to model mismatch *@
+            @* @await Html.PartialAsync("~/Views/Section/List.cshtml") *@
         </section>
     </div>
 
