@@ -7,7 +7,7 @@
 {
 	if (section.IsActionSection())
 	{
-		Html.RenderAction(section.ActionName, section.ControllerName, new { sectionTitle = section.Title });
+		@{ await Html.RenderActionAsync(section.ActionName, section.ControllerName, new { sectionTitle = section.Title }); }
 	}
 	else
 	{

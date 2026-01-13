@@ -77,4 +77,8 @@
     <!-- XML-RPC -->
     <PackageReference Include="xmlrpcnet" Version="2.5.0" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="ViewComponents\" />
+  </ItemGroup>
 </Project>

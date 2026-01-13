@@ -40,11 +40,15 @@
         }
         else
         {
-            link = Url.AbsoluteAction("Details", new {Model.Post.Id, Model.Post.Slug});
+            link = Url.AbsoluteAction(Context.Request, "Details", new {Model.Post.Id, Model.Post.Slug});
         }
 
         <link rel="canonical" href="@link">
     }
+}
+
+@{
+    var currentUrl = $"{Context.Request.Scheme}://{Context.Request.Host}{Context.Request.Path}{Context.Request.QueryString}";
 }
 
 <article class="article-body">
@@ -81,13 +85,13 @@
         </div>
     </div>
     <div class="postData">
-        <a style='text-decoration:none;' href='@string.Format("http://twitter.com/intent/tweet?status={0}+{1} via @{2}", Model.Post.Title, url, Model.Post.Author.TwitterNick)'>
+        <a style='text-decoration:none;' href='@string.Format("http://twitter.com/intent/tweet?status={0}+{1} via @{2}", Model.Post.Title, currentUrl, Model.Post.Author.TwitterNick)'>
             <span class="icomoon icon-twitter"></span><span>Tweet</span>
         </a>
-        <a style='text-decoration:none;' type="icon_link" onclick="window.open('@string.Format("http://www.facebook.com/sharer/sharer.php?u={0}&title={1}", url, Model.Post.Title)','sharer','toolbar=0,status=0,width=580,height=325');" href="javascript: void(0)">
+        <a style='text-decoration:none;' type="icon_link" onclick="window.open('@string.Format("http://www.facebook.com/sharer/sharer.php?u={0}&title={1}", currentUrl, Model.Post.Title)','sharer','toolbar=0,status=0,width=580,height=325');" href="javascript: void(0)">
             <span class="icomoon icon-facebook"></span><span>Share</span>
         </a>
-        <a style='text-decoration:none;' type="icon_link" onclick="popUp=window.open('@string.Format("https://www.linkedin.com/shareArticle?mini=true&url={0}&title={1}", url, Model.Post.Title)', 'popupwindow', 'scrollbars=yes,width=600,height=400');popUp.focus();return false" href="javascript: void(0)">
+        <a style='text-decoration:none;' type="icon_link" onclick="popUp=window.open('@string.Format("https://www.linkedin.com/shareArticle?mini=true&url={0}&title={1}", currentUrl, Model.Post.Title)', 'popupwindow', 'scrollbars=yes,width=600,height=400');popUp.focus();return false" href="javascript: void(0)">
             <span class="icomoon icon-linkedin"></span><span>Share</span>
         </a>
         <a href="#comments">

@@ -1,7 +1,15 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Html;
 using JetBrains.Annotations;
 
@@ -87,6 +95,54 @@ namespace RaccoonBlog.Web.Helpers
 				href += "?" + paramString;
 			}
 			return new HtmlString(href);
+		}
+	}
+
+	/// <summary>
+	/// HTML Helper extensions for ASP.NET Core that replace Html.RenderAction
+	/// </summary>
+	public static class HtmlHelperActionExtensions
+	{
+		/// <summary>
+		/// Renders an action result inline (replacement for Html.RenderAction)
+		/// </summary>
+		public static async Task RenderActionAsync(this IHtmlHelper html, string actionName, string controllerName, object routeValues = null)
+		{
+			if (html == null) throw new System.ArgumentNullException(nameof(html));
+			if (actionName == null) throw new System.ArgumentNullException(nameof(actionName));
+
+			var context = html.ViewContext.HttpContext;
+			var serviceProvider = context.RequestServices;
+			var actionInvoker = serviceProvider.GetService(typeof(IActionInvokerFactory)) as IActionInvokerFactory;
+			var actionSelector = serviceProvider.GetService(typeof(IActionDescriptorCollectionProvider)) as IActionDescriptorCollectionProvider;
+
+			if (actionInvoker == null || actionSelector == null)
+			{
+				// Fallback: render nothing
+				return;
+			}
+
+			var routeData = new RouteData(html.ViewContext.RouteData);
+			routeData.Values["controller"] = controllerName;
+			routeData.Values["action"] = actionName;
+
+			if (routeValues != null)
+			{
+				var properties = routeValues.GetType().GetProperties();
+				foreach (var prop in properties)
+				{
+					var value = prop.GetValue(routeValues);
+					routeData.Values[prop.Name] = value;
+				}
+			}
+
+			var actionContext = new ActionContext(context, routeData, new ActionDescriptor());
+			var invoker = actionInvoker.CreateInvoker(actionContext);
+
+			if (invoker != null)
+			{
+				await invoker.InvokeAsync();
+			}
 		}
 	}
 }
