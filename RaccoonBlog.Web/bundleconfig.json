@@ -1,0 +1,46 @@
+//[
+//  {
+//    "outputFileName": "wwwroot/js/main-bundle.min.js",
+//    "inputFiles": [
+//      "wwwroot/js/moment.js",
+//      "wwwroot/js/lib/MarkdownDeepLib.min.js",
+//      "wwwroot/js/utils.js",
+//      "wwwroot/js/raccoon-blog.js",
+//      "wwwroot/js/setup.js"
+//    ],
+//    "minify": { "enabled": true }
+//  },
+//  {
+//    "outputFileName": "wwwroot/css/admin-styles.min.css",
+//    "inputFiles": [
+//      "wwwroot/Areas/Admin/Content/css/fullcalendar.css",
+//      "wwwroot/Areas/Admin/datepicker/css/bootstrap-datetimepicker.min.css"
+//    ]
+//  }
+//]
+[
+  {
+    "outputFileName": "wwwroot/js/main.min.js",
+    "inputFiles": [
+      "wwwroot/Content/js/moment.js",
+      "wwwroot/Content/js/lib/MarkdownDeepLib.min.js",
+      "wwwroot/Content/js/utils.js",
+      "wwwroot/Content/js/raccoon-blog.js",
+      "wwwroot/Content/js/setup.js",
+      "wwwroot/Content/js/jquery.twbsPagination.js",
+      "wwwroot/Content/js/jquery.validate.js",
+      "wwwroot/Content/js/jquery.validate.unobtrusive.js"
+    ],
+    "minify": { "enabled": true }
+  },
+  {
+    "outputFileName": "wwwroot/js/admin.min.js",
+    "inputFiles": [
+      "wwwroot/Content/js/moment.js",
+      "wwwroot/Areas/Admin/Content/js/lib/clipboard.min.js",
+      "wwwroot/Areas/Admin/Content/js/fullcalendar.js",
+      "wwwroot/Areas/Admin/Content/datepicker/js/bootstrap-datetimepicker.min.js"
+    ],
+    "minify": { "enabled": true }
+  }
+]

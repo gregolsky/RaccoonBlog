@@ -1,7 +1,13 @@
-[
+﻿[
   {
     "outputFile": "wwwroot/css/styles.css",
     "inputFile": "wwwroot/css/styles.less",
-    "minify": { "enabled": true }
+    "minify": {
+      "enabled": true
+    }
+  },
+  {
+    "outputFile": "wwwroot/admin/css/admin.styles.css",
+    "inputFile": "wwwroot/admin/css/admin.styles.less"
   }
 ]
