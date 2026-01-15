@@ -1,6 +1,7 @@
-﻿[
+[
   {
-    "outputFile": "Content/css/error.css",
-    "inputFile": "Content/css/error.less"
+    "outputFile": "wwwroot/css/styles.css",
+    "inputFile": "wwwroot/css/styles.less",
+    "minify": { "enabled": true }
   }
 ]

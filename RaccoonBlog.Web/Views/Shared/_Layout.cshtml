@@ -32,8 +32,8 @@
 
     @RenderSection("HeaderAdditions", false)
     
-    @* ASP.NET Core: Direct CSS references instead of bundling *@
-    <link rel="stylesheet" href="~/Content/css/styles.css" />
+    @* ASP.NET Core: CSS from wwwroot *@
+    <link rel="stylesheet" href="~/css/styles.css" />
     @Html.RenderTheme(ViewBag.BlogConfig.CustomCss as string)
     @RenderSection("Style", false)
 </head>
@@ -49,12 +49,12 @@
         // Initialize banner to display
         var banners = new List<Banner>
         {
-            new Banner {ResourceUrl = "https://ravendb.net/ravendb-vs-mongodb?utm_source=ayende_blog&utm_medium=banner", ImageSrc = "Content\\css\\img\\banners\\ravendb-vs-mongodb.jpg", AltText = "Comparison page for RavenDB and MongoDB"},
-            new Banner {ResourceUrl = "https://ravendb.net/?utm_source=ayende_blog&utm_medium=banner", ImageSrc = "Content\\css\\img\\banners\\ravendb.jpg", AltText = "RavenDB - High-Performance NoSQL Document Database"},
-            new Banner {ResourceUrl = "https://ravendb.net/whitepapers/couchbase-vs-ravendb-performance-at-rakuten-kobo?utm_source=ayende_blog&utm_medium=banner", ImageSrc = "Content\\css\\img\\banners\\couchbase-vs-ravendb-whitepaper.png", AltText = "Couchbase vs RavenDB Performance at Rakuten Kobo Whitepaper"},
-            new Banner {ResourceUrl = "https://ravendb.net/workshops?utm_source=ayende_blog&utm_medium=banner", ImageSrc = "Content\\css\\img\\banners\\workshops-ravendb.png", AltText = "RavenDB Workshops - Deep dive into practical use of Document Data Modeling"},
-            new Banner {ResourceUrl = "https://ravendb.net/learn/webinars?utm_source=ayende_blog&utm_medium=banner", ImageSrc = "Content\\css\\img\\banners\\webinars-ravendb.png", AltText = "Deep Dive into RavenDB webinars"},
-            new Banner {ResourceUrl = "https://ravendb.net/lp/ai-agent-creator?utm_source=ayende_blog&utm_medium=banner", ImageSrc = "Content\\css\\img\\banners\\ai-agent.jpg", AltText = "AI Agents, powered by your database - Bring AI into your applications with context, tools, and your data"},
+            new Banner {ResourceUrl = "https://ravendb.net/ravendb-vs-mongodb?utm_source=ayende_blog&utm_medium=banner", ImageSrc = "css/img/banners/ravendb-vs-mongodb.jpg", AltText = "Comparison page for RavenDB and MongoDB"},
+            new Banner {ResourceUrl = "https://ravendb.net/?utm_source=ayende_blog&utm_medium=banner", ImageSrc = "css/img/banners/ravendb.jpg", AltText = "RavenDB - High-Performance NoSQL Document Database"},
+            new Banner {ResourceUrl = "https://ravendb.net/whitepapers/couchbase-vs-ravendb-performance-at-rakuten-kobo?utm_source=ayende_blog&utm_medium=banner", ImageSrc = "css/img/banners/couchbase-vs-ravendb-whitepaper.png", AltText = "Couchbase vs RavenDB Performance at Rakuten Kobo Whitepaper"},
+            new Banner {ResourceUrl = "https://ravendb.net/workshops?utm_source=ayende_blog&utm_medium=banner", ImageSrc = "css/img/banners/workshops-ravendb.png", AltText = "RavenDB Workshops - Deep dive into practical use of Document Data Modeling"},
+            new Banner {ResourceUrl = "https://ravendb.net/learn/webinars?utm_source=ayende_blog&utm_medium=banner", ImageSrc = "css/img/banners/webinars-ravendb.png", AltText = "Deep Dive into RavenDB webinars"},
+            new Banner {ResourceUrl = "https://ravendb.net/lp/ai-agent-creator?utm_source=ayende_blog&utm_medium=banner", ImageSrc = "css/img/banners/ai-agent.jpg", AltText = "AI Agents, powered by your database - Bring AI into your applications with context, tools, and your data"},
         };
 
         var random = new Random();
@@ -82,8 +82,8 @@
                 </div>
                 <div class="flex-grow"></div>
                 <div class="rewards margin-top">
-                    <a class="mvp-profile-vertical" href="https://mvp.microsoft.com/en-us/PublicProfile/4012807" title="Microsoft MVP Reconnect Oren Eini" target="_blank" rel="nofollow"><img src="~/Content/css/img/mvp-vertical.svg" /></a>
-                    <a class="dzone-profile-vertical" href="https://dzone.com/users/750579/ayende.html" title="DZone 2020 Hall of Fame Award Winner" target="_blank" rel="nofollow"><img src="~/Content/css/img/dzone-vertical.svg" /></a>
+                    <a class="mvp-profile-vertical" href="https://mvp.microsoft.com/en-us/PublicProfile/4012807" title="Microsoft MVP Reconnect Oren Eini" target="_blank" rel="nofollow"><img src="~/css/img/mvp-vertical.svg" /></a>
+                    <a class="dzone-profile-vertical" href="https://dzone.com/users/750579/ayende.html" title="DZone 2020 Hall of Fame Award Winner" target="_blank" rel="nofollow"><img src="~/css/img/dzone-vertical.svg" /></a>
                 </div>
                 <div class="pull-down">
                     @* TODO: Convert to View Component - temporarily disabled due to model mismatch *@
@@ -142,11 +142,11 @@
         <script type="text/javascript">
             window.RaccoonRoutes = {};
         </script>
-        @* ASP.NET Core: Direct script references instead of bundling *@
-        <script src="~/Content/js/jquery.min.js"></script>
-        <script src="~/Content/js/jquery-migrate.min.js"></script>
-        <script src="~/Content/js/bootstrap.min.js"></script>
-        <script src="~/Content/js/raccoon-blog.js"></script>
+        @* ASP.NET Core: Scripts from wwwroot *@
+        <script src="~/js/jquery.min.js"></script>
+        <script src="~/js/jquery-migrate.min.js"></script>
+        <script src="~/js/bootstrap.min.js"></script>
+        <script src="~/js/raccoon-blog.js"></script>
         @await RenderSectionAsync("Script", required: false)
         <script async src="https://www.googletagmanager.com/gtag/js?id=G-JWD0V24RSP"></script>
         <script>

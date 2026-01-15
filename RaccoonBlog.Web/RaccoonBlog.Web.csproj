@@ -36,6 +36,7 @@
 
   <ItemGroup>
     <!-- Core ASP.NET Core packages -->
+    <PackageReference Include="BuildBundlerMinifier" Version="3.2.449" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Facebook" Version="8.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="8.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.MicrosoftAccount" Version="8.0.0" />
@@ -67,7 +68,6 @@
     <PackageReference Include="T4MVC" Version="4.1.0" />
     
     <!-- Updated security-vulnerable packages -->
-    <PackageReference Include="bootstrap" Version="5.3.8" />
     <PackageReference Include="jQuery" Version="3.7.1" />
     <PackageReference Include="jQuery.Validation" Version="1.21.0" />
     
@@ -89,4 +89,14 @@
   <ItemGroup>
     <Folder Include="ViewComponents\" />
   </ItemGroup>
+
+  <!-- Clean generated CSS files on Clean -->
+  <Target Name="CleanBundledFiles" AfterTargets="Clean">
+    <ItemGroup>
+      <FilesToDelete Include="wwwroot\css\styles.css" />
+      <FilesToDelete Include="wwwroot\css\styles.min.css" />
+    </ItemGroup>
+    <Delete Files="@(FilesToDelete)" />
+    <Message Text="Cleaned generated CSS files" Importance="high" />
+  </Target>
 </Project>

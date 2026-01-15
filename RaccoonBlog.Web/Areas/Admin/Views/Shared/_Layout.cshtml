@@ -11,8 +11,8 @@
 	<title>RaccoonBlog :: @ViewBag.Title</title>
 
 	<link href='//fonts.googleapis.com/css?family=Lato:300,400,700&subset=latin,latin-ext' rel='stylesheet' type='text/css' />
-	@* ASP.NET Core: Direct CSS references *@
-	<link rel="stylesheet" href="~/Areas/Admin/Content/css/admin.styles.css" />
+	@* ASP.NET Core: CSS from wwwroot/admin *@
+	<link rel="stylesheet" href="~/admin/css/admin.styles.css" />
 	@Html.RenderAdminTheme()
 	@await RenderSectionAsync("Style", required: false)
 </head>
@@ -49,12 +49,12 @@
 		</div>
 	</footer>
 
-	@* ASP.NET Core: Direct script references *@
-	<script src="~/Content/js/jquery.min.js"></script>
-	<script src="~/Content/js/jquery-migrate.min.js"></script>
-	<script src="~/Content/js/bootstrap.min.js"></script>
-	<script src="~/Areas/Admin/Content/js/tinymce/tinymce.min.js"></script>
-	<script src="~/Content/js/admin/main.js"></script>
+	@* ASP.NET Core: Scripts from wwwroot *@
+	<script src="~/js/jquery.min.js"></script>
+	<script src="~/js/jquery-migrate.min.js"></script>
+	<script src="~/js/bootstrap.min.js"></script>
+	<script src="~/admin/js/tinymce/tinymce.min.js"></script>
+	<script src="~/js/admin/main.js"></script>
 	@await RenderSectionAsync("Script", required: false)
 
 </body>

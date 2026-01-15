@@ -206,15 +206,11 @@ app.Use(async (context, next) =>
     }
 });
 
-// Map controller routes - Area routes must be mapped first to avoid ambiguity
-app.MapControllerRoute(
-    name: "admin_default",
-    pattern: "admin/{controller=Posts}/{action=Index}/{id?}",
-    defaults: new { area = "Admin" });
-
-app.MapControllerRoute(
-    name: "areas",
-    pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}");
+// Map controller routes - Use MapAreaControllerRoute for Admin area
+app.MapAreaControllerRoute(
+    name: "admin",
+    areaName: "Admin",
+    pattern: "Admin/{controller=Posts}/{action=Index}/{id?}");
 
 app.MapControllerRoute(
     name: "default",
