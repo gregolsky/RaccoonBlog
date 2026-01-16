@@ -10,7 +10,7 @@ String.prototype.isNullOrEmpty = function () {
     return this == false || this === '';
 };
 
-(function (window, undefined) {
+;(function (window, undefined) {
     var Raccoon = {};
     Raccoon.Util = {};
     Raccoon.Util.Views = {};

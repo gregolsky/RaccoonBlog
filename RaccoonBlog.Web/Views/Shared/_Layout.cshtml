@@ -139,30 +139,15 @@
         </section>
     </div>
 
+    <script src="~/js/jquery-1.11.2.js" asp-append-version="true"></script>
+    <script src="~/js/jquery-migrate-1.2.1.js" asp-append-version="true"></script>
+    <script src="~/js/bootstrap.js" asp-append-version="true"></script>
+
+    <script src="~/js/main-bundle.min.js" asp-append-version="true"></script>
+
     @if (IsSectionDefined("Script"))
     {
-        <script type="text/javascript">
-            window.RaccoonRoutes = {};
-        </script>
-        @* ASP.NET Core: Scripts from wwwroot *@
-        <script src="~/js/jquery.min.js"></script>
-        <script src="~/js/jquery-migrate.min.js"></script>
-        <script src="~/js/bootstrap.min.js"></script>
-        <script src="~/js/raccoon-blog.js"></script>
-
-        <script src="~/js/jquery-1.11.2.js"></script>
-        <script src="~/js/bootstrap.js"></script>
-        <script src="~/js/moment.js"></script>
-        <script src="~/js/utils.js"></script>
-        <script src="~/js/raccoon-blog.js"></script>
-
         @await RenderSectionAsync("Script", required: false)
-        <script async src="https://www.googletagmanager.com/gtag/js?id=G-JWD0V24RSP"></script>
-        <script>
-            window.dataLayer = window.dataLayer || [];
-            function gtag() { dataLayer.push(arguments); }
-            gtag('js', new Date()); gtag('config', 'G-JWD0V24RSP');
-        </script>
     }
 </body>
 </html>

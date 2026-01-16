@@ -1,4 +1,4 @@
-﻿(function(window) {
+﻿ (function (window) {
     window.utils = {};
 
     window.utils.randomString = function randomString(num) {
@@ -44,4 +44,4 @@
         createCookie(name, "", -1);
     };
 
-}(window))
+}(window));

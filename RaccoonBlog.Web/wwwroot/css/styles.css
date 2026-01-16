@@ -6950,7 +6950,7 @@ body.show-grid .postsList article h2 {
   flex-direction: column;
   align-items: center;
   flex-shrink: 0;
-  background-image: url(../img/new-bg.svg);
+  background-image: url(img/new-bg.svg);
 }
 .leftSide header {
   width: 100%;
@@ -7203,7 +7203,7 @@ body.show-grid .postsList article h2 {
   position: absolute;
   width: 34px;
   height: 28px;
-  background: url(../img/search-icon.svg) center no-repeat;
+  background: url(img/search-icon.svg) center no-repeat;
   background-size: 20px;
   text-indent: -9999px;
   right: 2px;
@@ -7401,16 +7401,16 @@ body.show-grid .postsList article h2 {
     color: #388ee9;
   }
   .body-header .views .stackView {
-    background-image: url(../img/ico_stack_inactive.svg);
+    background-image: url(img/ico_stack_inactive.svg);
   }
   .body-header .views .stackView.active {
-    background-image: url(../img/ico_stack_active.svg);
+    background-image: url(img/ico_stack_active.svg);
   }
   .body-header .views .gridView {
-    background-image: url(../img/ico_grid_inactive.svg);
+    background-image: url(img/ico_grid_inactive.svg);
   }
   .body-header .views .gridView.active {
-    background-image: url(../img/ico_grid_active.svg);
+    background-image: url(img/ico_grid_active.svg);
   }
 }
 @media (min-width: 768px) {
@@ -7640,7 +7640,7 @@ article.article-body .related-posts .related-posts_items .related-posts_item {
   font-size: 1rem;
   transition: all 0.2s ease-in-out;
   border-radius: 7.08px;
-  background-image: url(../img/article.svg);
+  background-image: url(img/article.svg);
   background-repeat: no-repeat;
   background-size: 36px;
   background-blend-mode: soft-light;
