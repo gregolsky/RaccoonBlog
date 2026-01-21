@@ -1,4 +1,4 @@
-using AutoMapper;
+﻿using AutoMapper;
 using FluentScheduler;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Facebook;
@@ -50,6 +50,31 @@ builder.Services.AddControllersWithViews(options =>
 })
 .AddNewtonsoftJson();
 
+builder.Services.AddWebOptimizer(pipeline =>
+{
+    pipeline.AddJavaScriptBundle("/js/main-bundle.min.js", "js/moment.js", "js/lib/MarkdownDeepLib.min.js", "js/utils.js", "js/raccoon-blog.js", "js/setup.js", "js/jquery.twbsPagination.js", "js/jquery.validate.js", "js/jquery.validate.unobtrusive.js");
+    pipeline.AddJavaScriptBundle("/admin/js/admin-scripts-bundle.min.js", "js/bootstrap.js");
+
+    pipeline.AddLessBundle("/admin/css/admin.styles.css", "admin/css/admin.styles.less").MinifyCss();
+    pipeline.AddLessBundle("/admin/css/bootstrap/bootstrap-extend.css", "admin/css/bootstrap/bootstrap-extend.less").MinifyCss();
+
+    var env = builder.Environment;
+    var cssRootPath = Path.Combine(env.WebRootPath, "css");
+
+    if (Directory.Exists(cssRootPath))
+    {
+        var bundleFiles = Directory.GetFiles(cssRootPath, "*.bundle.less");
+
+        foreach (var bundleFile in bundleFiles)
+        {
+            var fileName = Path.GetFileName(bundleFile);
+            var themeName = fileName.Substring(0, fileName.IndexOf(".bundle.less"));
+
+            pipeline.AddLessBundle($"/css/custom/{themeName}.css", $"css/{themeName}.bundle.less")
+                    .MinifyCss();
+        }
+    }
+});
 // Configure Session (required for session-based TempData)
 builder.Services.AddSession(options =>
 {
@@ -213,6 +238,7 @@ else
 }
 
 app.UseHttpsRedirection();
+app.UseWebOptimizer();
 app.UseStaticFiles();
 
 app.UseRouting();

@@ -93,7 +93,7 @@ namespace RaccoonBlog.Web.Helpers
 				return HtmlString.Empty;
 
 			// Return a link tag for the theme CSS
-			return new HtmlString($"<link rel=\"stylesheet\" href=\"/css/custom/{themeName}.css\" />");
+            return new HtmlString($"<link rel=\"stylesheet\" href=\"/css/custom/{themeName}.css\" />");
 		}
 
 		public static IHtmlContent RenderAdminTheme(this IHtmlHelper helper)

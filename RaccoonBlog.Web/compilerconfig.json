@@ -1,21 +1,6 @@
 ﻿[
   {
-    "outputFile": "wwwroot/css/styles.css",
-    "inputFile": "wwwroot/css/styles.less",
-    "minify": {
-      "enabled": true
-    }
-  },
-  {
-    "outputFile": "wwwroot/admin/css/admin.styles.css",
-    "inputFile": "wwwroot/admin/css/admin.styles.less"
-  },
-  {
-    "outputFile": "wwwroot/admin/css/bootstrap/bootstrap-extend.css",
-    "inputFile": "wwwroot/admin/css/bootstrap/bootstrap-extend.less"
-  },
-  {
-    "outputFile": "wwwroot/css/bootstrap/theme.css",
-    "inputFile": "wwwroot/css/bootstrap/theme.less"
+    "outputFile": "wwwroot/css/custom/ayende.styles.css",
+    "inputFile": "wwwroot/css/custom/ayende.styles.less"
   }
 ]
