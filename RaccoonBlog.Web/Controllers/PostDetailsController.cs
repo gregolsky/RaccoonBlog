@@ -21,6 +21,12 @@ namespace RaccoonBlog.Web.Controllers
     public partial class PostDetailsController : RaccoonController
     {
         private static Logger _log = LogManager.GetCurrentClassLogger();
+        private readonly IServiceProvider _serviceProvider;
+
+        public PostDetailsController(IServiceProvider serviceProvider)
+        {
+            _serviceProvider = serviceProvider;
+        }
 
         public virtual IActionResult Details(string id, string slug, Guid key)
         {
@@ -130,7 +136,8 @@ namespace RaccoonBlog.Web.Controllers
             if (ModelState.IsValid == false)
                 return PostingCommentFailed(post, input, key);
 
-            TaskExecutor.ExcuteLater(new AddCommentTask(input, Request.MapTo<AddCommentTask.RequestValues>(), id));
+            // Pass IServiceProvider to AddCommentTask for DI access
+            TaskExecutor.ExcuteLater(new AddCommentTask(input, Request.MapTo<AddCommentTask.RequestValues>(), id, _serviceProvider));
 
             CommenterUtil.SetCommenterCookie(Response, input.CommenterKey); // ASP.NET Core: Already a string
 

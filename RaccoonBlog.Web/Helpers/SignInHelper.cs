@@ -9,11 +9,11 @@ namespace RaccoonBlog.Web.Helpers
 {
 	public class SignInHelper
 	{
-		private readonly HttpContext httpContext;
+		private readonly IHttpContextAccessor _httpContextAccessor;
 
-		public SignInHelper(HttpContext httpContext)
+		public SignInHelper(IHttpContextAccessor httpContextAccessor)
 		{
-			this.httpContext = httpContext;
+			this._httpContextAccessor = httpContextAccessor;
 		}
 
 		/// <summary>
@@ -27,7 +27,7 @@ namespace RaccoonBlog.Web.Helpers
 		public async Task SignInAsync(LogOnModel logOn, bool isPersistent)
 		{
 			// Sign out any existing authentication
-			await httpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+			await _httpContextAccessor.HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
 
 			var claims = new[]
 			{
@@ -46,7 +46,7 @@ namespace RaccoonBlog.Web.Helpers
 					: System.DateTimeOffset.UtcNow.AddHours(2)
 			};
 
-			await httpContext.SignInAsync(
+			await _httpContextAccessor.HttpContext.SignInAsync(
 				CookieAuthenticationDefaults.AuthenticationScheme,
 				claimsPrincipal,
 				authProperties);
@@ -62,7 +62,7 @@ namespace RaccoonBlog.Web.Helpers
 
 		public async Task SignOutAsync()
 		{
-			await httpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+			await _httpContextAccessor.HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
 		}
 	}
 }

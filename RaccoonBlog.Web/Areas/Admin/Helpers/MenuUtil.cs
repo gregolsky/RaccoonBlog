@@ -15,7 +15,7 @@ namespace RaccoonBlog.Web.Areas.Admin.Helpers
 		{
 			var items = new List<MenuItem>
 			{
-				new MenuItem {Title = "Back To Blog", Url = url.RouteUrl("homepage"), Type = MenuButtonType.Plain},
+				new MenuItem {Title = "Back To Blog", Url = url.Action("Index", "Posts", new { area = "" }), Type = MenuButtonType.Plain},
 				new MenuItem {Title = "Posts", Url = url.Action("Index", "Posts"), Type = MenuButtonType.Plain},
                 new MenuItem {Title = "Add new post", Url = url.Action("Add", "Posts"), Type = MenuButtonType.Add},
 				new MenuItem {Title = "Sections", Url = url.Action("Index", "Sections"), Type = MenuButtonType.Plain},

@@ -9,5 +9,13 @@
   {
     "outputFile": "wwwroot/admin/css/admin.styles.css",
     "inputFile": "wwwroot/admin/css/admin.styles.less"
+  },
+  {
+    "outputFile": "wwwroot/admin/css/bootstrap/bootstrap-extend.css",
+    "inputFile": "wwwroot/admin/css/bootstrap/bootstrap-extend.less"
+  },
+  {
+    "outputFile": "wwwroot/css/bootstrap/theme.css",
+    "inputFile": "wwwroot/css/bootstrap/theme.less"
   }
 ]

@@ -18,7 +18,8 @@ namespace RaccoonBlog.Web.Infrastructure.Tasks
 			public string UserAgent { get; set; }
 			public string UserHostAddress { get; set; }
 			public bool IsAuthenticated { get; set; }
-		}
+            public bool IsLocal { get; set; }
+        }
 
 		private readonly CommentInput commentInput;
 		private readonly RequestValues requestValues;

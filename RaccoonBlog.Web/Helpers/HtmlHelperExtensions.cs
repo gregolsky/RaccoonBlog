@@ -93,13 +93,13 @@ namespace RaccoonBlog.Web.Helpers
 				return HtmlString.Empty;
 
 			// Return a link tag for the theme CSS
-			return new HtmlString($"<link rel=\"stylesheet\" href=\"/Content/css/custom/{themeName}.css\" />");
+			return new HtmlString($"<link rel=\"stylesheet\" href=\"/css/custom/{themeName}.css\" />");
 		}
 
 		public static IHtmlContent RenderAdminTheme(this IHtmlHelper helper)
 		{
 			// Return a link tag for the admin theme CSS
-			return new HtmlString("<link rel=\"stylesheet\" href=\"/Areas/Admin/Content/css/admin.styles.css\" />");
+			return new HtmlString("<link rel=\"stylesheet\" href=\"/admin/css/admin.styles.css\" />");
 		}
 	}
 }

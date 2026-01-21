@@ -7076,6 +7076,7 @@ body.show-grid .postsList article h2 {
   display: none;
   width: 100%;
   height: 230px;
+  background: url(img/logo-vertical.svg) center no-repeat;
 }
 .leftSide a.logo-vertical h1 {
   margin: 0;

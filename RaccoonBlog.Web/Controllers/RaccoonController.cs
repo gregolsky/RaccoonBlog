@@ -1,16 +1,17 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Xml.Linq;
 using HibernatingRhinos.Loci.Common.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using RaccoonBlog.Web.Helpers.Results;
 using RaccoonBlog.Web.Models;
 using Raven.Client.Documents;
 using Raven.Client.Documents.Session;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Xml.Linq;
 
 namespace RaccoonBlog.Web.Controllers
 {
@@ -74,7 +75,7 @@ namespace RaccoonBlog.Web.Controllers
         public override void OnActionExecuting(ActionExecutingContext filterContext)
         {
             ViewBag.IsHomePage = false;
-            RavenSession = (IDocumentSession)HttpContext.Items["CurrentRequestRavenSession"];
+            RavenSession = HttpContext.RequestServices.GetRequiredService<IDocumentSession>();
             base.OnActionExecuting(filterContext);
         }
 

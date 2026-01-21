@@ -1,3 +1,4 @@
+using AutoMapper;
 using FluentScheduler;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Facebook;
@@ -6,26 +7,32 @@ using Microsoft.AspNetCore.Authentication.MicrosoftAccount;
 using Microsoft.AspNetCore.Authentication.Twitter;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Microsoft.AspNetCore.Mvc.ViewFeatures.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using NLog;
 using NLog.Web;
-using Raven.Client.Documents;
-using Raven.Client.Documents.Conventions;
-using Raven.Client.Documents.Indexes;
-using Raven.Client.Http;
 using RaccoonBlog.Web.Helpers;
 using RaccoonBlog.Web.Helpers.Binders;
 using RaccoonBlog.Web.Infrastructure.AutoMapper;
 using RaccoonBlog.Web.Infrastructure.Indexes;
 using RaccoonBlog.Web.Infrastructure.Jobs;
+using Raven.Client.Documents;
+using Raven.Client.Documents.Conventions;
+using Raven.Client.Documents.Indexes;
+using Raven.Client.Documents.Session;
+using Raven.Client.Http;
 using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Net;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
-using AutoMapper;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -40,10 +47,24 @@ builder.Host.UseNLog();
 builder.Services.AddControllersWithViews(options =>
 {
     options.ModelBinderProviders.Insert(0, new GuidBinderProvider());
+})
+.AddNewtonsoftJson();
+
+// Configure Session (required for session-based TempData)
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(30);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
 });
+
+// Configure TempData to use JSON serialization instead of BSON
+builder.Services.AddSingleton<TempDataSerializer, JsonTempDataSerializer>();
 
 builder.Services.AddHttpContextAccessor();
 
+
+builder.Services.AddScoped<RaccoonBlog.Web.Helpers.SignInHelper>();
 // Configure RavenDB DocumentStore
 var ravenUrls = builder.Configuration["Raven:Urls"]?.Split(',', StringSplitOptions.RemoveEmptyEntries) ?? new[] { "http://localhost:8080" };
 var ravenDatabase = builder.Configuration["Raven:Database"] ?? "blog.ayende.com";
@@ -78,6 +99,20 @@ if (int.TryParse(builder.Configuration["Raven:RequestsTimeoutInSec"], out int ti
 
 documentStore.Initialize();
 builder.Services.AddSingleton<IDocumentStore>(documentStore);
+builder.Services.AddScoped<IDocumentSession>(ctx =>
+{
+    return ctx.GetRequiredService<IDocumentStore>().OpenSession();
+});
+
+builder.Services.AddScoped<RaccoonBlog.Web.Models.BlogConfig>(ctx =>
+{
+    var session = ctx.GetRequiredService<IDocumentSession>();
+    using (session.Advanced.DocumentStore.AggressivelyCacheFor(TimeSpan.FromMinutes(5)))
+    {
+        return session.Load<RaccoonBlog.Web.Models.BlogConfig>("Blog/Config")
+               ?? new RaccoonBlog.Web.Models.BlogConfig();
+    }
+});
 
 // Configure Authentication
 var authBuilder = builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
@@ -182,27 +217,42 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+// Add session middleware (must be before authentication and authorization)
+app.UseSession();
+
 app.UseAuthentication();
 app.UseAuthorization();
 
 // RavenDB session management per request
+//app.Use(async (context, next) =>
+//{
+//    var session = documentStore.OpenSession();
+//    context.Items["CurrentRequestRavenSession"] = session;
+
+//    try
+//    {
+//        await next();
+
+//        if (context.Response.StatusCode < 400)
+//        {
+//            session.SaveChanges();
+//        }
+//    }
+//    finally
+//    {
+//        session?.Dispose();
+//    }
+//});
+
 app.Use(async (context, next) =>
 {
-    var session = documentStore.OpenSession();
-    context.Items["CurrentRequestRavenSession"] = session;
-    
-    try
+    var session = context.RequestServices.GetRequiredService<IDocumentSession>();
+
+    await next();
+
+    if (context.Response.StatusCode < 400 && context.Request.Method != "GET")
     {
-        await next();
-        
-        if (context.Response.StatusCode < 400)
-        {
-            session.SaveChanges();
-        }
-    }
-    finally
-    {
-        session?.Dispose();
+        session.SaveChanges();
     }
 });
 
@@ -217,3 +267,37 @@ app.MapControllerRoute(
     pattern: "{controller=Posts}/{action=Index}/{id?}");
 
 app.Run();
+
+// Custom JSON TempData Serializer to replace BSON serializer
+public class JsonTempDataSerializer : TempDataSerializer
+{
+    private static readonly JsonSerializerSettings Settings = new JsonSerializerSettings
+    {
+        TypeNameHandling = TypeNameHandling.None,
+        ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+        NullValueHandling = NullValueHandling.Include
+    };
+
+    public override IDictionary<string, object> Deserialize(byte[] value)
+    {
+        if (value == null || value.Length == 0)
+        {
+            return new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+        }
+
+        var json = Encoding.UTF8.GetString(value);
+        return JsonConvert.DeserializeObject<Dictionary<string, object>>(json, Settings)
+            ?? new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+    }
+
+    public override byte[] Serialize(IDictionary<string, object> values)
+    {
+        if (values == null || values.Count == 0)
+        {
+            return Array.Empty<byte>();
+        }
+
+        var json = JsonConvert.SerializeObject(values, Settings);
+        return Encoding.UTF8.GetBytes(json);
+    }
+}

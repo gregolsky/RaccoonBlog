@@ -51,12 +51,12 @@
         // Initialize banner to display
         var banners = new List<Banner>
         {
-            new Banner {ResourceUrl = "https://ravendb.net/ravendb-vs-mongodb?utm_source=ayende_blog&utm_medium=banner", ImageSrc = "css/img/banners/ravendb-vs-mongodb.jpg", AltText = "Comparison page for RavenDB and MongoDB"},
-            new Banner {ResourceUrl = "https://ravendb.net/?utm_source=ayende_blog&utm_medium=banner", ImageSrc = "css/img/banners/ravendb.jpg", AltText = "RavenDB - High-Performance NoSQL Document Database"},
-            new Banner {ResourceUrl = "https://ravendb.net/whitepapers/couchbase-vs-ravendb-performance-at-rakuten-kobo?utm_source=ayende_blog&utm_medium=banner", ImageSrc = "css/img/banners/couchbase-vs-ravendb-whitepaper.png", AltText = "Couchbase vs RavenDB Performance at Rakuten Kobo Whitepaper"},
-            new Banner {ResourceUrl = "https://ravendb.net/workshops?utm_source=ayende_blog&utm_medium=banner", ImageSrc = "css/img/banners/workshops-ravendb.png", AltText = "RavenDB Workshops - Deep dive into practical use of Document Data Modeling"},
-            new Banner {ResourceUrl = "https://ravendb.net/learn/webinars?utm_source=ayende_blog&utm_medium=banner", ImageSrc = "css/img/banners/webinars-ravendb.png", AltText = "Deep Dive into RavenDB webinars"},
-            new Banner {ResourceUrl = "https://ravendb.net/lp/ai-agent-creator?utm_source=ayende_blog&utm_medium=banner", ImageSrc = "css/img/banners/ai-agent.jpg", AltText = "AI Agents, powered by your database - Bring AI into your applications with context, tools, and your data"},
+        new Banner {ResourceUrl = "https://ravendb.net/ravendb-vs-mongodb?utm_source=ayende_blog&utm_medium=banner", ImageSrc = "css/img/banners/ravendb-vs-mongodb.jpg", AltText = "Comparison page for RavenDB and MongoDB"},
+        new Banner {ResourceUrl = "https://ravendb.net/?utm_source=ayende_blog&utm_medium=banner", ImageSrc = "css/img/banners/ravendb.jpg", AltText = "RavenDB - High-Performance NoSQL Document Database"},
+        new Banner {ResourceUrl = "https://ravendb.net/whitepapers/couchbase-vs-ravendb-performance-at-rakuten-kobo?utm_source=ayende_blog&utm_medium=banner", ImageSrc = "css/img/banners/couchbase-vs-ravendb-whitepaper.png", AltText = "Couchbase vs RavenDB Performance at Rakuten Kobo Whitepaper"},
+        new Banner {ResourceUrl = "https://ravendb.net/workshops?utm_source=ayende_blog&utm_medium=banner", ImageSrc = "css/img/banners/workshops-ravendb.png", AltText = "RavenDB Workshops - Deep dive into practical use of Document Data Modeling"},
+        new Banner {ResourceUrl = "https://ravendb.net/learn/webinars?utm_source=ayende_blog&utm_medium=banner", ImageSrc = "css/img/banners/webinars-ravendb.png", AltText = "Deep Dive into RavenDB webinars"},
+        new Banner {ResourceUrl = "https://ravendb.net/lp/ai-agent-creator?utm_source=ayende_blog&utm_medium=banner", ImageSrc = "css/img/banners/ai-agent.jpg", AltText = "AI Agents, powered by your database - Bring AI into your applications with context, tools, and your data"},
         };
 
         var random = new Random();
@@ -71,6 +71,7 @@
                     <span class="lead">aka Ayende Rahien</span>
                 </a>
                 <button class="menu-button" id="open-button"><i class="icon-arrow-down hide-sm" aria-hidden="true"></i></button>
+
             </header>
 
             <a asp-controller="Posts" asp-action="Index" class="logo-vertical">
@@ -88,7 +89,11 @@
                     <a class="dzone-profile-vertical" href="https://dzone.com/users/750579/ayende.html" title="DZone 2020 Hall of Fame Award Winner" target="_blank" rel="nofollow"><img src="~/css/img/dzone-vertical.svg" /></a>
                 </div>
                 <div class="pull-down">
-                    @* TODO: Convert to View Component - temporarily disabled due to model mismatch *@
+                    @await Component.InvokeAsync("PostsStatistics")
+                    <p class="copyright">Copyright ©️ Ayende Rahien 2004 — @DateTime.Now.Year.ToString()</p>
+                    <small class="text-muted"><a href="@Url.Action("Index", "privacy-policy")" class="legal-link">Privacy Policy</a></small>
+                    <span class="separator margin-left-sm margin-right-sm">·</span>
+                    <small class="text-muted"><a href="@Url.Action("Index", "terms")" class="legal-link">Terms</a></small>
                 </div>
             </div>
         </div>
@@ -120,22 +125,30 @@
                 </nav>
 
                 <div class="clearfix"></div>
-                @* TODO: Convert to View Components - temporarily disabled due to model mismatch *@
-                @* @await Html.PartialAsync("~/Views/Section/TagsList.cshtml") *@
-                @* @await Html.PartialAsync("~/Views/Section/ArchivesList.cshtml") *@
+                <vc:tags-list></vc:tags-list>
+                <vc:archives-list></vc:archives-list>
             </header>
             <div class="bnr-carousel">
-                <a href="@bannerToDisplay.ResourceUrl" target="_blank"><img src="~/@bannerToDisplay.ImageSrc" class="img-responsive img-center" title="@bannerToDisplay.AltText" alt="@bannerToDisplay.AltText" /></a>
+                <a href="@bannerToDisplay.ResourceUrl" target="_blank"><img src="@bannerToDisplay.ImageSrc" class="img-responsive img-center" title="@bannerToDisplay.AltText" alt="@bannerToDisplay.AltText" /></a>
             </div>
             @RenderBody()
         </div>
         <section class="rightSide">
+            @using RaccoonBlog.Web.ViewModels
+            @inject Raven.Client.Documents.Session.IDocumentSession RavenSession
             @if (Context.User.Identity.IsAuthenticated)
             {
-                @await Html.PartialAsync("~/Views/Section/AdministrationPanel.cshtml")
+                var userDoc = RavenSession.Query<RaccoonBlog.Web.Models.User>()
+                .FirstOrDefault(u => u.Email == User.Identity.Name);
+
+                var adminModel = new CurrentUserViewModel
+                {
+                    FullName = userDoc?.FullName ?? "Admin"
+                };
+
+                @await Html.PartialAsync("~/Views/Section/AdministrationPanel.cshtml", adminModel)
             }
-            @* TODO: Convert to View Component - temporarily disabled due to model mismatch *@
-            @* @await Html.PartialAsync("~/Views/Section/List.cshtml") *@
+            <vc:sidebar-list></vc:sidebar-list>
         </section>
     </div>
 

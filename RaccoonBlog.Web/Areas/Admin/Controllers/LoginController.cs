@@ -7,7 +7,8 @@ using RaccoonBlog.Web.ViewModels;
 
 namespace RaccoonBlog.Web.Areas.Admin.Controllers
 {
-	public partial class LoginController : RaccoonController
+    [Area("Admin")]
+    public partial class LoginController : RaccoonController
 	{
 		private readonly SignInHelper _signInHelper;
 
@@ -55,8 +56,9 @@ namespace RaccoonBlog.Web.Areas.Admin.Controllers
 		private IActionResult RedirectFromLoginPage(string retrunUrl = null)
 		{
 			if (string.IsNullOrEmpty(retrunUrl))
-				return RedirectToRoute("homepage");
-			return Redirect(retrunUrl);
+                return RedirectToAction("Index", "Posts", new { area = "" });
+            //return RedirectToRoute("homepage");
+            return Redirect(retrunUrl);
 		}
 
 		[HttpGet]

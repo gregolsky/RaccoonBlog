@@ -52,6 +52,7 @@
     <PackageReference Include="JetBrains.Annotations" Version="11.1.0" />
     <PackageReference Include="Lambda2Js.Signed" Version="3.1.4" />
     <PackageReference Include="Microsoft.AspNetCore.JsonPatch" Version="8.0.22" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="8.0.11" />
     <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="8.0.0" />
     <PackageReference Include="Microsoft.Bcl.HashCode" Version="6.0.0" />
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
@@ -86,10 +87,6 @@
     <PackageReference Include="xmlrpcnet" Version="2.5.0" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="ViewComponents\" />
-  </ItemGroup>
-
   <!-- Clean generated CSS files on Clean -->
   <Target Name="CleanBundledFiles" AfterTargets="Clean">
     <ItemGroup>
@@ -99,4 +96,5 @@
     <Delete Files="@(FilesToDelete)" />
     <Message Text="Cleaned generated CSS files" Importance="high" />
   </Target>
+  <ProjectExtensions><VisualStudio><UserProperties bundleconfig_1json__JsonSchema="https://www.schemastore.org/chisel-slices.json" /></VisualStudio></ProjectExtensions>
 </Project>

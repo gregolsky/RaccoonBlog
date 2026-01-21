@@ -2,7 +2,26 @@
 
 @charset "utf-8";
 @import "admin.variables.less";
-/* CSS Document */
+@import "bootstrap/bootstrap-extend.less";
+
+
+body {
+    background-color: @gray-dark !important;
+    font-family: "Lato", "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+.btn-primary {
+    background-color: @brand-primary !important;
+    border-color: #008ed0 !important;
+}
+
+.container > .content, section.content {
+    background-color: @component-active-color !important;
+    padding: 30px;
+    border-radius: 4px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    margin-top: 20px;
+}
 .main-nav {
     background-color: @gray-lighter;
 
@@ -14,7 +33,7 @@
     .navbar-brand {
         background-color: @brand-primary;
         color: #FFF;
-        background-image: url(img/logo.svg);
+        background-image: url(/admin/img/logo.svg);
         background-repeat: no-repeat;
         background-position: center;
         background-size: contain;
@@ -46,7 +65,7 @@
 
     @media (min-width: @screen-tablet) {
 
-        .active>a {
+        .active > a {
             font-weight: bold;
             color: @brand-warning;
         }
@@ -153,47 +172,48 @@ footer {
 }
 
 #login {
-	button[type=submit] {
-		margin-top:30px;
-	}
-	
-	.logo {
-		background-color:@brand-primary;
-		color:#FFF;
-		background-image:url(img/logo.svg);
-		background-repeat:no-repeat;
-		background-position:center;
-		background-size:contain;
-		padding:30px 15px;
-		width:300px;
-		height:80px;
-		margin:-30px -30px 30px;
-		text-indent:-9999px;
-	}
-	.center {
-		position:absolute;
-		top:50%;
-		left:50%;
-		width:300px;
-		min-height:100px;
-		background-color:@gray-lighter;
-		padding:30px;
-		
-		box-sizing:border-box;
-		
-		-moz-transform: translateX(-50%) translateY(-50%);
-		-webkit-transform: translateX(-50%) translateY(-50%);
-		-o-transform: translateX(-50%) translateY(-50%);
-		-ms-transform: translateX(-50%) translateY(-50%);
-		transform: translateX(-50%) translateY(-50%);
-	}
-	
-	footer {
-		position:absolute;
-		width:100%;
-		bottom:0;
-		text-align:center;
-	}
+    background-color: @gray-dark;
+
+    button[type=submit] {
+        margin-top: 30px;
+    }
+
+    .logo {
+        background-color: @brand-primary;
+        color: #FFF;
+        background-image: url(/admin/img/logo.svg);
+        background-repeat: no-repeat;
+        background-position: center;
+        background-size: contain;
+        padding: 30px 15px;
+        width: 300px;
+        height: 80px;
+        margin: -30px -30px 30px;
+        text-indent: -9999px;
+    }
+
+    .center {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 300px;
+        min-height: 100px;
+        background-color: @gray-lighter;
+        padding: 30px;
+        box-sizing: border-box;
+        -moz-transform: translateX(-50%) translateY(-50%);
+        -webkit-transform: translateX(-50%) translateY(-50%);
+        -o-transform: translateX(-50%) translateY(-50%);
+        -ms-transform: translateX(-50%) translateY(-50%);
+        transform: translateX(-50%) translateY(-50%);
+    }
+
+    footer {
+        position: absolute;
+        width: 100%;
+        bottom: 0;
+        text-align: center;
+    }
 }
 
 .user {

@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace RaccoonBlog.Web.ViewModels
 {
+	[Serializable]
 	public class CommentInput
 	{
 		[Required(ErrorMessage = "Name is required")]

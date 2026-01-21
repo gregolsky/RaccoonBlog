@@ -1,61 +1,89 @@
 ﻿<!DOCTYPE html>
 <html>
 <head>
-	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-	<meta name="viewport" content="width=device-width, initial-scale=1 user-scalable=no" />
-	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
-	<meta name="format-detection" content="telephone=no" />
-	<meta name="theme-color" content="#FFF" />
-	<meta name="msapplication-tap-highlight" content="no" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>RaccoonBlog :: @ViewBag.Title</title>
 
-	<title>RaccoonBlog :: @ViewBag.Title</title>
+    <link href='//fonts.googleapis.com/css?family=Lato:300,400,700&subset=latin,latin-ext' rel='stylesheet' type='text/css' />
 
-	<link href='//fonts.googleapis.com/css?family=Lato:300,400,700&subset=latin,latin-ext' rel='stylesheet' type='text/css' />
-	@* ASP.NET Core: CSS from wwwroot/admin *@
-	<link rel="stylesheet" href="~/admin/css/admin.styles.css" />
-	@Html.RenderAdminTheme()
-	@await RenderSectionAsync("Style", required: false)
+
+    <link href='//fonts.googleapis.com/css?family=Lato:300,400,700&subset=latin,latin-ext' rel='stylesheet' type='text/css' />
+
+    <link rel="stylesheet" href="~/css/bootstrap/bootstrap.css" />
+
+    <link rel="stylesheet" href="~/admin/css/fullcalendar.css" />
+
+    <link rel="stylesheet" href="~/themes/base/theme.css" asp-append-version="true" />
+
+    <link rel="stylesheet" href="~/admin/css/admin.styles.css" asp-append-version="true" />
+    @await RenderSectionAsync("Style", required: false)
+    @Html.RenderAdminTheme()
 </head>
 <body>
-	<section class="main-nav">
-		<div class="container">
-			<div class="navbar-header">
-				<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
-					<span class="sr-only">Toggle navigation</span>
-					<span class="icon-bar"></span>
-					<span class="icon-bar"></span>
-					<span class="icon-bar"></span>
-				</button>
-				<a class="navbar-brand" asp-route="homepage">Raccoon Blog</a>
-			</div>
-			<div id="navbar" class="navbar-collapse collapse">
-				<ul class="nav navbar-nav">
-					@await Html.PartialAsync("RenderMenu", RaccoonBlog.Web.Areas.Admin.Helpers.MenuUtil.GetTopMenu(Url, Context.Request))
-				</ul>
-				<ul class="nav navbar-nav navbar-right">
-					<li><a asp-area="Admin" asp-controller="Login" asp-action="Logout"><span class="glyphicon glyphicon-user" aria-hidden="true"></span> Logout</a></li>
-				</ul>
-			</div>
-		</div>
-	</section>
-	<div class="container">
-		<section class="content">
-			@RenderBody()
-		</section>
-	</div>
-	<footer>
-		<div class="container">
-			<span class="small">Copyright © Raccoon Blog 2011 - @DateTime.Now.Year</span>
-		</div>
-	</footer>
+    <section class="main-nav">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" asp-route="homepage">Raccoon Blog</a>
+            </div>
+            <div id="navbar" class="navbar-collapse collapse">
+                <ul class="nav navbar-nav">
+                    @await Html.PartialAsync("RenderMenu", RaccoonBlog.Web.Areas.Admin.Helpers.MenuUtil.GetTopMenu(Url, Context.Request))
+                </ul>
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a asp-area="Admin" asp-controller="Login" asp-action="Logout">
+                            <span class="glyphicon glyphicon-user" aria-hidden="true"></span> Logout
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </section>
 
-	@* ASP.NET Core: Scripts from wwwroot *@
-	<script src="~/js/jquery.min.js"></script>
-	<script src="~/js/jquery-migrate.min.js"></script>
-	<script src="~/js/bootstrap.min.js"></script>
-	<script src="~/admin/js/tinymce/tinymce.min.js"></script>
-	<script src="~/js/admin/main.js"></script>
-	@await RenderSectionAsync("Script", required: false)
+    <div class="container">
+        <section class="content">
+            @RenderBody()
+        </section>
+    </div>
 
+    <footer>
+        <div class="container">
+            <span class="small">Copyright © Raccoon Blog 2011 - @DateTime.Now.Year</span>
+        </div>
+    </footer>
+
+    @* <script src="~/js/jquery-1.11.2.js" asp-append-version="true"></script>
+    <script src="~/js/bootstrap.js" asp-append-version="true"></script>
+    <script src="~/js/admin-scripts-bundle.min.js" asp-append-version="true"></script>
+
+    <script src="~/admin/js/tinymce/tinymce.min.js"></script>
+    <script src="~/js/admin.min.js" asp-append-version="true"></script>
+
+    @if (IsSectionDefined("Script"))
+    {
+        @await RenderSectionAsync("Script", required: false)
+    }
+    else if (IsSectionDefined("Scripts"))
+    {
+        @await RenderSectionAsync("Scripts", required: false)
+    } *@
+    <script src="~/js/moment.js"></script>
+    <script src="~/js/jquery-1.11.2.js" asp-append-version="true"></script>
+
+    <script src="~/admin/js/admin-scripts-bundle.min.js" asp-append-version="true"></script>
+
+    <script src="~/admin/js/tinymce/tinymce.min.js"></script>
+    <script src="~/admin/js/fullcalendar.js"></script>
+    <script src="~/js/admin.min.js" asp-append-version="true"></script>
+
+    @await RenderSectionAsync("Script", required: false)
 </body>
 </html>

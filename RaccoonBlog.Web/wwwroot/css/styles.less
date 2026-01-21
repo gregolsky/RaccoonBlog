@@ -176,16 +176,16 @@ body {
             flex-grow: 1;
         }
     }
-    
+
     h2 {
         font-weight: 600;
     }
-    
+
     .separator {
         width: 3px;
         color: @brand-primary;
     }
-    
+
     .icomoon {
         a {
             text-decoration: none;
@@ -201,7 +201,7 @@ body {
         padding: @grid-gutter-width;
         width: @leftSide-width;
     }
-    
+
     @media (min-width: @screen-lg) {
         width: @leftSide-width-lg;
     }
@@ -237,19 +237,19 @@ body {
         display: inline-block;
     }
 
-    .about-link::after {
-        content: '';
-        display: block;
-        width: 0;
-        height: 4px;
-        background: #388ee9;
-        transition: width .2s;
-    }
+        .about-link::after {
+            content: '';
+            display: block;
+            width: 0;
+            height: 4px;
+            background: #388ee9;
+            transition: width .2s;
+        }
 
-    .about-link:hover::after {
-        width: 100%;
-        //transition: width .3s;
-    }
+        .about-link:hover::after {
+            width: 100%;
+            //transition: width .3s;
+        }
 
     .about {
         display: flex;
@@ -260,6 +260,7 @@ body {
 
         .about-info {
             margin: @grid-gutter-width/2 auto;
+
             @media (min-width: @screen-sm) {
                 margin: @grid-gutter-width auto;
             }
@@ -304,6 +305,7 @@ body {
             display: none;
             width: 100%;
             height: 230px;
+            background: url(img/logo-vertical.svg) center no-repeat;
 
             h1 {
                 margin: 0;
