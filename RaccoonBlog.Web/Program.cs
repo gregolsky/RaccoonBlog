@@ -33,6 +33,7 @@ using System.Net;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using Microsoft.AspNetCore.Rewrite;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -55,8 +56,9 @@ builder.Services.AddWebOptimizer(pipeline =>
     pipeline.AddJavaScriptBundle("/js/main-bundle.min.js", "js/moment.js", "js/lib/MarkdownDeepLib.min.js", "js/utils.js", "js/raccoon-blog.js", "js/setup.js", "js/jquery.twbsPagination.js", "js/jquery.validate.js", "js/jquery.validate.unobtrusive.js");
     pipeline.AddJavaScriptBundle("/admin/js/admin-scripts-bundle.min.js", "js/bootstrap.js");
 
-    pipeline.AddLessBundle("/admin/css/admin.styles.css", "admin/css/admin.styles.less").MinifyCss();
-    pipeline.AddLessBundle("/admin/css/bootstrap/bootstrap-extend.css", "admin/css/bootstrap/bootstrap-extend.less").MinifyCss();
+    // Админка: собираем все в один файл
+    pipeline.AddLessBundle("/admin/css/admin.styles.css", "admin/css/admin.bundle.less")
+            .MinifyCss();
 
     var env = builder.Environment;
     var cssRootPath = Path.Combine(env.WebRootPath, "css");
@@ -239,6 +241,12 @@ else
 
 app.UseHttpsRedirection();
 app.UseWebOptimizer();
+
+var rewriteOptions = new RewriteOptions()
+    .AddRewrite(@"^blog/Images/(.*)", "images/$1", skipRemainingRules: true);
+
+app.UseRewriter(rewriteOptions);
+
 app.UseStaticFiles();
 
 app.UseRouting();
@@ -248,27 +256,6 @@ app.UseSession();
 
 app.UseAuthentication();
 app.UseAuthorization();
-
-// RavenDB session management per request
-//app.Use(async (context, next) =>
-//{
-//    var session = documentStore.OpenSession();
-//    context.Items["CurrentRequestRavenSession"] = session;
-
-//    try
-//    {
-//        await next();
-
-//        if (context.Response.StatusCode < 400)
-//        {
-//            session.SaveChanges();
-//        }
-//    }
-//    finally
-//    {
-//        session?.Dispose();
-//    }
-//});
 
 app.Use(async (context, next) =>
 {
