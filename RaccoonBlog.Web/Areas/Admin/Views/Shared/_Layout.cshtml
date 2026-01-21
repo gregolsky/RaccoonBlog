@@ -18,6 +18,8 @@
     <link rel="stylesheet" href="~/themes/base/theme.css" asp-append-version="true" />
 
     <link rel="stylesheet" href="~/admin/css/admin.styles.css" asp-append-version="true" />
+
+    <link rel="stylesheet" href="~/admin/datepicker/css/bootstrap-datetimepicker.css" />
     @await RenderSectionAsync("Style", required: false)
     @Html.RenderAdminTheme()
 </head>
@@ -83,6 +85,7 @@
     <script src="~/admin/js/tinymce/tinymce.min.js"></script>
     <script src="~/admin/js/fullcalendar.js"></script>
     <script src="~/js/admin.min.js" asp-append-version="true"></script>
+    <script src="~/admin/datepicker/js/bootstrap-datetimepicker.min.js"></script>
 
     @await RenderSectionAsync("Script", required: false)
 </body>

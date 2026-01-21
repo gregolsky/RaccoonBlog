@@ -260,7 +260,7 @@ app.Use(async (context, next) =>
 app.MapAreaControllerRoute(
     name: "admin",
     areaName: "Admin",
-    pattern: "Admin/{controller=Posts}/{action=Index}/{id?}");
+    pattern: "Admin/{controller=Posts}/{action=Index}/{id?}/{slug?}");
 
 app.MapControllerRoute(
     name: "default",

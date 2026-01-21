@@ -7331,7 +7331,7 @@ body.show-grid .postsList article h2 {
   padding-right: 7px;
 }
 .body-header #tags ul li .rss {
-  background: url(../img/rss.png) center no-repeat;
+  background: url(/css/img/rss.png) center no-repeat;
   background-size: cover;
   text-indent: -9999px;
   width: 20px;
@@ -7737,7 +7737,7 @@ article.article-body .related-posts .related-posts_items .related-posts_item:hov
 .show-grid .postsList .read-more {
   display: block;
   width: 100%;
-  background: url(../img/readmore.png) bottom repeat-x;
+  background: url(/css/img/readmore.png) bottom repeat-x;
   height: 100px;
   position: absolute;
   bottom: 0;

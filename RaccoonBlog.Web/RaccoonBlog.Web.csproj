@@ -32,6 +32,8 @@
     <!-- This needs to be rewritten for ASP.NET Core if XML-RPC support is required -->
     <Compile Remove="Services\MetaWeblog.cs" />
     <None Include="Services\MetaWeblog.cs" />
+    <None Include="wwwroot\images\favicon-16x16.png" />
+    <None Include="wwwroot\images\favicon-32x32.png" />
   </ItemGroup>
 
   <ItemGroup>
