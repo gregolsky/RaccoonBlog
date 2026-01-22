@@ -6,6 +6,11 @@ using System.Collections.Generic;
 
 namespace RaccoonBlog.Web.Infrastructure.Indexes
 {
+    // DISABLED: Vector Search requires RavenDB v7+ 
+    // This index uses LoadVector() which is not available in v6.0.104
+    // Temporarily disabled for .NET 8 migration compatibility
+    
+    /*
     public class Posts_ByVector : AbstractIndexCreationTask<Post, Posts_ByTag.Query>
     {
         public class Query
@@ -34,4 +39,5 @@ namespace RaccoonBlog.Web.Infrastructure.Indexes
                            };
         }
     }
+    */
 }

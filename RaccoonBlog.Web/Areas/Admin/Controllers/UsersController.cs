@@ -1,15 +1,21 @@
-using System.Linq;
-using Microsoft.AspNetCore.Mvc;
 using HibernatingRhinos.Loci.Common.Models;
+using Microsoft.AspNetCore.Mvc;
 using RaccoonBlog.Web.Infrastructure.AutoMapper;
 using RaccoonBlog.Web.Models;
 using RaccoonBlog.Web.ViewModels;
+using Raven.Client.Documents;
+using Raven.Client.Documents.Session;
+using System.Linq;
 
 namespace RaccoonBlog.Web.Areas.Admin.Controllers
 {
 	public partial class UsersController : AdminController
 	{
-		public virtual IActionResult Index()
+        public UsersController(IDocumentStore documentStore, IDocumentSession ravenSession)
+: base(documentStore, ravenSession)
+        {
+        }
+        public virtual IActionResult Index()
 		{
 			var users = RavenSession.Query<User>()
 				.OrderBy(u => u.FullName)

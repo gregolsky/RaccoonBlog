@@ -1,18 +1,24 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using RaccoonBlog.Web.Infrastructure.AutoMapper;
+using RaccoonBlog.Web.Infrastructure.Common;
 using RaccoonBlog.Web.Infrastructure.Indexes;
 using RaccoonBlog.Web.Models;
 using RaccoonBlog.Web.ViewModels;
-using RaccoonBlog.Web.Infrastructure.Common;
+using Raven.Client.Documents;
+using Raven.Client.Documents.Session;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace RaccoonBlog.Web.Controllers
 {
 	public partial class SectionController : AggresivelyCachingRacconController
 	{
-		protected override TimeSpan CacheDuration => TimeSpan.FromMinutes(6);
+        public SectionController(IDocumentStore documentStore, IDocumentSession ravenSession)
+: base(documentStore, ravenSession)
+        {
+        }
+        protected override TimeSpan CacheDuration => TimeSpan.FromMinutes(6);
 
 		// Note: ChildActionOnly attribute doesn't exist in ASP.NET Core
 		// These will become ViewComponents or regular actions

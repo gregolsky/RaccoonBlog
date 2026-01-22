@@ -5,29 +5,42 @@ using RaccoonBlog.Web.Models;
 using RaccoonBlog.Web.Services;
 using Raven.Client.Documents;
 using Raven.Client.Documents.Session;
-using Raven.TestDriver;
+using Raven.Embedded;
 using Xunit;
 
 namespace RaccoonBlog.IntegrationTests.Web.Services
 {
-	public class PostSchedulingStrategyTests : RavenTestDriver
+	public class PostSchedulingStrategyTests : IDisposable
 	{
+	    private static EmbeddedServer _embeddedServer;
+	    private static readonly object _lock = new object();
+	    
 		protected DateTimeOffset Now { get; private set; }
 		protected IDocumentStore DocumentStore { get; private set; }
 		protected IDocumentSession Session { get; private set; }
 
 		public PostSchedulingStrategyTests()
 		{
+			// Use EmbeddedServer singleton - StartServer() is called automatically on first GetDocumentStore
+			lock (_lock)
+			{
+				if (_embeddedServer == null)
+				{
+					_embeddedServer = EmbeddedServer.Instance;
+					// StartServer is called automatically by EmbeddedServer.Instance the first time
+					// DO NOT call _embeddedServer.StartServer() manually - it will throw on subsequent calls
+				}
+			}
+			
 			Now = DateTimeOffset.Now;
-		    DocumentStore = GetDocumentStore();
+		    DocumentStore = _embeddedServer.GetDocumentStore(Guid.NewGuid().ToString());
 			Session = DocumentStore.OpenSession();
 		}
 
-		public override void Dispose()
+		public virtual void Dispose()
 		{
-			Session.Dispose();
-			DocumentStore.Dispose();
-            base.Dispose();
+			Session?.Dispose();
+			DocumentStore?.Dispose();
 		}
 
 		[Fact]

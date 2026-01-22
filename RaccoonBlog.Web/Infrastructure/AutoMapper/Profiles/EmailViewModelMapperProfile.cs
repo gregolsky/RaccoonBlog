@@ -17,7 +17,12 @@ namespace RaccoonBlog.Web.Infrastructure.AutoMapper.Profiles
 				.ForMember(x => x.PostSlug, o => o.Ignore())
 				.ForMember(x => x.BlogName, o => o.Ignore())
 				.ForMember(x => x.Key, o => o.Ignore())
+				.ForMember(x => x.IpAddress, o => o.MapFrom(x => x.UserHostAddress))
+				.ForMember(x => x.UserAgent, o => o.MapFrom(x => x.UserAgent))
 				;
+
+			// Note: Commenter -> CommentInput and User -> CommentInput mappings 
+			// are in PostViewModelMapperProfile to avoid duplication
 		}
 	}
 }

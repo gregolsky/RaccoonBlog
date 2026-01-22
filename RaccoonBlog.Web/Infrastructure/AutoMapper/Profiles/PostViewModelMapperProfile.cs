@@ -40,6 +40,7 @@ namespace RaccoonBlog.Web.Infrastructure.AutoMapper.Profiles
 			CreateMap<Commenter, CommentInput>()
 				.ForMember(x => x.Body, o => o.Ignore())
 				.ForMember(x => x.CommenterKey, o => o.MapFrom(m => m.Key))
+				.ForMember(x => x.IsSpam, o => o.Ignore())
 				;
 
 			CreateMap<CommentInput, Commenter>()
@@ -55,17 +56,8 @@ namespace RaccoonBlog.Web.Infrastructure.AutoMapper.Profiles
 				.ForMember(x => x.Url, o => o.MapFrom(m => ConfigurationHelper.MainBlogUrl ?? "/"))
 				.ForMember(x => x.Body, o => o.Ignore())
 				.ForMember(x => x.CommenterKey, o => o.Ignore())
+				.ForMember(x => x.IsSpam, o => o.Ignore())
 				;
-
-			//CreateMap<UserProfile, CommentInput>()
-			//    .ForMember(x => x.Name, o => o.MapFrom(m => m.FirstName + " " + m.LastName))
-			//    .ForMember(x => x.Url, o => o.MapFrom(m => m.ProfileURL))
-			//    .ForMember(x => x.Body, o => o.Ignore())
-			//    .ForMember(x => x.CommenterKey, o => o.Ignore())
-			//    ;
-
-			// ASP.NET Core: HttpRequest mapping - simplified for now
-			// CreateMap<HttpRequestWrapper, Tasks.AddCommentTask.RequestValues>();
 
 			CreateMap<User, PostViewModel.UserDetails>();
 		}

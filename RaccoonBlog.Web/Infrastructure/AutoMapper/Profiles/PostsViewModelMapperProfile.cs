@@ -21,6 +21,7 @@ namespace RaccoonBlog.Web.Infrastructure.AutoMapper.Profiles
 				.ForMember(x => x.PublishedAt, o => o.MapFrom(m => m.PublishAt))
 				.ForMember(x=>x.Title, o => o.MapFrom(m => System.Net.WebUtility.HtmlDecode(m.Title)))
 				.ForMember(x => x.Body, o => o.MapFrom(m => m.Body))
+				.ForMember(x => x.IsSerie, o => o.MapFrom(m => m.Title.Contains(":")))
 				;
 
 			CreateMap<User, PostsViewModel.PostSummary.UserDetails>();

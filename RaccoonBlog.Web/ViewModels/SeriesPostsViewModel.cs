@@ -21,7 +21,6 @@
     {
         public SeriesInfo()
         {
-            // ASP.NET Core: Replaced Antlr.Runtime.Misc.ListStack with standard List
             PostsInSeries = new List<PostInSeries>();
         }
 

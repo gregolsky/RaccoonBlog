@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using Raven.Client.Documents;
+using Raven.Client.Documents.Session;
 
 namespace RaccoonBlog.Web.Controllers
 {
@@ -7,12 +9,12 @@ namespace RaccoonBlog.Web.Controllers
 	{
 		private readonly IConfiguration _configuration;
 
-		public SearchController(IConfiguration configuration)
-		{
+		public SearchController(IConfiguration configuration, IDocumentStore documentStore, IDocumentSession ravenSession) : base(documentStore, ravenSession)
+        {
 			_configuration = configuration;
 		}
 
-		private string GoogleCustomSearchId => _configuration["Raccoon:GoogleCustomSearch:Id"]; // ASP.NET Core: Use IConfiguration
+		private string GoogleCustomSearchId => _configuration["Raccoon:GoogleCustomSearch:Id"];
 
 		public virtual IActionResult SearchResult(string q)
 		{

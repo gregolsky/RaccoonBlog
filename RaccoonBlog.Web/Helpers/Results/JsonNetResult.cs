@@ -69,18 +69,9 @@ namespace RaccoonBlog.Web.Helpers.Results
 			if (ResponseBody != null)
 			{
 				var json = JsonConvert.SerializeObject(ResponseBody, Formatting, Settings);
-				
-				// set content encoding if specified
-				if (ContentEncoding != null)
-				{
-					var bytes = ContentEncoding.GetBytes(json);
-					await response.Body.WriteAsync(bytes, 0, bytes.Length);
-				}
-				else
-				{
-					await response.WriteAsync(json);
-				}
-			}
+
+                await response.WriteAsync(json);
+            }
 		}
 	}
 }

@@ -1,13 +1,19 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using RaccoonBlog.Web.Models;
+using Raven.Client.Documents;
+using Raven.Client.Documents.Session;
 
 namespace RaccoonBlog.Web.Controllers
 {
 	public partial class WelcomeController : RaccoonController
 	{
-		//
-		// GET: /Welcome/
-		public virtual IActionResult Index()
+        public WelcomeController(IDocumentStore documentStore, IDocumentSession ravenSession) : base(documentStore, ravenSession)
+        {
+        }
+
+        //
+        // GET: /Welcome/
+        public virtual IActionResult Index()
 		{
 			return AssertConfigurationIsNeeded() ?? View(BlogConfig.New());
 		}

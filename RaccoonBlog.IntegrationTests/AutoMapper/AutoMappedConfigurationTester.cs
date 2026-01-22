@@ -14,10 +14,8 @@ namespace RaccoonBlog.IntegrationTests.AutoMapper
 
 		public AutoMapperConfigurationTester()
 		{
-			// Configure AutoMapper using AutoMapper 12.x API
 			_configuration = new MapperConfiguration(cfg =>
 			{
-				// Add all profiles explicitly (same as in Program.cs)
 				cfg.AddProfile<AutoMapperConfiguration>();
 				cfg.AddProfile<PostViewModelMapperProfile>();
 				cfg.AddProfile<PostsViewModelMapperProfile>();
@@ -31,14 +29,12 @@ namespace RaccoonBlog.IntegrationTests.AutoMapper
 
 			_mapper = _configuration.CreateMapper();
 
-			// Initialize AutoMapperExtensions so .MapTo() extension methods work
 			AutoMapperExtensions.Initialize(_mapper);
 		}
 
 		[Fact]
 		public void AssertConfigurationIsValid()
 		{
-			// Use instance method instead of static Mapper API
 			_configuration.AssertConfigurationIsValid();
 		}
 

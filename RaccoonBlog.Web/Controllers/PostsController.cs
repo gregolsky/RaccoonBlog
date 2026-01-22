@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using RaccoonBlog.Web.Infrastructure.AutoMapper;
 using RaccoonBlog.Web.Infrastructure.AutoMapper.Profiles.Resolvers;
@@ -10,12 +7,20 @@ using RaccoonBlog.Web.Models;
 using RaccoonBlog.Web.ViewModels;
 using Raven.Client.Documents;
 using Raven.Client.Documents.Linq;
+using Raven.Client.Documents.Session;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace RaccoonBlog.Web.Controllers
 {
 	public partial class PostsController : AggresivelyCachingRacconController
 	{
-		public virtual IActionResult Index()
+        public PostsController(IDocumentStore documentStore, IDocumentSession ravenSession)
+: base(documentStore, ravenSession)
+        {
+        }
+        public virtual IActionResult Index()
 		{
 			ViewBag.IsHomePage = CurrentPage == DefaultPage;
 
@@ -51,7 +56,7 @@ namespace RaccoonBlog.Web.Controllers
 				.FirstOrDefault(x => x.SeriesId == seriesId);
 
 			if (serie == null)
-                return NotFound(); // ASP.NET Core: HttpNotFound() ? NotFound()
+                return NotFound();
 
             var posts = RavenSession.Query<Post>()
                 .Include(x => x.AuthorId)

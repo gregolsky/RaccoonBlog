@@ -1,14 +1,21 @@
-using System.Linq;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using RaccoonBlog.Web.Helpers.Attributes;
 using RaccoonBlog.Web.Models;
+using Raven.Client.Documents;
+using Raven.Client.Documents.Session;
+using System.Linq;
 
 namespace RaccoonBlog.Web.Areas.Admin.Controllers
 {
 	public partial class SectionsController : AdminController
 	{
-		public virtual IActionResult Index()
+        public SectionsController(IDocumentStore documentStore, IDocumentSession ravenSession)
+        : base(documentStore, ravenSession)
+        {
+        }
+
+        public virtual IActionResult Index()
 		{
 			var sections = RavenSession.Query<Section>()
 				.OrderBy(x => x.Position)
@@ -43,9 +50,6 @@ namespace RaccoonBlog.Web.Areas.Admin.Controllers
 
 			section.IsActive = activate;
 
-			// ASP.NET Core: Cache invalidation moved to separate service
-			// OutputCacheManager.RemoveItems("Section");
-
 			return StatusCode(StatusCodes.Status200OK);
 		}
 
@@ -65,9 +69,6 @@ namespace RaccoonBlog.Web.Areas.Admin.Controllers
 			}
 			RavenSession.Store(section);
 
-			// ASP.NET Core: Cache invalidation moved to separate service
-			// OutputCacheManager.RemoveItems("Section");
-
 			return RedirectToAction("Index");
 		}
 
@@ -81,10 +82,7 @@ namespace RaccoonBlog.Web.Areas.Admin.Controllers
 
 			RavenSession.Delete(section);
 
-			// ASP.NET Core: Cache invalidation moved to separate service
-			// OutputCacheManager.RemoveItems("Section");
-
-			if (Request.Headers["X-Requested-With"] == "XMLHttpRequest") // ASP.NET Core: IsAjaxRequest() replacement
+			if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
 			{
 				return Json(new { Success = true });
 			}
@@ -129,9 +127,6 @@ namespace RaccoonBlog.Web.Areas.Admin.Controllers
 			}
 
 			section.Position = newPosition;
-
-			// ASP.NET Core: Cache invalidation moved to separate service
-			// OutputCacheManager.RemoveItems("Section");
 
 			return Json(new { success = true });
 		}

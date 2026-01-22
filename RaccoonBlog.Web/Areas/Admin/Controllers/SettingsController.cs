@@ -1,20 +1,26 @@
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using RaccoonBlog.Web.Areas.Admin.Models;
 using RaccoonBlog.Web.Areas.Admin.ViewModels;
 using RaccoonBlog.Web.Helpers;
 using RaccoonBlog.Web.Models;
 using RaccoonBlog.Web.Models.SocialNetwork;
+using Raven.Client.Documents;
 using Raven.Client.Documents.Operations;
 using Raven.Client.Documents.Queries;
 using Raven.Client.Documents.Session;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace RaccoonBlog.Web.Areas.Admin.Controllers
 {
     public partial class SettingsController : AdminController
     {
+        public SettingsController(IDocumentStore documentStore, IDocumentSession ravenSession)
+        : base(documentStore, ravenSession)
+        {
+        }
+
         [HttpGet]
         public virtual IActionResult Index()
         {
@@ -28,7 +34,7 @@ namespace RaccoonBlog.Web.Areas.Admin.Controllers
             if (ModelState.IsValid == false)
             {
                 ViewBag.Message = ModelState.FirstErrorMessage();
-                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest") // ASP.NET Core: IsAjaxRequest() replacement
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
                     return Json(new { Success = false, ViewBag.Message });
                 return View(BlogConfig);
             }
@@ -43,11 +49,8 @@ namespace RaccoonBlog.Web.Areas.Admin.Controllers
             RavenSession.Store(config, BlogConfig.Key);
             RavenSession.SaveChanges();
 
-            // ASP.NET Core: Cache invalidation moved to separate service
-            // OutputCacheManager.RemoveItem("Section", "ContactMe");
-
             ViewBag.Message = "Configurations successfully saved!";
-            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest") // ASP.NET Core: IsAjaxRequest() replacement
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
                 return Json(new { Success = true, ViewBag.Message });
             return View(config);
         }
@@ -89,7 +92,7 @@ namespace RaccoonBlog.Web.Areas.Admin.Controllers
             postSubmission.Status = null;
             postSubmission.Attempts = 0;
             RavenSession.SaveChanges();
-            return RedirectToAction("RedditSubmission"); // ASP.NET Core: Direct action name instead of T4MVC
+            return RedirectToAction("RedditSubmission");
         }
 
         private async Task<RedditManualSubmissionViewModel> PrepareRedditManualSubmissionViewModel()

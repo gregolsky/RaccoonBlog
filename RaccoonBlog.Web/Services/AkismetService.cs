@@ -1,99 +1,100 @@
-using System;
 using Joel.Net;
+using Microsoft.Extensions.Configuration;
 using RaccoonBlog.Web.Controllers;
 using RaccoonBlog.Web.Helpers;
 using RaccoonBlog.Web.Models;
+using Raven.Client.Documents;
+using Raven.Client.Documents.Session;
+using System;
+using System.Threading.Tasks;
 
 namespace RaccoonBlog.Web.Services
 {
-	public static class AkismetService
-	{
-		private static string akismetKey;
-		private static string AkismetKey
-		{
-			get
-			{
-				if (string.IsNullOrWhiteSpace(akismetKey))
-				{
-					using (var session = RaccoonController.DocumentStore.OpenSession())
-					{
-						akismetKey = session.Load<BlogConfig>(BlogConfig.Key).AkismetKey;
-					}
-				}
-				return akismetKey;
-			}
-		}
+    public interface IAkismetService
+    {
+        bool CheckForSpam(PostComments.Comment comment);
+        void MarkHam(PostComments.Comment comment);
+        void MarkSpam(PostComments.Comment comment);
+    }
 
-		private static string BlogUrl
-		{
-			get { return ConfigurationHelper.MainBlogUrl; }
-		}
+    public class AkismetService : IAkismetService
+    {
+        private readonly IDocumentSession _session;
+        private readonly IConfiguration _configuration;
 
-		public static bool CheckForSpam(PostComments.Comment comment)
-		{
+        public AkismetService(IDocumentSession session, IConfiguration configuration)
+        {
+            _session = session;
+            _configuration = configuration;
+        }
+
+        private string AkismetKey => _session.Load<BlogConfig>(BlogConfig.Key)?.AkismetKey;
+
+        private string BlogUrl => _configuration["MainBlogUrl"];
+
+        public bool CheckForSpam(PostComments.Comment comment)
+        {
 #if DEBUG 
-			return false;
+            return false;
 #endif
-			var api = new Akismet(AkismetKey, BlogUrl, comment.UserAgent);
-			if (!api.VerifyKey()) throw new Exception("Akismet API key invalid.");
+            var api = new Akismet(AkismetKey, BlogUrl, comment.UserAgent);
+            if (!api.VerifyKey()) throw new Exception("Akismet API key invalid.");
 
-			var akismetComment = new AkismetComment
-			{
-				Blog = BlogUrl,
-				UserIp = comment.UserHostAddress,
-				UserAgent = comment.UserAgent,
-				CommentContent = comment.Body,
-				CommentType = "comment",
-				CommentAuthor = comment.Author,
-				CommentAuthorEmail = comment.Email,
-				CommentAuthorUrl = comment.Url,
-			};
+            var akismetComment = new AkismetComment
+            {
+                Blog = BlogUrl,
+                UserIp = comment.UserHostAddress,
+                UserAgent = comment.UserAgent,
+                CommentContent = comment.Body,
+                CommentType = "comment",
+                CommentAuthor = comment.Author,
+                CommentAuthorEmail = comment.Email,
+                CommentAuthorUrl = comment.Url,
+            };
 
-			//Check if Akismet thinks this comment is spam. Returns TRUE if spam.
-			return api.CommentCheck(akismetComment);
-		}
+            return api.CommentCheck(akismetComment);
+        }
 
-		public static void MarkHam(PostComments.Comment comment)
-		{
-			var api = new Akismet(AkismetKey, BlogUrl, comment.UserAgent);
-			if (!api.VerifyKey()) throw new Exception("Akismet API key invalid.");
+        public void MarkHam(PostComments.Comment comment)
+        {
+            var api = new Akismet(AkismetKey, BlogUrl, comment.UserAgent);
+            if (!api.VerifyKey()) throw new Exception("Akismet API key invalid.");
 
-			var akismetComment = new AkismetComment
-			{
-				Blog = BlogUrl,
-				UserIp = comment.UserHostAddress,
-				UserAgent = comment.UserAgent,
-				CommentContent = comment.Body,
-				CommentType = "comment",
-				CommentAuthor = comment.Author,
-				CommentAuthorEmail = comment.Email,
-				CommentAuthorUrl = comment.Url,
-			};
+            var akismetComment = new AkismetComment
+            {
+                Blog = BlogUrl,
+                UserIp = comment.UserHostAddress,
+                UserAgent = comment.UserAgent,
+                CommentContent = comment.Body,
+                CommentType = "comment",
+                CommentAuthor = comment.Author,
+                CommentAuthorEmail = comment.Email,
+                CommentAuthorUrl = comment.Url,
+            };
 #if !DEBUG
-			api.SubmitHam(akismetComment);
+            api.SubmitHam(akismetComment);
 #endif
-		}
+        }
 
-		public static void MarkSpam(PostComments.Comment comment)
-		{
-			var api = new Akismet(AkismetKey, BlogUrl, comment.UserAgent);
-			if (!api.VerifyKey()) throw new Exception("Akismet API key invalid.");
+        public void MarkSpam(PostComments.Comment comment)
+        {
+            var api = new Akismet(AkismetKey, BlogUrl, comment.UserAgent);
+            if (!api.VerifyKey()) throw new Exception("Akismet API key invalid.");
 
-			var akismetComment = new AkismetComment
-			{
-				Blog = BlogUrl,
-				UserIp = comment.UserHostAddress,
-				UserAgent = comment.UserAgent,
-				CommentContent = comment.Body,
-				CommentType = "comment",
-				CommentAuthor = comment.Author,
-				CommentAuthorEmail = comment.Email,
-				CommentAuthorUrl = comment.Url,
-			};
-
+            var akismetComment = new AkismetComment
+            {
+                Blog = BlogUrl,
+                UserIp = comment.UserHostAddress,
+                UserAgent = comment.UserAgent,
+                CommentContent = comment.Body,
+                CommentType = "comment",
+                CommentAuthor = comment.Author,
+                CommentAuthorEmail = comment.Email,
+                CommentAuthorUrl = comment.Url,
+            };
 #if !DEBUG
-			api.SubmitSpam(akismetComment);
+            api.SubmitSpam(akismetComment);
 #endif
-		}
-	}
+        }
+    }
 }

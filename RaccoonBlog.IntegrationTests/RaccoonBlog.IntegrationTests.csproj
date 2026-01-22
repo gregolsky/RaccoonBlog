@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
@@ -8,15 +8,8 @@
     <TargetFramework>net8.0</TargetFramework>
     <IsPackable>false</IsPackable>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <IsTestProject>true</IsTestProject>
   </PropertyGroup>
-  
-  <!-- Exclude .NET Framework-dependent code that uses System.Web, RhinoMocks, etc. -->
-  <ItemGroup>
-    <Compile Remove="Routing\**" />
-    <Compile Remove="Web\**" />
-    <None Include="Routing\**" />
-    <None Include="Web\**" />
-  </ItemGroup>
   
   <ItemGroup>
     <ProjectReference Include="..\RaccoonBlog.Web\RaccoonBlog.Web.csproj" />
@@ -27,15 +20,25 @@
   </ItemGroup>
   
   <ItemGroup>
+    <!-- Test SDK - REQUIRED for test discovery and execution -->
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
+    
+    <!-- ASP.NET Core Testing packages -->
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.11" />
+    <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="8.0.11" />
+    
     <!-- Keep compatible packages -->
     <PackageReference Include="AutoMapper" Version="12.0.1" />
     <PackageReference Include="HtmlAgilityPack" Version="1.6.16" />
-    <PackageReference Include="RavenDB.Client" Version="7.1.0-rc-71000" />
-    <PackageReference Include="RavenDB.TestDriver" Version="6.0.104" />
-    <PackageReference Include="xunit" Version="2.4.0" />
-    <PackageReference Include="xunit.analyzers" Version="0.10.0" />
-    <PackageReference Include="xunit.core" Version="2.4.0" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.5">
+    
+    <!-- RavenDB packages - ALL v6.0.104 for compatibility -->
+    <PackageReference Include="RavenDB.Client" Version="6.0.104" />
+    <PackageReference Include="RavenDB.Embedded" Version="6.0.104" />
+    
+    <!-- Updated xunit packages for .NET 8 compatibility -->
+    <PackageReference Include="xunit" Version="2.9.2" />
+    <PackageReference Include="xunit.analyzers" Version="1.16.0" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>

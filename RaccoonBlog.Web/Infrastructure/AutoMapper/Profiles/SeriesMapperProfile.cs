@@ -22,6 +22,7 @@ namespace RaccoonBlog.Web.Infrastructure.AutoMapper.Profiles
             CreateMap<Posts_Series.Result, SeriesInfo>()
                 .ForMember(x => x.SeriesTitle, o => o.MapFrom(x => x.Series))
                 .ForMember(x => x.PostsInSeries, o => o.Ignore())
+                .ForMember(x => x.SeriesSlug, o => o.MapFrom(x => SlugConverter.TitleToSlug(x.Series)))
                 ;
         }
     }

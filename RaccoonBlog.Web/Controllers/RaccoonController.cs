@@ -17,16 +17,21 @@ namespace RaccoonBlog.Web.Controllers
 {
     public abstract partial class RaccoonController : Controller
     {
-        public static IDocumentStore DocumentStore { get; set; }
+        protected IDocumentStore DocumentStore { get; }
+        protected IDocumentSession RavenSession { get; }
 
-        public IDocumentSession RavenSession { get; set; }
+        protected RaccoonController(IDocumentStore documentStore, IDocumentSession ravenSession)
+        {
+            DocumentStore = documentStore;
+            RavenSession = ravenSession;
+        }
 
         protected StatusCodeResult HttpNotModified()
         {
             return StatusCode(304);
         }
 
-        protected IActionResult Xml(XDocument xml, string etag) // ASP.NET Core: ActionResult ? IActionResult
+        protected IActionResult Xml(XDocument xml, string etag)
         {
             return new XmlResult(xml, etag);
         }
@@ -75,7 +80,6 @@ namespace RaccoonBlog.Web.Controllers
         public override void OnActionExecuting(ActionExecutingContext filterContext)
         {
             ViewBag.IsHomePage = false;
-            RavenSession = HttpContext.RequestServices.GetRequiredService<IDocumentSession>();
             base.OnActionExecuting(filterContext);
         }
 
@@ -96,9 +100,7 @@ namespace RaccoonBlog.Web.Controllers
         {
             get
             {
-                var s = Request.Query["page"].ToString();
-                int result;
-                if (int.TryParse(s, out result))
+                if (int.TryParse(Request.Query["page"], out var result))
                     return Math.Max(DefaultPage, result);
                 return DefaultPage;
             }

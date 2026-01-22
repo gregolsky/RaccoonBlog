@@ -1,13 +1,18 @@
-using System;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Raven.Client.Documents;
+using Raven.Client.Documents.Session;
+using System;
 
 namespace RaccoonBlog.Web.Controllers
 {
 	public abstract partial class AggresivelyCachingRacconController : RaccoonController
 	{
 		IDisposable aggressivelyCacheFor;
-
-		public override void OnActionExecuting(ActionExecutingContext filterContext)
+        public AggresivelyCachingRacconController(IDocumentStore documentStore, IDocumentSession ravenSession)
+: base(documentStore, ravenSession)
+        {
+        }
+        public override void OnActionExecuting(ActionExecutingContext filterContext)
 		{
 			base.OnActionExecuting(filterContext);
 

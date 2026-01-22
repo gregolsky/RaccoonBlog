@@ -1,15 +1,16 @@
-using System;
-using Microsoft.AspNetCore.Mvc;
-using System.Linq;
-using System.Xml.Linq;
 using HibernatingRhinos.Loci.Common.Models;
+using Microsoft.AspNetCore.Mvc;
 using NLog;
-using RaccoonBlog.Web.Infrastructure.AutoMapper.Profiles.Resolvers;
-using RaccoonBlog.Web.Models;
-using RaccoonBlog.Web.Infrastructure.Common;
 using RaccoonBlog.Web.Helpers;
+using RaccoonBlog.Web.Infrastructure.AutoMapper.Profiles.Resolvers;
+using RaccoonBlog.Web.Infrastructure.Common;
+using RaccoonBlog.Web.Models;
+using Raven.Client.Documents;
 using Raven.Client.Documents.Linq;
 using Raven.Client.Documents.Session;
+using System;
+using System.Linq;
+using System.Xml.Linq;
 
 namespace RaccoonBlog.Web.Controllers
 {
@@ -18,7 +19,9 @@ namespace RaccoonBlog.Web.Controllers
         private static Logger _log = LogManager.GetCurrentClassLogger();
 
         private static readonly string EtagInitValue = Guid.NewGuid().ToString();
-
+        public SyndicationController(IDocumentStore documentStore, IDocumentSession ravenSession) : base(documentStore, ravenSession)
+        {
+        }
         public virtual IActionResult Rsd()
         {
             var ns = XNamespace.Get("http://archipelago.phrasewise.com/rsd");
@@ -27,13 +30,13 @@ namespace RaccoonBlog.Web.Controllers
                         new XElement(ns + "service",
                                      new XElement(ns + "engineName", "Raccoon Blog"),
                                      new XElement(ns + "engineLink", "http://hibernatingrhinos.com"),
-                                     new XElement(ns + "homePageLink", Url.RelativeToAbsolute(Request, Url.RouteUrl("homepage"))), // ASP.NET Core: Add Request parameter
+                                     new XElement(ns + "homePageLink", Url.RelativeToAbsolute(Request, Url.RouteUrl("homepage"))),
                                      new XElement(ns + "apis",
                                                   new XElement(ns + "api",
                                                                new XAttribute("name", "MetaWeblog"),
                                                                new XAttribute("preferred", "true"),
                                                                new XAttribute("blogID", "0"),
-                                                               new XAttribute("apiLink", Url.RelativeToAbsolute(Request, Url.Content("~/services/metaweblogapi.ashx"))) // ASP.NET Core: Add Request parameter
+                                                               new XAttribute("apiLink", Url.RelativeToAbsolute(Request, Url.Content("~/services/metaweblogapi.ashx")))
                                                     )
                                         )
                             )
@@ -82,14 +85,14 @@ namespace RaccoonBlog.Web.Controllers
                              new XAttribute("version", "2.0"),
                              new XElement("channel",
                                           new XElement("title", queryBehavior.Title),
-                                          new XElement("link", Url.RelativeToAbsolute(Request, Url.RouteUrl("homepage"))), // ASP.NET Core: Add Request parameter
+                                          new XElement("link", Url.RelativeToAbsolute(Request, Url.RouteUrl("homepage"))),
                                           new XElement("description", BlogConfig.MetaDescription ?? queryBehavior.Title),
                                           new XElement("copyright", String.Format("{0} (c) {1}", BlogConfig.Copyright, DateTime.Now.Year)),
                                           new XElement("ttl", "60"),
                                           from post in posts
                                           let postLink = GetPostLink(post)
                                           select new XElement("item",
-                                                              new XElement("title", System.Net.WebUtility.HtmlDecode(post.Title)), // ASP.NET Core: Server.HtmlDecode ? WebUtility.HtmlDecode
+                                                              new XElement("title", System.Net.WebUtility.HtmlDecode(post.Title)),
                                                               new XElement("description", post.CompiledContent(true)),
                                                               new XElement("link", postLink),
                                                                 new XElement("guid", postLink),
@@ -137,8 +140,8 @@ namespace RaccoonBlog.Web.Controllers
         private string GetPostLink(Post post)
         {
             if (post.Id == null) // invalid feed
-                return Url.AbsoluteAction(Request, "Index", "Posts"); // ASP.NET Core: Add Request parameter
-            return Url.AbsoluteAction(Request, "Details", "PostDetails", new { Id = post.GetIdForUrl(), Slug = SlugConverter.TitleToSlug(post.Title), Key = post.ShowPostEvenIfPrivate }); // ASP.NET Core: Add Request parameter
+                return Url.AbsoluteAction(Request, "Index", "Posts");
+            return Url.AbsoluteAction(Request, "Details", "PostDetails", new { Id = post.GetIdForUrl(), Slug = SlugConverter.TitleToSlug(post.Title), Key = post.ShowPostEvenIfPrivate });
         }
 
 
@@ -186,14 +189,14 @@ namespace RaccoonBlog.Web.Controllers
                          new XAttribute("version", "2.0"),
                          new XElement("channel",
                                       new XElement("title", BlogConfig.Title),
-                                      new XElement("link", Url.RelativeToAbsolute(Request, Url.RouteUrl("homepage"))), // ASP.NET Core: Add Request parameter
+                                      new XElement("link", Url.RelativeToAbsolute(Request, Url.RouteUrl("homepage"))),
                                       new XElement("description", BlogConfig.MetaDescription ?? BlogConfig.Title),
                                       new XElement("copyright", String.Format("{0} (c) {1}", BlogConfig.Copyright, DateTime.Now.Year)),
                                       new XElement("ttl", "60"),
                                       from commentsTuple in commentsTuples
                                       let comment = commentsTuple.Item1
                                       let post = commentsTuple.Item2
-                                      let link = Url.AbsoluteAction(Request, "Details", "PostDetails", new { Id = post.GetIdForUrl(), Slug = SlugConverter.TitleToSlug(post.Title) }) + "#comment" + comment.Id // ASP.NET Core: Add Request parameter
+                                      let link = Url.AbsoluteAction(Request, "Details", "PostDetails", new { Id = post.GetIdForUrl(), Slug = SlugConverter.TitleToSlug(post.Title) }) + "#comment" + comment.Id
                                       select new XElement("item",
                                                           new XElement("title", comment.Author + " commented on " + post.Title),
                                                           new XElement("description", comment.Body),
@@ -211,7 +214,7 @@ namespace RaccoonBlog.Web.Controllers
 
         private bool CheckEtag(QueryStatistics stats, out string responseETagHeader)
         {
-            string requestETagHeader = Request.Headers["If-None-Match"].ToString() ?? string.Empty; // ASP.NET Core: StringValues ? string
+            string requestETagHeader = Request.Headers["If-None-Match"].ToString() ?? string.Empty;
             responseETagHeader = stats.Timestamp.ToString("o") + EtagInitValue;
             return requestETagHeader == responseETagHeader;
         }

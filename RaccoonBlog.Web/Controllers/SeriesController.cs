@@ -1,15 +1,21 @@
 ﻿namespace RaccoonBlog.Web.Controllers
 {
+    using Microsoft.AspNetCore.Mvc;
+    using Microsoft.Extensions.Configuration;
     using RaccoonBlog.Web.Infrastructure.AutoMapper;
     using RaccoonBlog.Web.Infrastructure.Common;
     using RaccoonBlog.Web.Infrastructure.Indexes;
-    using ViewModels;
+    using Raven.Client.Documents;
+    using Raven.Client.Documents.Session;
     using System.Linq;
-    using Microsoft.AspNetCore.Mvc;
+    using ViewModels;
 
 	public partial class SeriesController : RaccoonController
     {
-		public virtual IActionResult PostsSeries()
+        public SeriesController(IDocumentStore documentStore, IDocumentSession ravenSession) : base(documentStore, ravenSession)
+        {
+        }
+        public virtual IActionResult PostsSeries()
         {
             var series = RavenSession.Query<Posts_Series.Result, Posts_Series>()
                 .Statistics(out var stats)

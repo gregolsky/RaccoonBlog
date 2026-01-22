@@ -4,22 +4,27 @@
 //  </copyright>
 // -----------------------------------------------------------------------
 
-using System;
-using System.Linq;
-using System.Security.Claims;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RaccoonBlog.Web.Helpers;
 using RaccoonBlog.Web.Infrastructure.AutoMapper;
 using RaccoonBlog.Web.Models;
+using Raven.Client.Documents;
+using Raven.Client.Documents.Session;
+using System;
+using System.Linq;
+using System.Security.Claims;
+using System.Threading.Tasks;
 
 namespace RaccoonBlog.Web.Controllers
 {
 	public partial class SocialController : RaccoonController
 	{
-		public virtual IActionResult Login(string provider, string redirectUrl)
+        public SocialController(IDocumentStore documentStore, IDocumentSession ravenSession) : base(documentStore, ravenSession)
+        {
+        }
+        public virtual IActionResult Login(string provider, string redirectUrl)
 		{
 			// Request a redirect to the external login provider
 			var properties = new AuthenticationProperties
@@ -29,7 +34,7 @@ namespace RaccoonBlog.Web.Controllers
 			return Challenge(properties, provider);
 		}
 
-		private const string XsrfKey = "XsrfId"; // ASP.NET Core: XSRF key for potential future use
+		private const string XsrfKey = "XsrfId";
 
 		private static void SetCommenterValuesFromResponse(ClaimsPrincipal principal, Commenter commenter)
 		{

@@ -14,7 +14,7 @@ namespace RaccoonBlog.Web.Controllers
             HttpContext.Response.StatusCode = ViewBag.ErrorCode = 500;
             ViewBag.ErrorMessage = "error";
 
-            return View("Error"); // ASP.NET Core: Direct view name instead of T4MVC
+            return View("Error");
         }
 
         [HttpGet]
@@ -29,7 +29,7 @@ namespace RaccoonBlog.Web.Controllers
             HttpContext.Response.StatusCode = ViewBag.ErrorCode = 404;
             ViewBag.ErrorMessage = "not found";
 
-            return View("Error"); // ASP.NET Core: Direct view name instead of T4MVC
+            return View("Error");
         }
     }
 }

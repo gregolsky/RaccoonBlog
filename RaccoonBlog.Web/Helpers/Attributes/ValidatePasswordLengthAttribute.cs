@@ -29,7 +29,6 @@ namespace RaccoonBlog.Web.Helpers.Attributes
 			return (valueAsString != null && valueAsString.Length >= _minCharacters);
 		}
 
-		// ASP.NET Core: IClientValidatable ? IClientModelValidator
 		public void AddValidation(ClientModelValidationContext context)
 		{
 			if (context == null)

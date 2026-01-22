@@ -33,3 +33,6 @@ using System.Runtime.InteropServices;
 // by using the '*' as shown below:
 [assembly: AssemblyVersion("2.0.0.0")]
 [assembly: AssemblyFileVersion("2.0.0.0")]
+
+// Make internal types visible to test assembly for WebApplicationFactory<Program>
+[assembly: InternalsVisibleTo("RaccoonBlog.IntegrationTests")]

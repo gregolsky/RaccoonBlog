@@ -30,27 +30,6 @@ namespace RaccoonBlog.Web.Helpers
 			return true;
 		}
 
-		public static IHtmlContent RenderSection(this IHtmlHelper helper, string sectionTitle)
-		{
-			var sections = helper.ViewBag.Sections as List<Section>;
-			if (sections == null)
-				return null;
-
-			var section = sections.FirstOrDefault(x => string.Equals(x.Title, sectionTitle, StringComparison.OrdinalIgnoreCase) && x.IsActive);
-			if (section == null)
-				return null;
-
-			// ASP.NET Core Note: Html.Action() has been removed
-			// Section actions should be rendered using ViewComponents or PartialViews instead
-			// For now, just render the body content if available
-			if (string.IsNullOrEmpty(section.Body) == false)
-				return new HtmlString(section.Body);
-
-			// TODO: Convert section actions to ViewComponents
-			// Example: return await helper.PartialAsync($"Section/{section.ControllerName}/{section.ActionName}");
-			return HtmlString.Empty;
-		}
-
 		public static string ConvertSectionTitleToId(this IHtmlHelper helper, string sectionTitle)
 		{
 			if (string.IsNullOrEmpty(sectionTitle))

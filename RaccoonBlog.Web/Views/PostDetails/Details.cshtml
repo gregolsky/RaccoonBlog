@@ -8,6 +8,8 @@
     ViewBag.CurrentUrl = Url.Action("Details", new { Model.Post.Id, Model.Post.Slug });
 }
 
+@inject RaccoonBlog.Web.Helpers.Recaptcha2Helper Recaptcha2Helper
+
 @section HeaderAdditions
 {
     @{

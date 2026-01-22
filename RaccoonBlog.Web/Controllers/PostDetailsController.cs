@@ -1,9 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+using HibernatingRhinos.Loci.Common.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using NLog;
 using RaccoonBlog.Web.Helpers;
 using RaccoonBlog.Web.Infrastructure.AutoMapper;
@@ -14,7 +11,12 @@ using RaccoonBlog.Web.Infrastructure.Tasks;
 using RaccoonBlog.Web.Models;
 using RaccoonBlog.Web.ViewModels;
 using Raven.Client.Documents;
-using HibernatingRhinos.Loci.Common.Tasks;
+using Raven.Client.Documents.Linq;
+using Raven.Client.Documents.Session;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace RaccoonBlog.Web.Controllers
 {
@@ -22,10 +24,12 @@ namespace RaccoonBlog.Web.Controllers
     {
         private static Logger _log = LogManager.GetCurrentClassLogger();
         private readonly IServiceProvider _serviceProvider;
+        private readonly Recaptcha2Helper _recaptcha2Helper;
 
-        public PostDetailsController(IServiceProvider serviceProvider)
+        public PostDetailsController(IServiceProvider serviceProvider, IDocumentStore documentStore, IDocumentSession ravenSession, Recaptcha2Helper recaptcha2Helper) : base(documentStore, ravenSession)
         {
             _serviceProvider = serviceProvider;
+            _recaptcha2Helper = recaptcha2Helper;
         }
 
         public virtual IActionResult Details(string id, string slug, Guid key)
@@ -43,12 +47,17 @@ namespace RaccoonBlog.Web.Controllers
 
             SeriesInfo seriesInfo = GetSeriesInfo(post.Title);
 
-            var related = RavenSession.Query<Posts_ByVector.Query, Posts_ByVector>()
-                .Where(p => p.PublishAt < DateTimeOffset.Now.AsMinutes())
-                .VectorSearch(x => x.WithField(p => p.Vector), x => x.ForDocument(post.Id))
+            var nowAsMinutes = DateTimeOffset.Now.AsMinutes();
+            var tagsToSearch = post.Tags ?? Array.Empty<string>();
+
+            var related = RavenSession.Query<Posts_ByTag.Query, Posts_ByTag>()
+                .Where(p => p.PublishAt < nowAsMinutes && p.Tags.ContainsAny(tagsToSearch))
+                .OrderByDescending(p => p.PublishAt)
+                .Take(10)
+                .Select(p => new PostReference { Id = p.Id, Title = p.Title, PublishedAt = p.PublishAt, Tags = p.Tags })
+                .ToList()
+                .Where(p => p.Id != post.Id)
                 .Take(3)
-                .Skip(1) // skip the current post, always the best match :-)
-                .Select(p => new PostReference { Id = p.Id, Title = p.Title, PublishedAt = p.PublishAt, Tags = p.Tags})
                 .ToList();
 
             var comments = RavenSession.Load<PostComments>(post.CommentsId) ?? new PostComments();
@@ -74,7 +83,6 @@ namespace RaccoonBlog.Web.Controllers
                 var newCommentEmailHash = EmailHashResolver.Resolve(comment.Email);
                 var newCommentContent = MarkdownResolver.Resolve(comment.Body);
                 
-                // ASP.NET Core: Convert IHtmlContent to string for comparison
                 var newCommentContentString = newCommentContent ?? string.Empty;
                 
                 if (vm.Comments.Any(x =>
@@ -104,14 +112,14 @@ namespace RaccoonBlog.Web.Controllers
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken] // ASP.NET Core: Add CSRF protection
+        [ValidateAntiForgeryToken]
         public virtual async Task<IActionResult> Comment(CommentInput input, string id, Guid key)
         {
             if (ModelState.IsValid == false)
                 return RedirectToAction("Details");
 
             if (IsIpAddressBlocked())
-                return StatusCode(StatusCodes.Status402PaymentRequired); // ASP.NET Core: HttpStatusCodeResult ? StatusCode
+                return StatusCode(StatusCodes.Status402PaymentRequired);
 
             var post = RavenSession
                 .Include<Post>(x => x.CommentsId)
@@ -127,7 +135,7 @@ namespace RaccoonBlog.Web.Controllers
             var commenter = RavenSession.GetCommenter(input.CommenterKey);
             if (commenter == null)
             {
-                input.CommenterKey = Guid.NewGuid().ToString(); // ASP.NET Core: Convert Guid to string
+                input.CommenterKey = Guid.NewGuid().ToString();
             }
 
             ValidateCommentsAllowed(post, comments);
@@ -139,17 +147,14 @@ namespace RaccoonBlog.Web.Controllers
             // Pass IServiceProvider to AddCommentTask for DI access
             TaskExecutor.ExcuteLater(new AddCommentTask(input, Request.MapTo<AddCommentTask.RequestValues>(), id, _serviceProvider));
 
-            CommenterUtil.SetCommenterCookie(Response, input.CommenterKey); // ASP.NET Core: Already a string
-
-            // ASP.NET Core: Cache invalidation moved to separate service
-            // OutputCacheManager.RemoveItem(SectionController.NameConst, "List");
+            CommenterUtil.SetCommenterCookie(Response, input.CommenterKey);
 
             return PostingCommentSucceeded(post, input);
         }
 
         private bool IsIpAddressBlocked()
         {
-            var ip = HttpContext.Connection.RemoteIpAddress?.ToString(); // ASP.NET Core: Request.UserHostAddress ? Connection.RemoteIpAddress
+            var ip = HttpContext.Connection.RemoteIpAddress?.ToString();
 
             var blacklistId = BlackList.GetId(ip);
 
@@ -160,7 +165,7 @@ namespace RaccoonBlog.Web.Controllers
         private IActionResult PostingCommentSucceeded(Post post, CommentInput input)
         {
             const string successMessage = "Your comment will be posted soon. Thanks!";
-            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest") // ASP.NET Core: IsAjaxRequest() replacement
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
                 return Json(new { Success = true, message = successMessage });
 
             TempData["new-comment"] = input;
@@ -180,16 +185,16 @@ namespace RaccoonBlog.Web.Controllers
 
         private async Task ValidateCaptcha(CommentInput input, Commenter commenter)
         {
-            if (User.Identity.IsAuthenticated || // ASP.NET Core: Request.IsAuthenticated ? User.Identity.IsAuthenticated
+            if (User.Identity.IsAuthenticated ||
                 (commenter != null && commenter.IsTrustedCommenter == true))
                 return;
 
-            await Recaptcha2Helper.Validate(ModelState).ConfigureAwait(false);
+            await _recaptcha2Helper.Validate(ModelState).ConfigureAwait(false);
         }
 
         private IActionResult PostingCommentFailed(Post post, CommentInput input, Guid key)
         {
-            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest") // ASP.NET Core: IsAjaxRequest() replacement
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
                 return Json(new { Success = false, message = ModelState.FirstErrorMessage() });
 
             var postReference = post.MapTo<PostReference>();
@@ -206,7 +211,7 @@ namespace RaccoonBlog.Web.Controllers
 
         private void SetWhateverUserIsTrustedCommenter(PostViewModel vm)
         {
-            if (User.Identity.IsAuthenticated) // ASP.NET Core: Request.IsAuthenticated ? User.Identity.IsAuthenticated
+            if (User.Identity.IsAuthenticated)
             {
                 var user = RavenSession.GetCurrentUser(User);
                 vm.Input = user.MapTo<CommentInput>();
@@ -215,7 +220,6 @@ namespace RaccoonBlog.Web.Controllers
                 return;
             }
 
-            // ASP.NET Core: Cookie handling updated
             if (Request.Cookies.TryGetValue(CommenterUtil.CommenterCookieName, out var cookieValue))
             {
                 _log.Debug("Cookie '" + CommenterUtil.CommenterCookieName + "': " + cookieValue);
@@ -225,7 +229,7 @@ namespace RaccoonBlog.Web.Controllers
                 {
                     _log.Debug("Could not find commenter for '" + CommenterUtil.CommenterCookieName + "': " + cookieValue);
                     vm.IsLoggedInCommenter = false;
-                    Response.Cookies.Delete(CommenterUtil.CommenterCookieName); // ASP.NET Core: Cookie deletion
+                    Response.Cookies.Delete(CommenterUtil.CommenterCookieName);
                     return;
                 }
 
@@ -276,7 +280,7 @@ namespace RaccoonBlog.Web.Controllers
                     {
                         Id = Post.GetIdForUrl(s.Id),
                         Slug = SlugConverter.TitleToSlug(s.Title),
-                        Title = System.Net.WebUtility.HtmlDecode(TitleConverter.ToPostTitle(s.Title)), // ASP.NET Core: HttpUtility ? WebUtility
+                        Title = System.Net.WebUtility.HtmlDecode(TitleConverter.ToPostTitle(s.Title)),
                         PublishAt = s.PublishAt
                     })
                     .OrderByDescending(p => p.PublishAt)

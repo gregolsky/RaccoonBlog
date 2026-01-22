@@ -1,15 +1,21 @@
-﻿using System.Linq;
+﻿using Microsoft.AspNetCore.Mvc;
 using RaccoonBlog.Web.Infrastructure.AutoMapper;
 using RaccoonBlog.Web.Infrastructure.Common;
 using RaccoonBlog.Web.Models;
 using RaccoonBlog.Web.ViewModels;
-using Microsoft.AspNetCore.Mvc;
+using Raven.Client.Documents;
+using Raven.Client.Documents.Session;
+using System.Linq;
 
 namespace RaccoonBlog.Web.Controllers
 {
 	public partial class LegacyPostController : RaccoonController
 	{
-		public virtual IActionResult RedirectLegacyPost(int year, int month, int day, string slug)
+        public LegacyPostController(IDocumentStore documentStore, IDocumentSession ravenSession)
+: base(documentStore, ravenSession)
+        {
+        }
+        public virtual IActionResult RedirectLegacyPost(int year, int month, int day, string slug)
 		{
 			// attempt to find a post with match slug in the given date, but will back off the exact date if we can't find it
 			var post = RavenSession.Query<Post>()
@@ -27,7 +33,7 @@ namespace RaccoonBlog.Web.Controllers
 
 			if (post == null) 
 			{
-				return NotFound(); // ASP.NET Core: HttpNotFound() → NotFound()
+				return NotFound();
 			}
 
 			var postReference = post.MapTo<PostReference>();

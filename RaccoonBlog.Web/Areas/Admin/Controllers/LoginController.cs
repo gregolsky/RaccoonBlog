@@ -1,9 +1,11 @@
-using Microsoft.AspNetCore.Mvc;
 using HibernatingRhinos.Loci.Common.Models;
+using Microsoft.AspNetCore.Mvc;
 using RaccoonBlog.Web.Controllers;
 using RaccoonBlog.Web.Helpers;
 using RaccoonBlog.Web.Infrastructure.Common;
 using RaccoonBlog.Web.ViewModels;
+using Raven.Client.Documents;
+using Raven.Client.Documents.Session;
 
 namespace RaccoonBlog.Web.Areas.Admin.Controllers
 {
@@ -12,15 +14,19 @@ namespace RaccoonBlog.Web.Areas.Admin.Controllers
 	{
 		private readonly SignInHelper _signInHelper;
 
-		public LoginController(SignInHelper signInHelper) // ASP.NET Core: Constructor injection
-		{
-			_signInHelper = signInHelper;
-		}
+        public LoginController(
+                SignInHelper signInHelper,
+                IDocumentStore documentStore,
+                IDocumentSession ravenSession)
+                : base(documentStore, ravenSession)
+        {
+            _signInHelper = signInHelper;
+        }
 
-		[HttpGet]
+        [HttpGet]
 		public virtual IActionResult Index(string returnUrl)
 		{
-			if (User.Identity.IsAuthenticated) // ASP.NET Core: Request.IsAuthenticated ? User.Identity.IsAuthenticated
+			if (User.Identity.IsAuthenticated)
 			{
 				return RedirectFromLoginPage();
 			}
@@ -57,7 +63,6 @@ namespace RaccoonBlog.Web.Areas.Admin.Controllers
 		{
 			if (string.IsNullOrEmpty(retrunUrl))
                 return RedirectToAction("Index", "Posts", new { area = "" });
-            //return RedirectToRoute("homepage");
             return Redirect(retrunUrl);
 		}
 
@@ -68,15 +73,13 @@ namespace RaccoonBlog.Web.Areas.Admin.Controllers
 			return RedirectFromLoginPage(returnurl);
 		}
 
-		// ASP.NET Core: ChildActionOnly removed, use ViewComponent instead
-		// [ChildActionOnly]
 		public virtual IActionResult CurrentUser()
 		{
-			if (User.Identity.IsAuthenticated == false) // ASP.NET Core: Request.IsAuthenticated ? User.Identity.IsAuthenticated
+			if (User.Identity.IsAuthenticated == false)
 				return View(new CurrentUserViewModel());
 
-			var user = RavenSession.GetUserByEmail(User.Identity.Name); // ASP.NET Core: HttpContext.User ? User
-			return View(new CurrentUserViewModel { FullName = user.FullName }); // TODO: we don't really need a VM here
+			var user = RavenSession.GetUserByEmail(User.Identity.Name);
+			return View(new CurrentUserViewModel { FullName = user.FullName });
 		}
 	}
 }

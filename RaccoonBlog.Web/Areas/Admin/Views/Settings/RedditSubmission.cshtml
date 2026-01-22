@@ -5,7 +5,6 @@
 @model RaccoonBlog.Web.Areas.Admin.ViewModels.RedditManualSubmissionViewModel
 
 @functions {
-    // ASP.NET Core: Convert @helper to async local function
     async Task ManualSubmissionAction(Post post, Reddit.PostSubmission postSubmission)
     {
         if (postSubmission.IsManualSubmissionPending == false)

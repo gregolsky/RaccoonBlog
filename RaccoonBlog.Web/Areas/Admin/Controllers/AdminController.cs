@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.DependencyInjection;
 using RaccoonBlog.Web.Controllers;
+using Raven.Client.Documents;
+using Raven.Client.Documents.Session;
 using System;
 
 namespace RaccoonBlog.Web.Areas.Admin.Controllers
@@ -13,13 +15,13 @@ namespace RaccoonBlog.Web.Areas.Admin.Controllers
 	{
 		private IDisposable disableAggressiveCaching;
 
+		protected AdminController(IDocumentStore documentStore, IDocumentSession ravenSession)
+		: base(documentStore, ravenSession)
+		{
+		}
+
 		public override void OnActionExecuting(ActionExecutingContext filterContext)
 		{
-            if (DocumentStore == null)
-            {
-                DocumentStore = filterContext.HttpContext.RequestServices.GetRequiredService<Raven.Client.Documents.IDocumentStore>();
-            }
-
             disableAggressiveCaching = DocumentStore.DisableAggressiveCaching();
 			base.OnActionExecuting(filterContext);
 		}

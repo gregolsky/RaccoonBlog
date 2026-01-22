@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Mvc.ViewFeatures.Infrastructure;
+using Microsoft.AspNetCore.Rewrite;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -20,7 +21,7 @@ using RaccoonBlog.Web.Helpers;
 using RaccoonBlog.Web.Helpers.Binders;
 using RaccoonBlog.Web.Infrastructure.AutoMapper;
 using RaccoonBlog.Web.Infrastructure.Indexes;
-using RaccoonBlog.Web.Infrastructure.Jobs;
+using RaccoonBlog.Web.Services;
 using Raven.Client.Documents;
 using Raven.Client.Documents.Conventions;
 using Raven.Client.Documents.Indexes;
@@ -33,7 +34,6 @@ using System.Net;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
-using Microsoft.AspNetCore.Rewrite;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -90,8 +90,12 @@ builder.Services.AddSingleton<TempDataSerializer, JsonTempDataSerializer>();
 
 builder.Services.AddHttpContextAccessor();
 
-
+builder.Services.AddHttpClient<Recaptcha2Verifier>(client => {
+    client.BaseAddress = new Uri("https://www.google.com");
+});
+builder.Services.AddScoped<Recaptcha2Helper>();
 builder.Services.AddScoped<RaccoonBlog.Web.Helpers.SignInHelper>();
+builder.Services.AddScoped<IAkismetService, AkismetService>();
 // Configure RavenDB DocumentStore
 var ravenUrls = builder.Configuration["Raven:Urls"]?.Split(',', StringSplitOptions.RemoveEmptyEntries) ?? new[] { "http://localhost:8080" };
 var ravenDatabase = builder.Configuration["Raven:Database"] ?? "blog.ayende.com";
@@ -217,7 +221,6 @@ JobManager.JobException += info =>
     var logger = LogManager.GetCurrentClassLogger();
     logger.Fatal(info.Exception, $"Error executing background job {info.Name}.");
 };
-JobManager.Initialize(new SocialNetworkIntegrationJobsRegistry());
 
 var app = builder.Build();
 
@@ -314,3 +317,6 @@ public class JsonTempDataSerializer : TempDataSerializer
         return Encoding.UTF8.GetBytes(json);
     }
 }
+
+// Partial Program class to make it accessible for WebApplicationFactory in integration tests
+public partial class Program { }

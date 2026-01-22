@@ -73,9 +73,6 @@ namespace RaccoonBlog.Web.Helpers
             byte[] saltBytes = Encoding.ASCII.GetBytes(_salt);
             byte[] valueBytes = Convert.FromBase64String(value);
 
-            byte[] decrypted;
-            int decryptedByteCount = 0;
-
             using (T cipher = new T())
             {
                 Rfc2898DeriveBytes passwordBytes = new Rfc2898DeriveBytes(password, saltBytes, _iterations);
@@ -89,15 +86,14 @@ namespace RaccoonBlog.Web.Helpers
                     {
                         using (CryptoStream reader = new CryptoStream(from, decryptor, CryptoStreamMode.Read))
                         {
-                            decrypted = new byte[valueBytes.Length];
-                            decryptedByteCount = reader.Read(decrypted, 0, decrypted.Length);
+                            using (StreamReader streamReader = new StreamReader(reader, Encoding.UTF8))
+                            {
+                                return streamReader.ReadToEnd();
+                            }
                         }
                     }
                 }
-
-                cipher.Clear();
             }
-            return Encoding.UTF8.GetString(decrypted, 0, decryptedByteCount);
         }
 
         public static string GenerateRandomString(int maxSize)

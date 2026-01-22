@@ -8,11 +8,17 @@ using RaccoonBlog.Web.Infrastructure.Common;
 using RaccoonBlog.Web.Models;
 using RaccoonBlog.Web.Services;
 using RaccoonBlog.Web.ViewModels;
+using System.Threading.Tasks;
 
 namespace RaccoonBlog.Web.Infrastructure.Tasks
 {
 	public class AddCommentTask : BackgroundTask
 	{
+		private IAkismetService _akismetService;
+        public AddCommentTask(IAkismetService akismetService) 
+		{ 
+			_akismetService = akismetService;
+        }
 		public class RequestValues
 		{
 			public string UserAgent { get; set; }
@@ -55,7 +61,7 @@ namespace RaccoonBlog.Web.Infrastructure.Tasks
 			              		UserAgent = requestValues.UserAgent,
 			              		UserHostAddress = requestValues.UserHostAddress,
 			              	};
-			comment.IsSpam = AkismetService.CheckForSpam(comment);
+			comment.IsSpam = _akismetService.CheckForSpam(comment);
 
 			var commenter = DocumentSession.GetCommenter(commentInput.CommenterKey);
 			if (commenter == null)

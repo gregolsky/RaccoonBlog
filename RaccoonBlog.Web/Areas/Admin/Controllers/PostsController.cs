@@ -1,10 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
 using HibernatingRhinos.Loci.Common.Extensions;
 using HibernatingRhinos.Loci.Common.Models;
+using Microsoft.AspNetCore.Mvc;
 using RaccoonBlog.Web.Areas.Admin.ViewModels;
 using RaccoonBlog.Web.Helpers;
 using RaccoonBlog.Web.Helpers.Attributes;
@@ -13,13 +9,26 @@ using RaccoonBlog.Web.Infrastructure.Common;
 using RaccoonBlog.Web.Models;
 using RaccoonBlog.Web.Services;
 using RaccoonBlog.Web.ViewModels;
+using Raven.Client.Documents;
 using Raven.Client.Documents.Operations;
+using Raven.Client.Documents.Session;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace RaccoonBlog.Web.Areas.Admin.Controllers
 {
 	public partial class PostsController : AdminController
 	{
-		public virtual IActionResult Index()
+		private IAkismetService _akismetService;
+        public PostsController(IDocumentStore documentStore, IDocumentSession ravenSession, IAkismetService akismetService)
+        : base(documentStore, ravenSession)
+        {
+            _akismetService = akismetService;
+        }
+
+        public virtual IActionResult Index()
 		{
 			// the actual UI is handled via JavaScript
 			return View("List");
@@ -48,7 +57,6 @@ namespace RaccoonBlog.Web.Areas.Admin.Controllers
 
 		[HttpPost]
 		[ValidateAntiForgeryToken]
-		// ASP.NET Core: No [ValidateInput(false)] - use [AllowHtml] on model properties instead
 		public virtual IActionResult Update(PostInput input)
 		{
 			if (!ModelState.IsValid)
@@ -160,10 +168,10 @@ namespace RaccoonBlog.Web.Areas.Admin.Controllers
 			return Json(new {success = true});
 		}
 
-		[HttpPost]
-		[ValidateAntiForgeryToken]
-		public virtual IActionResult CommentsAdmin(string id, CommentCommandOptions command, int[] commentIds)
-		{
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public virtual IActionResult CommentsAdmin(string id, CommentCommandOptions command, int[] commentIds)
+        {
 			if (commentIds == null || commentIds.Length == 0)
 				ModelState.AddModelError("CommentIdsAreEmpty", "Not comments was selected.");
 
@@ -173,7 +181,7 @@ namespace RaccoonBlog.Web.Areas.Admin.Controllers
 
 			if (ModelState.IsValid == false)
 			{
-				if (Request.Headers["X-Requested-With"] == "XMLHttpRequest") // ASP.NET Core: IsAjaxRequest() replacement
+				if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
 					return Json(new {Success = false, message = ModelState.FirstErrorMessage()});
 
 				return Details(id);
@@ -196,7 +204,7 @@ namespace RaccoonBlog.Web.Areas.Admin.Controllers
 					comments.Spam.RemoveAll(spams.Contains);
 					foreach (var comment in spams)
 					{
-						AkismetService.MarkSpam(comment);
+                        _akismetService.MarkSpam(comment);
 					}
 					break;
 
@@ -213,7 +221,7 @@ namespace RaccoonBlog.Web.Areas.Admin.Controllers
 						.ForEach(comment =>
 						         	{
 						         		comment.IsSpam = false;
-						         		AkismetService.MarkHam(comment);
+						         		_akismetService.MarkHam(comment);
 						         		ResetNumberOfSpamComments(comment);
 						         	});
 					break;
@@ -223,7 +231,7 @@ namespace RaccoonBlog.Web.Areas.Admin.Controllers
 
 			post.CommentsCount = comments.Comments.Count;
 
-			if (Request.Headers["X-Requested-With"] == "XMLHttpRequest") // ASP.NET Core: IsAjaxRequest() replacement
+			if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
 			{
 				return Json(new {Success = true});
 			}
@@ -260,7 +268,7 @@ namespace RaccoonBlog.Web.Areas.Admin.Controllers
 
         private IActionResult SuccessResponse()
         {
-            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest") // ASP.NET Core: IsAjaxRequest() replacement
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
             {
                 return Json(new { Success = true });
             }
