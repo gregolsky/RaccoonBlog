@@ -50,13 +50,12 @@ builder.Services.AddControllersWithViews(options =>
     options.ModelBinderProviders.Insert(0, new GuidBinderProvider());
 })
 .AddNewtonsoftJson();
-
+builder.Services.AddSingleton<CacheSignalService>();
 builder.Services.AddWebOptimizer(pipeline =>
 {
     pipeline.AddJavaScriptBundle("/js/main-bundle.min.js", "js/moment.js", "js/lib/MarkdownDeepLib.min.js", "js/utils.js", "js/raccoon-blog.js", "js/setup.js", "js/jquery.twbsPagination.js", "js/jquery.validate.js", "js/jquery.validate.unobtrusive.js");
     pipeline.AddJavaScriptBundle("/admin/js/admin-scripts-bundle.min.js", "js/bootstrap.js");
 
-    // Админка: собираем все в один файл
     pipeline.AddLessBundle("/admin/css/admin.styles.css", "admin/css/admin.bundle.less")
             .MinifyCss();
 

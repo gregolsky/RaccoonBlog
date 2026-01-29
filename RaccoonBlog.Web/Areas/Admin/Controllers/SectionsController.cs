@@ -2,17 +2,21 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using RaccoonBlog.Web.Helpers.Attributes;
 using RaccoonBlog.Web.Models;
+using RaccoonBlog.Web.Services;
 using Raven.Client.Documents;
 using Raven.Client.Documents.Session;
+using System;
 using System.Linq;
 
 namespace RaccoonBlog.Web.Areas.Admin.Controllers
 {
 	public partial class SectionsController : AdminController
 	{
-        public SectionsController(IDocumentStore documentStore, IDocumentSession ravenSession)
+        private readonly CacheSignalService _cacheSignal;
+        public SectionsController(IDocumentStore documentStore, IDocumentSession ravenSession, CacheSignalService cacheSignal)
         : base(documentStore, ravenSession)
         {
+            _cacheSignal = cacheSignal;
         }
 
         public virtual IActionResult Index()
@@ -33,24 +37,30 @@ namespace RaccoonBlog.Web.Areas.Admin.Controllers
 		[HttpGet]
 		public virtual IActionResult Edit(string id)
 		{
+            id = Uri.UnescapeDataString(id);
+
 			var section = RavenSession.Load<Section>(id);
 			if (section == null)
 				return NotFound("Section does not exist.");
 
-			return View(section);
+            return View(section);
 		}
 
 		[HttpPost]
 		[ValidateAntiForgeryToken]
 		public virtual IActionResult Activate(string id, bool activate)
 		{
-			var section = RavenSession.Load<Section>(id);
+            id = Uri.UnescapeDataString(id);
+
+            var section = RavenSession.Load<Section>(id);
 			if (section == null)
 				return NotFound("Section does not exist.");
 
 			section.IsActive = activate;
 
-			return StatusCode(StatusCodes.Status200OK);
+            _cacheSignal.Invalidate(CacheKeys.SectionArea);
+
+            return StatusCode(StatusCodes.Status200OK);
 		}
 
 		[HttpPost]
@@ -69,20 +79,26 @@ namespace RaccoonBlog.Web.Areas.Admin.Controllers
 			}
 			RavenSession.Store(section);
 
-			return RedirectToAction("Index");
+            _cacheSignal.Invalidate(CacheKeys.SectionArea);
+
+            return RedirectToAction("Index");
 		}
 
 		[HttpPost]
 		[ValidateAntiForgeryToken]
 		public virtual IActionResult Delete(string id)
 		{
-			var section = RavenSession.Load<Section>(id);
+            id = Uri.UnescapeDataString(id);
+
+            var section = RavenSession.Load<Section>(id);
 			if (section == null)
 				return NotFound("Section does not exist.");
 
 			RavenSession.Delete(section);
 
-			if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+            _cacheSignal.Invalidate(CacheKeys.SectionArea);
+
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
 			{
 				return Json(new { Success = true });
 			}
@@ -94,7 +110,9 @@ namespace RaccoonBlog.Web.Areas.Admin.Controllers
 		[ValidateAntiForgeryToken]
 		public virtual IActionResult SetPosition(string id, int newPosition)
 		{
-			var section = RavenSession.Load<Section>(id);
+            id = Uri.UnescapeDataString(id);
+
+            var section = RavenSession.Load<Section>(id);
 			if (section == null)
 				return Json(new {success = false, message = string.Format("There is no post with id {0}", id)});
 
@@ -128,7 +146,9 @@ namespace RaccoonBlog.Web.Areas.Admin.Controllers
 
 			section.Position = newPosition;
 
-			return Json(new { success = true });
+            _cacheSignal.Invalidate(CacheKeys.SectionArea);
+
+            return Json(new { success = true });
 		}
 	}
 }

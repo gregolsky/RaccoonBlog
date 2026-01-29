@@ -80,7 +80,9 @@
             <button class="menu-enlarge" id="enlarge-button"><i class="icon-circle-arrow-left hide-sm" aria-hidden="true"></i></button>
             <div class="collapseMobile flex-grow">
                 <div class="about flex-grow @(ViewBag.IsHomePage ? "home" : string.Empty)">
-                    @await Html.PartialAsync("~/Views/Section/ContactMe.cshtml")
+                    <cache name="ContactMeCache" expires-after="@TimeSpan.FromHours(1)" vary-by="@CacheSignal.GetToken(CacheKeys.SectionArea)">
+                        @await Html.PartialAsync("~/Views/Section/ContactMe.cshtml")
+                    </cache>
                 </div>
                 <div class="flex-grow"></div>
                 <div class="rewards margin-top">
@@ -124,8 +126,13 @@
                 </nav>
 
                 <div class="clearfix"></div>
-                <vc:tags-list></vc:tags-list>
-                <vc:archives-list></vc:archives-list>
+                <cache name="TagsListCache" expires-after="@TimeSpan.FromHours(1)" vary-by="@CacheSignal.GetToken(CacheKeys.SectionArea)">
+                    <vc:tags-list></vc:tags-list>
+                </cache>
+
+                <cache name="ArchivesListCache" expires-after="@TimeSpan.FromHours(1)" vary-by="@CacheSignal.GetToken(CacheKeys.SectionArea)">
+                    <vc:archives-list></vc:archives-list>
+                </cache>
             </header>
             <div class="bnr-carousel">
                 <a href="@bannerToDisplay.ResourceUrl" target="_blank"><img src="@bannerToDisplay.ImageSrc" class="img-responsive img-center" title="@bannerToDisplay.AltText" alt="@bannerToDisplay.AltText" /></a>
@@ -133,6 +140,8 @@
             @RenderBody()
         </div>
         <section class="rightSide">
+            @inject CacheSignalService CacheSignal
+            @using RaccoonBlog.Web.Services
             @using RaccoonBlog.Web.ViewModels
             @inject Raven.Client.Documents.Session.IDocumentSession RavenSession
             @if (Context.User.Identity.IsAuthenticated)
@@ -147,7 +156,10 @@
 
                 @await Html.PartialAsync("~/Views/Section/AdministrationPanel.cshtml", adminModel)
             }
-            <vc:sidebar-list></vc:sidebar-list>
+
+            <cache name="SidebarSections" expires-after="@TimeSpan.FromMinutes(5)" vary-by="@CacheSignal.GetToken(CacheKeys.SectionArea)">
+                <vc:sidebar-list></vc:sidebar-list>
+            </cache>
         </section>
     </div>
 

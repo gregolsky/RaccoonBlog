@@ -18,8 +18,8 @@ namespace RaccoonBlog.Web.ViewComponents
 
 		public IViewComponentResult Invoke()
 		{
-			// Check if we're currently processing an exception
-			if (true.Equals(HttpContext.Items["CurrentlyProcessingException"]))
+            // Check if we're currently processing an exception
+            if (true.Equals(HttpContext.Items["CurrentlyProcessingException"]))
 			{
 				return View(new SectionDetails[0]);
 			}
