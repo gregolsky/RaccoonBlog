@@ -34,6 +34,8 @@ using System.Net;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using Microsoft.AspNetCore.HttpOverrides;
+using RaccoonBlog.Web.Infrastructure.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -43,6 +45,8 @@ ConfigurationHelper.Initialize(builder.Configuration);
 // Configure NLog
 builder.Logging.ClearProviders();
 builder.Host.UseNLog();
+
+builder.Services.AddRouting(options => options.LowercaseUrls = true);
 
 // Add services to the container
 builder.Services.AddControllersWithViews(options =>
@@ -223,6 +227,11 @@ JobManager.JobException += info =>
 
 var app = builder.Build();
 
+app.UseForwardedHeaders(new ForwardedHeadersOptions
+{
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+});
+
 // Initialize AutoMapper extensions with the IMapper instance from the ROOT service provider
 // IMPORTANT: Do NOT use a scoped service provider here, as it will be disposed
 // and AutoMapper will try to use the disposed provider for type converters
@@ -240,6 +249,18 @@ else
     app.UseStatusCodePagesWithReExecute("/Error/{0}");
     app.UseHsts();
 }
+
+app.Use(async (context, next) =>
+{
+    if (context.Request.Path.Value == "/")
+    {
+        context.Response.Redirect("/blog/");
+        return;
+    }
+    await next();
+});
+
+app.UsePathBase("/blog");
 
 app.UseHttpsRedirection();
 app.UseWebOptimizer();
@@ -270,6 +291,8 @@ app.Use(async (context, next) =>
         session.SaveChanges();
     }
 });
+
+app.MapRaccoonBlogRoutes();
 
 // Map controller routes - Use MapAreaControllerRoute for Admin area
 app.MapAreaControllerRoute(
