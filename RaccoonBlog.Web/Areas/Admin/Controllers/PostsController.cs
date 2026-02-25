@@ -14,18 +14,24 @@ using Raven.Client.Documents.Operations;
 using Raven.Client.Documents.Session;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
+using RaccoonBlog.Web.Areas.Admin.Models;
 
 namespace RaccoonBlog.Web.Areas.Admin.Controllers
 {
 	public partial class PostsController : AdminController
 	{
 		private IAkismetService _akismetService;
-        public PostsController(IDocumentStore documentStore, IDocumentSession ravenSession, IAkismetService akismetService)
+		private readonly MediaService _mediaService;
+        public PostsController(IDocumentStore documentStore, IDocumentSession ravenSession, IAkismetService akismetService,  MediaService mediaService)
         : base(documentStore, ravenSession)
         {
             _akismetService = akismetService;
+            _mediaService = mediaService;
         }
 
         public virtual IActionResult Index()
@@ -44,6 +50,32 @@ namespace RaccoonBlog.Web.Areas.Admin.Controllers
 				CreatedAt = DateTimeOffset.Now,
 				PublishAt = null // force auto schedule
 			});
+		}
+		
+		[HttpPost]
+		[IgnoreAntiforgeryToken]
+		public IActionResult UploadImage(IFormFile file)
+		{
+			try
+			{
+				if (file == null || file.Length == 0)
+					return BadRequest("No file uploaded.");
+
+				using (var memoryStream = new MemoryStream())
+				{
+					file.CopyTo(memoryStream);
+					
+					var result = _mediaService.SaveImage(memoryStream, file.FileName, file.ContentType);
+					
+					var imageUrl = Url.Action("GetImage", "Images", new { area = "", id = result.FileHash, fileName = result.FileName });
+            
+					return Json(new { location = imageUrl });
+				}
+			}
+			catch (Exception ex)
+			{
+				return StatusCode(500, ex.Message + "\n" + ex.StackTrace);
+			}
 		}
 
 		[HttpGet]

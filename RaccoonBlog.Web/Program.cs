@@ -54,6 +54,7 @@ builder.Services.AddControllersWithViews(options =>
     options.ModelBinderProviders.Insert(0, new GuidBinderProvider());
 })
 .AddNewtonsoftJson();
+builder.Services.AddScoped<MediaService>();
 builder.Services.AddSingleton<CacheSignalService>();
 builder.Services.AddWebOptimizer(pipeline =>
 {
@@ -152,8 +153,11 @@ builder.Services.AddScoped<RaccoonBlog.Web.Models.BlogConfig>(ctx =>
 var authBuilder = builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
+        options.Cookie.Path = "/blog";
+        options.Cookie.Name = ".RaccoonBlog.Auth";
         options.LoginPath = "/admin/login";
         options.AccessDeniedPath = "/admin/login";
+        options.LogoutPath = "/admin/login/logout";
     });
 
 // Only add OAuth providers if credentials are configured

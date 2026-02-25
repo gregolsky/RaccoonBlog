@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using HibernatingRhinos.Loci.Common.Models;
 using Microsoft.AspNetCore.Mvc;
 using RaccoonBlog.Web.Controllers;
@@ -67,12 +68,12 @@ namespace RaccoonBlog.Web.Areas.Admin.Controllers
 		}
 
 		[HttpGet]
-		public virtual IActionResult LogOut(string returnurl)
+		public virtual async Task<IActionResult> LogOut(string returnurl)
 		{
-			_signInHelper.SignOut();
+			await _signInHelper.SignOutAsync();
 			return RedirectFromLoginPage(returnurl);
 		}
-
+		
 		public virtual IActionResult CurrentUser()
 		{
 			if (User.Identity.IsAuthenticated == false)

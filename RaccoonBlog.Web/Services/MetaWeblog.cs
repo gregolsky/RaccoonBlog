@@ -24,17 +24,20 @@ namespace RaccoonBlog.Web.Services
 		private readonly IConfiguration configuration;
 		private readonly IUrlHelper urlHelper;
 		private readonly HttpContext httpContext;
+		private readonly MediaService _mediaService;
 
 		public MetaWeblog(
 			IDocumentStore documentStore,
 			IConfiguration configuration,
 			IUrlHelper urlHelper,
-			IHttpContextAccessor httpContextAccessor)
+			IHttpContextAccessor httpContextAccessor,
+			MediaService mediaService)
 		{
 			this.documentStore = documentStore;
 			this.configuration = configuration;
 			this.urlHelper = urlHelper;
 			this.httpContext = httpContextAccessor.HttpContext;
+			_mediaService =  mediaService;
 		}
 
 		#region IMetaWeblog Members
@@ -218,6 +221,23 @@ namespace RaccoonBlog.Web.Services
 			{
 				url = imageWebPath
 			};
+		}
+		
+		MediaObjectInfo IMetaWeblog.NewMediaObjectTest(string blogid, string username, string password, MediaObject mediaObject)
+		{
+			ValidateUser(username, password);
+
+			using (var memoryStream = new MemoryStream(mediaObject.bits))
+			{
+				var result = _mediaService.SaveImage(memoryStream, mediaObject.name, mediaObject.type ?? "application/octet-stream");
+				
+				var imageUrl = urlHelper.Action("GetImage", "Images", new { area = "", id = result.FileHash, fileName = result.FileName });
+
+				return new MediaObjectInfo()
+				{
+					url = imageUrl
+				};
+			}
 		}
 
 		int IMetaWeblog.newCategory(string blogid, string username, string password, WordpressCategory category)
