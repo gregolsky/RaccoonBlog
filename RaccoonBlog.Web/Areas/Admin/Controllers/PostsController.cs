@@ -17,9 +17,14 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using RaccoonBlog.Web.Areas.Admin.Models;
+using Raven.Client.Documents.Commands.Batches;
+using Sparrow.Json;
 
 namespace RaccoonBlog.Web.Areas.Admin.Controllers
 {
@@ -372,7 +377,187 @@ update {
 
             metadata[Raven.Client.Constants.Documents.Metadata.Expires] = expirationDate;
         }
+        
 
+		public class PostBodyProjection
+		{
+			public string Id { get; set; }
+			public string Body { get; set; }
+		}
+		
+		[HttpGet("admin/posts/migrate-images")]
+		[AllowAnonymous] 
+		public IActionResult MigrateOldImages([FromServices] IWebHostEnvironment env)
+		{
+		    try
+		    {
+		        var archiveRootPath = env.WebRootPath;
+		        
+		        if (!Directory.Exists(archiveRootPath))
+		            return Content($"Folder not found: {archiveRootPath}");
+
+		        var urlMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+		        int migratedCount = 0;
+		        int updatedPostsCount = 0;
+		        
+		        var allFiles = Directory.GetFiles(archiveRootPath, "*.*", SearchOption.AllDirectories)
+		                                .Where(f => 
+		                                {
+		                                    var ext = Path.GetExtension(f).ToLower();
+		                                    return ext == ".png" || ext == ".jpg" || ext == ".jpeg" || ext == ".gif";
+		                                }).ToList();
+		        
+		        int batchSize = 50;
+		        for (int i = 0; i < allFiles.Count; i += batchSize)
+		        {
+		            var batchFiles = allFiles.Skip(i).Take(batchSize).ToList();
+		            var openStreams = new List<FileStream>(); 
+
+		            using (var fileSession = DocumentStore.OpenSession())
+		            {
+		                var batchData = batchFiles.Select(filePath => 
+		                {
+		                    var fileName = Path.GetFileName(filePath);
+		                    string fileHash;
+		                    string contentType = "image/" + Path.GetExtension(filePath).TrimStart('.').ToLower();
+		                    if (contentType == "image/jpg") contentType = "image/jpeg";
+
+		                    using (var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read))
+		                    using (var sha1 = System.Security.Cryptography.SHA1.Create())
+		                    {
+		                        var hashBytes = sha1.ComputeHash(stream);
+		                        fileHash = BitConverter.ToString(hashBytes).Replace("-", "").ToLowerInvariant();
+		                    }
+		                    return new { Path = filePath, FileName = fileName, Hash = fileHash, ContentType = contentType, DocId = "images/" + fileHash };
+		                }).ToList();
+		                
+		                var docIds = batchData.Select(x => x.DocId).Distinct().ToArray();
+		                var existingDocs = fileSession.Load<PostImage>(docIds); 
+		                
+		                var processedIdsInBatch = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+		                foreach (var data in batchData)
+		                {
+		                    if (existingDocs[data.DocId] == null && !processedIdsInBatch.Contains(data.DocId))
+		                    {
+		                        var imageDoc = new PostImage { Id = data.DocId, UploadedAt = DateTimeOffset.Now, FileName = data.FileName };
+		                        fileSession.Store(imageDoc);
+		                        
+		                        var attachmentStream = new FileStream(data.Path, FileMode.Open, FileAccess.Read, FileShare.Read);
+		                        fileSession.Advanced.Attachments.Store(data.DocId, data.FileName, attachmentStream, data.ContentType);
+		                        openStreams.Add(attachmentStream); 
+
+		                        processedIdsInBatch.Add(data.DocId);
+		                        migratedCount++;
+		                    }
+		                    
+		                    var newUrl = Url.Action("GetImage", "Images", new { area = "", id = data.Hash, fileName = data.FileName });
+
+		                    var relativePath = data.Path.Substring(archiveRootPath.Length).Replace("\\", "/").TrimStart('/').ToLower();
+		                    var parts = relativePath.Split('/');
+		                    
+		                    if (parts.Length >= 2)
+		                    {
+		                        var folderAndFileKey = parts[parts.Length - 2] + "/" + parts[parts.Length - 1];
+		                        urlMap[folderAndFileKey] = newUrl;
+		                    }
+
+		                    if (!data.FileName.StartsWith("image", StringComparison.OrdinalIgnoreCase) && 
+		                        !data.FileName.StartsWith("wlEmoticon", StringComparison.OrdinalIgnoreCase) &&
+		                        !data.FileName.StartsWith("clip_image", StringComparison.OrdinalIgnoreCase))
+		                    {
+		                        if (!urlMap.ContainsKey(data.FileName)) 
+		                            urlMap[data.FileName] = newUrl;
+		                    }
+		                }
+		                
+		                fileSession.SaveChanges(); 
+		                foreach (var s in openStreams) s.Dispose(); 
+		            }
+		        }
+		        
+		        var oldUrlRegex = new Regex(@"(?:https?://(?:www\.)?ayende\.com)?/(?:blog/)?(?:Content|Images|Blog/Images|Open-Live-Writer|Windows-Live-Writer|WindowsLiveWriter|ayende_com)[^"">]+?\.(?:png|jpg|jpeg|gif)", 
+		            RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+		        var query = RavenSession.Query<Post>()
+		            .Select(p => new PostBodyProjection { Id = p.Id, Body = p.Body });
+
+		        using (var stream = RavenSession.Advanced.Stream(query))
+		        using (var bulkSession = DocumentStore.OpenSession()) 
+		        {
+		            int batchChangesCount = 0;
+		            
+		            while (stream.MoveNext())
+		            {
+		                var doc = stream.Current.Document; 
+		                if (string.IsNullOrEmpty(doc.Body)) continue;
+
+		                bool isModified = false;
+		                string newBody = doc.Body;
+
+		                newBody = oldUrlRegex.Replace(doc.Body, match =>
+		                {
+		                    var fullMatch = match.Value;
+		                    string decodedMatch;
+		                    
+		                    try { decodedMatch = Uri.UnescapeDataString(fullMatch).ToLower(); }
+		                    catch { decodedMatch = fullMatch.ToLower(); }
+		                    
+		                    var urlParts = decodedMatch.TrimEnd('/').Split('/');
+		                    var fileNameInUrl = urlParts.Last();
+		                    
+		                    if (urlParts.Length >= 2)
+		                    {
+		                        var folderAndFileKey = urlParts[urlParts.Length - 2] + "/" + urlParts[urlParts.Length - 1];
+		                        if (urlMap.TryGetValue(folderAndFileKey, out string newUrl1))
+		                        {
+		                            isModified = true;
+		                            return newUrl1;
+		                        }
+		                    }
+		                    
+		                    if (urlMap.TryGetValue(fileNameInUrl, out string newUrl2))
+		                    {
+		                        isModified = true;
+		                        return newUrl2;
+		                    }
+
+		                    return fullMatch;
+		                });
+
+		                if (isModified)
+		                {
+		                    bulkSession.Advanced.Patch<Post, string>(doc.Id, p => p.Body, newBody);
+		                    updatedPostsCount++;
+		                    batchChangesCount++;
+		                }
+
+		                if (batchChangesCount >= 500)
+		                {
+		                    bulkSession.SaveChanges();
+		                    bulkSession.Advanced.Clear();
+		                    batchChangesCount = 0;
+		                }
+		            }
+		            
+		            if (batchChangesCount > 0)
+		            {
+		                bulkSession.SaveChanges();
+		            }
+		        }
+
+		        return Content($@"
+		            <h1>Migration complete!</h1>
+		            <p>Images added to RavenDB: {migratedCount} (of {allFiles.Count} found on disk)</p>
+		            <p>Posts updated: {updatedPostsCount}</p>
+		            <p>Total number of unique paths in the dictionary: {urlMap.Count}</p>
+		        ", "text/html; charset=utf-8");
+		    }
+		    catch (Exception ex)
+		    {
+		        return Content($"<h1>Error:</h1><pre>{ex.Message}\n{ex.StackTrace}</pre>", "text/html; charset=utf-8");
+		    }
+		}
     }
 
 	public enum CommentCommandOptions
