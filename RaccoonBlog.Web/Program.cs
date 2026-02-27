@@ -36,6 +36,8 @@
     using System.Text;
     using Microsoft.AspNetCore.HttpOverrides;
     using RaccoonBlog.Web.Infrastructure.Configuration;
+    using WilderMinds.MetaWeblog;
+    using MetaWeblogService = RaccoonBlog.Web.Services.MetaWeblogService;
 
     var builder = WebApplication.CreateBuilder(args);
 
@@ -55,6 +57,7 @@
     })
     .AddNewtonsoftJson();
     builder.Services.AddScoped<MediaService>();
+    builder.Services.AddMetaWeblog<MetaWeblogService>();
     builder.Services.AddSingleton<CacheSignalService>();
     builder.Services.AddWebOptimizer(pipeline =>
     {
@@ -93,7 +96,6 @@
     builder.Services.AddSingleton<TempDataSerializer, JsonTempDataSerializer>();
 
     builder.Services.AddHttpContextAccessor();
-
     builder.Services.AddHttpClient<Recaptcha2Verifier>(client => {
         client.BaseAddress = new Uri("https://www.google.com");
     });
@@ -308,6 +310,8 @@
         name: "default",
         pattern: "{controller=Posts}/{action=Index}/{id?}");
 
+    app.UseMetaWeblog("/Services/MetaWeblogAPI.ashx");
+    
     app.Run();
 
     // Custom JSON TempData Serializer to replace BSON serializer
