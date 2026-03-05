@@ -84,6 +84,7 @@
             }
         }
     });
+    builder.Services.AddOutputCache();
     // Configure Session (required for session-based TempData)
     builder.Services.AddSession(options =>
     {
@@ -135,6 +136,7 @@
     }
 
     documentStore.Initialize();
+    HibernatingRhinos.Loci.Common.Tasks.TaskExecutor.DocumentStore = documentStore;
     builder.Services.AddSingleton<IDocumentStore>(documentStore);
     builder.Services.AddScoped<IDocumentSession>(ctx =>
     {
@@ -280,7 +282,9 @@
 
     app.UseRouting();
 
-    // Add session middleware (must be before authentication and authorization)
+    app.UseOutputCache();
+
+// Add session middleware (must be before authentication and authorization)
     app.UseSession();
 
     app.UseAuthentication();

@@ -76,7 +76,19 @@ namespace RaccoonBlog.Web.Controllers
 
             vm.Post.Author = RavenSession.Load<User>(post.AuthorId).MapTo<PostViewModel.UserDetails>();
 
-            var comment = TempData["new-comment"] as CommentInput;
+            CommentInput comment = null;
+            if (TempData["new-comment"] != null)
+            {
+                var rawComment = TempData["new-comment"];
+                if (rawComment is Newtonsoft.Json.Linq.JObject jObject)
+                {
+                    comment = jObject.ToObject<CommentInput>();
+                }
+                else if (rawComment is CommentInput ci)
+                {
+                    comment = ci;
+                }
+            }
 
             if (comment != null)
             {
@@ -115,8 +127,8 @@ namespace RaccoonBlog.Web.Controllers
         [ValidateAntiForgeryToken]
         public virtual async Task<IActionResult> Comment(CommentInput input, string id, Guid key)
         {
-            if (ModelState.IsValid == false)
-                return RedirectToAction("Details");
+            //if (ModelState.IsValid == false)
+            //    return RedirectToAction("Details");
 
             if (IsIpAddressBlocked())
                 return StatusCode(StatusCodes.Status402PaymentRequired);

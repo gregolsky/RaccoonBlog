@@ -30,7 +30,8 @@ namespace RaccoonBlog.Web.Infrastructure.Tasks
 		private readonly CommentInput commentInput;
 		private readonly RequestValues requestValues;
 		private readonly string postId;
-		private readonly IServiceProvider serviceProvider;
+        private readonly IServiceScopeFactory _scopeFactory;
+        private readonly IServiceProvider serviceProvider;
 
 		public AddCommentTask(CommentInput commentInput, RequestValues requestValues, string postId, IServiceProvider serviceProvider = null)
 		{
@@ -38,55 +39,63 @@ namespace RaccoonBlog.Web.Infrastructure.Tasks
 			this.requestValues = requestValues;
 			this.postId = postId;
 			this.serviceProvider = serviceProvider;
-		}
+            this._scopeFactory = serviceProvider.GetRequiredService<IServiceScopeFactory>();
+        }
 
-		public override void Execute()
-		{
-			var post = DocumentSession
-				.Include<Post>(x => x.AuthorId)
-				.Include(x => x.CommentsId)
-				.Load("posts/" + postId);
-			var postAuthor = DocumentSession.Load<User>(post.AuthorId);
-			var comments = DocumentSession.Load<PostComments>(post.CommentsId);
+        public override void Execute()
+        {
+            using (var scope = _scopeFactory.CreateScope())
+            {
+                var akismetService = scope.ServiceProvider.GetRequiredService<IAkismetService>();
 
-			var comment = new PostComments.Comment
-			              	{
-			              		Id = comments.GenerateNewCommentId(),
-			              		Author = commentInput.Name,
-			              		Body = commentInput.Body,
-			              		CreatedAt = DateTimeOffset.Now,
-			              		Email = commentInput.Email,
-			              		Url = commentInput.Url,
-			              		Important = requestValues.IsAuthenticated, // TODO: Don't mark as important based on that
-			              		UserAgent = requestValues.UserAgent,
-			              		UserHostAddress = requestValues.UserHostAddress,
-			              	};
-			comment.IsSpam = _akismetService.CheckForSpam(comment);
+                var post = DocumentSession
+                    .Include<Post>(x => x.AuthorId)
+                    .Include(x => x.CommentsId)
+                    .Load("posts/" + postId);
 
-			var commenter = DocumentSession.GetCommenter(commentInput.CommenterKey);
-			if (commenter == null)
-			{
-				Guid.TryParse(commentInput.CommenterKey, out var parsedKey);
-				commenter = new Commenter { Key = parsedKey };
-			}
-			SetCommenter(commenter, comment);
+                var postAuthor = DocumentSession.Load<User>(post.AuthorId);
+                var comments = DocumentSession.Load<PostComments>(post.CommentsId);
 
-			if (requestValues.IsAuthenticated == false && comment.IsSpam)
-			{
-				if (commenter.NumberOfSpamComments > 4)
-					return;
-				comments.Spam.Add(comment);
-			}
-			else
-			{
-				post.CommentsCount++;
-				comments.Comments.Add(comment);
-			}
+                var comment = new PostComments.Comment
+                {
+                    Id = comments.GenerateNewCommentId(),
+                    Author = commentInput.Name,
+                    Body = commentInput.Body,
+                    CreatedAt = DateTimeOffset.Now,
+                    Email = commentInput.Email,
+                    Url = commentInput.Url,
+                    Important = requestValues.IsAuthenticated,
+                    UserAgent = requestValues.UserAgent,
+                    UserHostAddress = requestValues.UserHostAddress,
+                };
 
-			SendNewCommentEmail(post, comment, postAuthor);
-		}
+                comment.IsSpam = akismetService.CheckForSpam(comment);
 
-		private void SetCommenter(Commenter commenter, PostComments.Comment comment)
+                var commenter = DocumentSession.GetCommenter(commentInput.CommenterKey);
+                if (commenter == null)
+                {
+                    Guid.TryParse(commentInput.CommenterKey, out var parsedKey);
+                    commenter = new Commenter { Key = parsedKey };
+                }
+                SetCommenter(commenter, comment);
+
+                if (requestValues.IsAuthenticated == false && comment.IsSpam)
+                {
+                    if (commenter.NumberOfSpamComments > 4)
+                        return;
+                    comments.Spam.Add(comment);
+                }
+                else
+                {
+                    post.CommentsCount++;
+                    comments.Comments.Add(comment);
+                }
+
+                SendNewCommentEmail(post, comment, postAuthor, scope.ServiceProvider);
+            }
+        }
+
+        private void SetCommenter(Commenter commenter, PostComments.Comment comment)
 		{
 			if (requestValues.IsAuthenticated)
 				return;
@@ -101,25 +110,24 @@ namespace RaccoonBlog.Web.Infrastructure.Tasks
 			comment.CommenterId = commenter.Id;
 		}
 
-		private void SendNewCommentEmail(Post post, PostComments.Comment comment, User postAuthor)
-		{
-			if (requestValues.IsAuthenticated)
-				return; // we don't send email for authenticated users
+        private void SendNewCommentEmail(Post post, PostComments.Comment comment, User postAuthor, IServiceProvider localServiceProvider)
+        {
+            if (requestValues.IsAuthenticated)
+                return;
 
-			var viewModel = comment.MapTo<NewCommentEmailViewModel>();
-			viewModel.PostId = post.GetIdForUrl();
-			viewModel.PostTitle = WebUtility.HtmlDecode(post.Title);
-			viewModel.PostSlug = SlugConverter.TitleToSlug(post.Title);
-			viewModel.BlogName = DocumentSession.Load<BlogConfig>(BlogConfig.Key).Title;
-			viewModel.Key = post.ShowPostEvenIfPrivate.ToString();
-		    viewModel.IsSpam = comment.IsSpam;
+            var viewModel = comment.MapTo<NewCommentEmailViewModel>();
+            viewModel.PostId = post.GetIdForUrl();
+            viewModel.PostTitle = WebUtility.HtmlDecode(post.Title);
+            viewModel.PostSlug = SlugConverter.TitleToSlug(post.Title);
+            viewModel.BlogName = DocumentSession.Load<BlogConfig>(BlogConfig.Key).Title;
+            viewModel.Key = post.ShowPostEvenIfPrivate.ToString();
+            viewModel.IsSpam = comment.IsSpam;
             viewModel.IpAddress = comment.UserHostAddress;
             viewModel.UserAgent = comment.UserAgent;
 
-			var subject = string.Format("{2}Comment on: {0} from {1}", viewModel.PostTitle, viewModel.BlogName, viewModel.IsSpam ? "[DETECTED SPAM] " : string.Empty);
+            var subject = string.Format("{2}Comment on: {0} from {1}", viewModel.PostTitle, viewModel.BlogName, viewModel.IsSpam ? "[DETECTED SPAM] " : string.Empty);
 
-			// TODO: IServiceProvider should be passed from controller context
-			TaskExecutor.ExcuteLater(new SendEmailTask(viewModel.Email, subject, "NewComment", postAuthor.Email, viewModel, serviceProvider));
-		}
-	}
+            TaskExecutor.ExcuteLater(new SendEmailTask(viewModel.Email, subject, "NewComment", postAuthor.Email, viewModel, localServiceProvider));
+        }
+    }
 }

@@ -28,7 +28,6 @@ namespace HibernatingRhinos.Loci.Common.Tasks
 			{
 				Execute();
 				DocumentSession.SaveChanges();
-				TaskExecutor.StartExecuting();
 				return true;
 			}
 			catch (ConcurrencyException e)
@@ -42,10 +41,6 @@ namespace HibernatingRhinos.Loci.Common.Tasks
 				logger.ErrorException("Could not execute task " + GetType().Name, e);
 				OnError(e);
 				return false;
-			}
-			finally
-			{
-				TaskExecutor.Discard();
 			}
 		}
 

@@ -17,7 +17,7 @@ namespace RaccoonBlog.Web.Helpers
 
         public async Task<CaptchaVerificationResult> VerifyResponse(string token, string secret)
         {
-            if (string.IsNullOrEmpty(token)) return CaptchaVerificationResult.Error("Token is empty");
+            if (string.IsNullOrEmpty(token)) return CaptchaVerificationResult.Error("Captcha response not supplied.");
 
             var content = new FormUrlEncodedContent(new[] {
             new KeyValuePair<string, string>("secret", secret),

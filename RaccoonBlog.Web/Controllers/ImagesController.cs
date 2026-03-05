@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OutputCaching;
 using RaccoonBlog.Web.Services;
 using Raven.Client.Documents.Session;
 
@@ -14,7 +15,7 @@ public class ImagesController : Controller
     }
     
     [HttpGet("images/getimage/{id}")]
-    [ResponseCache(Duration = 1800)]
+    [OutputCache(Duration = 1800)]
     public IActionResult GetImage(string id, [FromQuery] string fileName)
     {
         var docId = "images/" + id;
