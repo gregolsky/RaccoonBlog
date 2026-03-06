@@ -94,6 +94,20 @@ using Microsoft.AspNetCore.Http;
         options.Cookie.IsEssential = true;
     });
 
+
+    builder.Services.AddAntiforgery(options =>
+    {
+
+        options.Cookie.Name = ".RaccoonBlog.Antiforgery";
+
+        options.Cookie.Path = "/blog";
+
+        options.Cookie.HttpOnly = true;
+
+
+        options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+    });
+
     // Configure TempData to use JSON serialization instead of BSON
     builder.Services.AddSingleton<TempDataSerializer, JsonTempDataSerializer>();
 
@@ -261,9 +275,12 @@ using Microsoft.AspNetCore.Http;
 
     app.Use(async (context, next) =>
     {
-        if (context.Request.Path.Value == "/")
+        var path = context.Request.Path.Value;
+
+        if (!path.StartsWith("/blog", StringComparison.OrdinalIgnoreCase))
         {
-            context.Response.Redirect("/blog/");
+            var newPath = "/blog" + (path.EndsWith("/") ? path : path + "/");
+            context.Response.Redirect(newPath);
             return;
         }
         await next();
@@ -273,11 +290,6 @@ using Microsoft.AspNetCore.Http;
 
     app.UseHttpsRedirection();
     app.UseWebOptimizer();
-
-    // var rewriteOptions = new RewriteOptions()
-    //     .AddRewrite(@"^blog/Images/(.*)", "images/$1", skipRemainingRules: true);
-    //
-    // app.UseRewriter(rewriteOptions);
 
     app.UseStaticFiles();
 
