@@ -7,6 +7,8 @@
     using Microsoft.AspNetCore.Authentication.Twitter;
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+    using Microsoft.AspNetCore.HttpOverrides;
     using Microsoft.AspNetCore.Mvc.ViewFeatures;
     using Microsoft.AspNetCore.Mvc.ViewFeatures.Infrastructure;
     using Microsoft.AspNetCore.Rewrite;
@@ -20,6 +22,7 @@
     using RaccoonBlog.Web.Helpers;
     using RaccoonBlog.Web.Helpers.Binders;
     using RaccoonBlog.Web.Infrastructure.AutoMapper;
+    using RaccoonBlog.Web.Infrastructure.Configuration;
     using RaccoonBlog.Web.Infrastructure.Indexes;
     using RaccoonBlog.Web.Services;
     using Raven.Client.Documents;
@@ -34,8 +37,6 @@
     using System.Net.Security;
     using System.Security.Cryptography.X509Certificates;
     using System.Text;
-    using Microsoft.AspNetCore.HttpOverrides;
-    using RaccoonBlog.Web.Infrastructure.Configuration;
     using WilderMinds.MetaWeblog;
     using MetaWeblogService = RaccoonBlog.Web.Services.MetaWeblogService;
 

@@ -30,7 +30,7 @@ namespace RaccoonBlog.Web.Services
 
         private string AkismetKey => _session.Load<BlogConfig>(BlogConfig.Key)?.AkismetKey;
 
-        private string BlogUrl => _configuration["MainBlogUrl"];
+        private string BlogUrl => _configuration["AppSettings:MainUrl"];
 
         public bool CheckForSpam(PostComments.Comment comment)
         {

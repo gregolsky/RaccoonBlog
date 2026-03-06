@@ -1,7 +1,5 @@
-using System.Collections;
-using System.Collections.Generic;
-using System.IO;
-using System.Threading.Tasks;
+using JetBrains.Annotations;
+using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Abstractions;
@@ -10,8 +8,11 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.AspNetCore.Html;
-using JetBrains.Annotations;
+using Microsoft.Extensions.DependencyInjection;
+using System.Collections;
+using System.Collections.Generic;
+using System.IO;
+using System.Threading.Tasks;
 
 namespace RaccoonBlog.Web.Helpers
 {
@@ -40,12 +41,23 @@ namespace RaccoonBlog.Web.Helpers
 			return AbsoluteActionUtil(url, request, url.Action(action, controller));
 		}
 
-		public static string AbsoluteAction(this IUrlHelper url, HttpRequest request, [AspMvcAction] string action, [AspMvcController] string controller, object routeValues)
-		{
-			return AbsoluteActionUtil(url, request, url.Action(action, controller, routeValues));
-		}
+        public static string AbsoluteAction(this IUrlHelper url, HttpRequest request, [AspMvcAction] string action, [AspMvcController] string controller, object routeValues)
+        {
+            var linkGenerator = request.HttpContext.RequestServices.GetService<LinkGenerator>();
 
-		public static string RelativeToAbsolute(this IUrlHelper url, HttpRequest request, string relativeUrl)
+            if (linkGenerator != null)
+            {
+                var relativeUrl = linkGenerator.GetPathByAction(action, controller, routeValues);
+                if (relativeUrl != null)
+                {
+                    return AbsoluteActionUtil(url, request, relativeUrl);
+                }
+            }
+
+            return AbsoluteActionUtil(url, request, url.Action(action, controller, routeValues));
+        }
+
+        public static string RelativeToAbsolute(this IUrlHelper url, HttpRequest request, string relativeUrl)
 		{
 			return AbsoluteActionUtil(url, request, relativeUrl);
 		}

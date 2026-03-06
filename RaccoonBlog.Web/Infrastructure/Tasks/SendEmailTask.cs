@@ -67,10 +67,28 @@ namespace RaccoonBlog.Web.Infrastructure.Tasks
                 var tempDataProvider = sp.GetRequiredService<ITempDataProvider>();
                 var configuration = sp.GetRequiredService<IConfiguration>();
 
+                var mainUrlString = configuration["AppSettings:MainUrl"] ?? "https://localhost";
+                var mainUri = new Uri(mainUrlString);
+
                 var httpContext = new DefaultHttpContext { RequestServices = sp };
+                httpContext.Request.Scheme = mainUri.Scheme;
+                httpContext.Request.Host = HostString.FromUriComponent(mainUri);
+
+                if (!string.IsNullOrEmpty(mainUri.AbsolutePath) && mainUri.AbsolutePath != "/")
+                {
+                    httpContext.Request.PathBase = mainUri.AbsolutePath;
+                }
+
+                var httpContextAccessor = sp.GetService<IHttpContextAccessor>();
+                if (httpContextAccessor != null)
+                {
+                    httpContextAccessor.HttpContext = httpContext;
+                }
+
                 var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
 
-                var viewResult = razorViewEngine.FindView(actionContext, view, false);
+                var viewPath = $"~/Views/MailTemplates/{view}.cshtml";
+                var viewResult = razorViewEngine.GetView(executingFilePath: null, viewPath: viewPath, isMainPage: true);
                 if (!viewResult.Success)
                 {
                     throw new InvalidOperationException($"Could not find view: {view}");

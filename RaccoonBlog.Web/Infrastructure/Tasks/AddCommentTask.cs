@@ -90,7 +90,7 @@ namespace RaccoonBlog.Web.Infrastructure.Tasks
                     post.CommentsCount++;
                     comments.Comments.Add(comment);
                 }
-
+               
                 SendNewCommentEmail(post, comment, postAuthor, scope.ServiceProvider);
             }
         }
