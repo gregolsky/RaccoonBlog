@@ -66,12 +66,14 @@ namespace RaccoonBlog.IntegrationTests.Web.Controllers
             {
                 RequestServices = services
             };
-            
-            controller.ControllerContext = new ControllerContext
-            {
-                HttpContext = httpContext,
-                RouteData = new RouteData()
-            };
+
+            var actionContext = new ActionContext(
+                    httpContext,
+                    new RouteData(),
+                    new Microsoft.AspNetCore.Mvc.Controllers.ControllerActionDescriptor()
+                );
+
+            controller.ControllerContext = new ControllerContext(actionContext);
         }
 
         public virtual void Dispose()

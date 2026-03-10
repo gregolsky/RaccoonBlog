@@ -1,10 +1,11 @@
-﻿using RaccoonBlog.Web.Areas.Admin.Controllers;
+﻿using Microsoft.Extensions.DependencyInjection;
+using RaccoonBlog.IntegrationTests.Infrastructure;
+using RaccoonBlog.Web.Areas.Admin.Controllers;
 using RaccoonBlog.Web.Helpers;
 using RaccoonBlog.Web.Models;
-using RaccoonBlog.IntegrationTests.Infrastructure;
-using Microsoft.Extensions.DependencyInjection;
 using Raven.Client.Documents;
 using Raven.Client.Documents.Session;
+using System;
 using Xunit;
 
 namespace RaccoonBlog.IntegrationTests.Web.Controllers
@@ -15,27 +16,57 @@ namespace RaccoonBlog.IntegrationTests.Web.Controllers
         {
         }
 
+        //[Fact]
+        //public void WhenTheBlogConfigIsAvailable_ThePropertyShouldReturnTheConfig()
+        //{
+        //    var config = new BlogConfig { Title = "Test Config", Id = "Blog/Config" };
+        //    SetupData(session => {
+        //        session.Store(config);
+        //        session.SaveChanges();
+        //    });
+
+        //    BlogConfig configFromController = null;
+
+        //    ExecuteWithScope(services =>
+        //    {
+        //        var controller = ActivatorUtilities.CreateInstance<LoginController>(services);
+
+        //        InitializeController(controller, services);
+
+        //        var configFromController = controller.BlogConfig;
+
+        //        Assert.NotNull(configFromController);
+        //        Assert.Equal(config.Title, configFromController.Title);
+        //    });
+
+        //    Assert.Equal(config.Title, configFromController.Title);
+        //}
+
         [Fact]
         public void WhenTheBlogConfigIsAvailable_ThePropertyShouldReturnTheConfig()
         {
             var config = new BlogConfig { Title = "Test Config", Id = "Blog/Config" };
-            SetupData(session => session.Store(config));
 
-            BlogConfig configFromController = null;
-            
-            ExecuteWithScope(services =>
-            {
-                var signInHelper = services.GetRequiredService<SignInHelper>();
-                var documentStore = services.GetRequiredService<IDocumentStore>();
-                var session = services.GetRequiredService<IDocumentSession>();
-                
-                var controller = new LoginController(signInHelper, documentStore, session);
-                InitializeController(controller, services);
-                
-                configFromController = controller.BlogConfig;
+            SetupData(session => {
+                session.Store(config);
+                session.SaveChanges();
             });
 
-            Assert.Equal(config.Title, configFromController.Title);
+            BlogConfig result = null;
+
+            ExecuteWithScope(services =>
+            {
+                var controller = ActivatorUtilities.CreateInstance<LoginController>(services);
+                InitializeController(controller, services);
+
+                var session = services.GetRequiredService<IDocumentSession>();
+                var dbConfig = session.Load<BlogConfig>("Blog/Config");
+
+                result = controller.BlogConfig;
+            });
+
+            Assert.NotNull(result);
+            Assert.Equal(config.Title, result.Title);
         }
 
         [Fact]

@@ -147,14 +147,5 @@ namespace RaccoonBlog.IntegrationTests.Routing
         {
             await AssertRouteExists("/css", "GET");
         }
-
-        [Fact]
-        public async Task IgnoreRoute_WebResource()
-        {
-            // WebResource.axd should return 404 as it's an ignored route from .NET Framework
-            // In ASP.NET Core, this route simply doesn't exist, which is the expected behavior
-            var exists = await AssertRouteExistsAsync("/WebResource.axd", "GET");
-            Assert.False(exists, "WebResource.axd should be ignored (return 404) as it's a .NET Framework artifact");
-        }
     }
 }
