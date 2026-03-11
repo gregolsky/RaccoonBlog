@@ -62,7 +62,7 @@ namespace RaccoonBlog.Web.Areas.Admin.Controllers
 
 		private IActionResult RedirectFromLoginPage(string retrunUrl = null)
 		{
-			if (string.IsNullOrEmpty(retrunUrl))
+			if (string.IsNullOrEmpty(retrunUrl) || !Url.IsLocalUrl(retrunUrl))
                 return RedirectToAction("Index", "Posts", new { area = "" });
             return Redirect(retrunUrl);
 		}

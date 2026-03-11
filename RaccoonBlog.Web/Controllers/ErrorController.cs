@@ -23,7 +23,8 @@ namespace RaccoonBlog.Web.Controllers
         {
             if (string.IsNullOrEmpty(aspxerrorpath) == false)
             {
-                Log.Warn("Could not find path: " + aspxerrorpath);
+                var sanitizedPath = System.Net.WebUtility.HtmlEncode(aspxerrorpath);
+                Log.Warn("Could not find path: " + sanitizedPath);
             }
 
             HttpContext.Response.StatusCode = ViewBag.ErrorCode = 404;
