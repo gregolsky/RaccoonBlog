@@ -15,11 +15,9 @@ namespace RaccoonBlog.Web.Infrastructure.Tasks
 	public class AddCommentTask : BackgroundTask
 	{
 		private IAkismetService _akismetService;
-        public AddCommentTask(IAkismetService akismetService) 
-		{ 
-			_akismetService = akismetService;
-        }
-		public class RequestValues
+        private readonly CacheSignalService _cacheSignal;
+
+        public class RequestValues
 		{
 			public string UserAgent { get; set; }
 			public string UserHostAddress { get; set; }
@@ -39,6 +37,7 @@ namespace RaccoonBlog.Web.Infrastructure.Tasks
 			this.requestValues = requestValues;
 			this.postId = postId;
 			this.serviceProvider = serviceProvider;
+            this._cacheSignal = serviceProvider.GetRequiredService<CacheSignalService>();
             this._scopeFactory = serviceProvider.GetRequiredService<IServiceScopeFactory>();
         }
 
@@ -90,7 +89,9 @@ namespace RaccoonBlog.Web.Infrastructure.Tasks
                     post.CommentsCount++;
                     comments.Comments.Add(comment);
                 }
-               
+
+                DocumentSession.SaveChanges();
+                _cacheSignal.Invalidate(CacheKeys.SectionArea);
                 SendNewCommentEmail(post, comment, postAuthor, scope.ServiceProvider);
             }
         }

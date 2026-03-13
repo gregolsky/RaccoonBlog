@@ -50,13 +50,13 @@
 			                    if (result.location) {
 				                    callback(result.location, { alt: file.name });
 			                    } else {
-				                    alert('Ошибка: сервер не вернул URL картинки.');
+									alert('Error: The server did not return the image URL.');
 			                    }
 		                    })
 		                    .catch(function(error) {
-			                    console.error('Ошибка сервера:', error.message);
-			                    alert('Ошибка C#:\n' + error.message);
-		                    });
+								console.error('Server error:', error.message);
+								alert('C# error:\n' + error.message);
+		                    }); 
                     };
                     input.click();
                 }
