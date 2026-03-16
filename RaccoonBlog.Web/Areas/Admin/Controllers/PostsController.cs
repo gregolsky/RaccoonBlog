@@ -32,11 +32,13 @@ namespace RaccoonBlog.Web.Areas.Admin.Controllers
 	{
 		private IAkismetService _akismetService;
 		private readonly MediaService _mediaService;
-        public PostsController(IDocumentStore documentStore, IDocumentSession ravenSession, IAkismetService akismetService,  MediaService mediaService)
+        private readonly CacheSignalService _cacheSignal;
+        public PostsController(IDocumentStore documentStore, IDocumentSession ravenSession, IAkismetService akismetService,  MediaService mediaService, CacheSignalService cacheSignal)
         : base(documentStore, ravenSession)
         {
             _akismetService = akismetService;
             _mediaService = mediaService;
+			_cacheSignal = cacheSignal;
         }
 
         public virtual IActionResult Index()
@@ -141,7 +143,8 @@ namespace RaccoonBlog.Web.Areas.Admin.Controllers
 				post.CommentsId = comments.Id;	
 			}
 
-			return RedirectToAction("Details", new {Id = post.MapTo<PostReference>().DomainId});
+            _cacheSignal.Invalidate(CacheKeys.SectionArea);
+            return RedirectToAction("Details", new {Id = post.MapTo<PostReference>().DomainId});
 		}
 
 		public virtual IActionResult Details(string id)
@@ -300,6 +303,7 @@ namespace RaccoonBlog.Web.Areas.Admin.Controllers
 
             RavenSession.Delete(post);
 
+            _cacheSignal.Invalidate(CacheKeys.SectionArea);
             return SuccessResponse();
         }
 

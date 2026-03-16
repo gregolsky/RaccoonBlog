@@ -4,7 +4,8 @@ namespace RaccoonBlog.Web.ViewModels
 {
 	public class UserInput
 	{
-		public string Id { get; set; }
+        [Display(Name = "User ID")]
+        public string Id { get; set; }
 
 		[Display(Name = "Full Name")]
 		public string FullName { get; set; }

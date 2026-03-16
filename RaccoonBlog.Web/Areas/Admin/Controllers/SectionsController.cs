@@ -22,7 +22,7 @@ namespace RaccoonBlog.Web.Areas.Admin.Controllers
         public virtual IActionResult Index()
 		{
 			var sections = RavenSession.Query<Section>()
-				.OrderBy(x => x.Position)
+                .OrderBy(x => x.Position)
 				.ToList();
 
 			return View("List", sections);
@@ -47,7 +47,6 @@ namespace RaccoonBlog.Web.Areas.Admin.Controllers
 		}
 
 		[HttpPost]
-		[ValidateAntiForgeryToken]
 		public virtual IActionResult Activate(string id, bool activate)
 		{
             id = Uri.UnescapeDataString(id);
@@ -63,29 +62,33 @@ namespace RaccoonBlog.Web.Areas.Admin.Controllers
             return StatusCode(StatusCodes.Status200OK);
 		}
 
-		[HttpPost]
-		[ValidateAntiForgeryToken]
-		public virtual IActionResult Update(Section section)
-		{
-			if (!ModelState.IsValid)
-				return View("Edit", section);
+        [HttpPost]
+        public virtual IActionResult Update(Section section)
+        {
+            if (!ModelState.IsValid)
+                return View("Edit", section);
 
-			if (section.Position == 0)
-			{
-				section.Position = RavenSession.Query<Section>()
-					.OrderByDescending(sec => sec.Position)
-					.Select(sec => sec.Position)
-					.FirstOrDefault() + 1;
-			}
-			RavenSession.Store(section);
+            if (!string.IsNullOrEmpty(section.Id))
+            {
+                section.Id = Uri.UnescapeDataString(section.Id);
+            }
+
+            if (section.Position == 0)
+            {
+                section.Position = RavenSession.Query<Section>()
+                    .OrderByDescending(sec => sec.Position)
+                    .Select(sec => sec.Position)
+                    .FirstOrDefault() + 1;
+            }
+
+            RavenSession.Store(section);
 
             _cacheSignal.Invalidate(CacheKeys.SectionArea);
 
             return RedirectToAction("Index");
-		}
+        }
 
-		[HttpPost]
-		[ValidateAntiForgeryToken]
+        [HttpPost]
 		public virtual IActionResult Delete(string id)
 		{
             id = Uri.UnescapeDataString(id);
@@ -107,7 +110,6 @@ namespace RaccoonBlog.Web.Areas.Admin.Controllers
 
 		[AjaxOnly]
 		[HttpPost]
-		[ValidateAntiForgeryToken]
 		public virtual IActionResult SetPosition(string id, int newPosition)
 		{
             id = Uri.UnescapeDataString(id);

@@ -26,7 +26,7 @@ namespace RaccoonBlog.Web.ViewComponents
 			var result = new List<RecentCommentViewModel>();
 			foreach (var commentsTuple in commentsTuples)
 			{
-				var recentCommentViewModel = commentsTuple.Item1.MapTo<RecentCommentViewModel>();
+                var recentCommentViewModel = commentsTuple.Item1.MapTo<RecentCommentViewModel>();
 				commentsTuple.Item2.MapPropertiesToInstance(recentCommentViewModel);
 				result.Add(recentCommentViewModel);
 			}

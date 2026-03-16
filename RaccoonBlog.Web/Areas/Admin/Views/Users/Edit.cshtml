@@ -18,7 +18,7 @@
 
 @using (Html.BeginForm("Update", "Users", Microsoft.AspNetCore.Mvc.Rendering.FormMethod.Post, new { @class = "form-horizontal" }))
 {
-    @Html.EditorFor(x => x.Id)
+    @Html.EditorFor(x => x.Id, "TextLong")
     @Html.EditorFor(x => x.FullName, "TextLong")
     @Html.EditorFor(x => x.Email, "EmailAddress")
 	@Html.EditorFor(x => x.Phone, "TextLong")

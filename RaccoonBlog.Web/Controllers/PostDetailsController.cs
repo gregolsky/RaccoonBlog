@@ -127,8 +127,8 @@ namespace RaccoonBlog.Web.Controllers
         [ValidateAntiForgeryToken]
         public virtual async Task<IActionResult> Comment(CommentInput input, string id, Guid key)
         {
-            //if (ModelState.IsValid == false)
-            //    return RedirectToAction("Details");
+            if (ModelState.IsValid == false)
+                return RedirectToAction("Details");
 
             if (IsIpAddressBlocked())
                 return StatusCode(StatusCodes.Status402PaymentRequired);
