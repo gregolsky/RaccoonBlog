@@ -262,18 +262,16 @@ var mapper = app.Services.GetRequiredService<AutoMapper.IMapper>();
 RaccoonBlog.Web.Infrastructure.AutoMapper.AutoMapperExtensions.Initialize(mapper);
 
 // Configure the HTTP request pipeline
-//if (app.Environment.IsDevelopment())
-//{
-//    app.UseDeveloperExceptionPage();
-//}
-//else
-//{
-//    app.UseExceptionHandler("/Error/Index");
-//    app.UseStatusCodePagesWithReExecute("/Error/{0}");
-//    app.UseHsts();
-//}
-
-app.UseDeveloperExceptionPage();
+if (app.Environment.IsDevelopment())
+{
+    app.UseDeveloperExceptionPage();
+}
+else
+{
+    app.UseExceptionHandler("/Error/Index");
+    app.UseStatusCodePagesWithReExecute("/Error/{0}");
+    app.UseHsts();
+}
 
 app.Use(async (context, next) =>
 {

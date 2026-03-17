@@ -22,8 +22,6 @@ namespace RaccoonBlog.Web.Controllers
         }
         public virtual IActionResult Index()
 		{
-
-			return Ok("Alive");
 			ViewBag.IsHomePage = CurrentPage == DefaultPage;
 
 		    var posts = RavenSession.Query<Post>()
