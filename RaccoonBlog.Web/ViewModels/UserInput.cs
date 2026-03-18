@@ -1,20 +1,18 @@
 using System.ComponentModel.DataAnnotations;
-using System.Web.Mvc;
-using DataAnnotationsExtensions;
 
 namespace RaccoonBlog.Web.ViewModels
 {
 	public class UserInput
 	{
-		[HiddenInput]
-		public string Id { get; set; }
+        [Display(Name = "User ID")]
+        public string Id { get; set; }
 
 		[Display(Name = "Full Name")]
 		public string FullName { get; set; }
 
 		[Required]
 		[Display(Name = "Email")]
-		[Email]
+		[EmailAddress]
 		public string Email { get; set; }
 
         [Display(Name = "Phone")]

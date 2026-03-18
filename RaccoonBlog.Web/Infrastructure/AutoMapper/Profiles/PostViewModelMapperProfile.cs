@@ -1,4 +1,5 @@
-using System.Web;
+using System.Net;
+using Microsoft.AspNetCore.Http;
 using RaccoonBlog.Web.Helpers;
 using RaccoonBlog.Web.Infrastructure.AutoMapper.Profiles.Resolvers;
 using RaccoonBlog.Web.Infrastructure.Common;
@@ -16,7 +17,7 @@ namespace RaccoonBlog.Web.Infrastructure.AutoMapper.Profiles
 				.ForMember(x => x.Slug, o => o.MapFrom(m => SlugConverter.TitleToSlug(m.Title)))
 				.ForMember(x => x.PublishedAt, o => o.MapFrom(m => m.PublishAt))
 				.ForMember(x => x.IsCommentAllowed, o => o.MapFrom(m => m.AllowComments))
-				.ForMember(x => x.Title, o => o.MapFrom(m => HttpUtility.HtmlDecode(m.Title)))
+				.ForMember(x => x.Title, o => o.MapFrom(m => WebUtility.HtmlDecode(m.Title)))
 				.ForMember(x => x.Author, o => o.Ignore())
 				;
 
@@ -30,7 +31,7 @@ namespace RaccoonBlog.Web.Infrastructure.AutoMapper.Profiles
 				;
 
 			CreateMap<Post, PostReference>()
-				.ForMember(x => x.Title, o => o.MapFrom(m => HttpUtility.HtmlDecode(m.Title)))
+				.ForMember(x => x.Title, o => o.MapFrom(m => WebUtility.HtmlDecode(m.Title)))
 				.ForMember(x => x.Slug, o => o.Ignore())
 				.ForMember(x => x.PublishedAt, o => o.MapFrom(m => m.PublishAt))
 				.ForMember(x => x.Tags, o => o.MapFrom(m => m.Tags))
@@ -39,6 +40,7 @@ namespace RaccoonBlog.Web.Infrastructure.AutoMapper.Profiles
 			CreateMap<Commenter, CommentInput>()
 				.ForMember(x => x.Body, o => o.Ignore())
 				.ForMember(x => x.CommenterKey, o => o.MapFrom(m => m.Key))
+				.ForMember(x => x.IsSpam, o => o.Ignore())
 				;
 
 			CreateMap<CommentInput, Commenter>()
@@ -51,19 +53,11 @@ namespace RaccoonBlog.Web.Infrastructure.AutoMapper.Profiles
 
 			CreateMap<User, CommentInput>()
 				.ForMember(x => x.Name, o => o.MapFrom(m => m.FullName))
-				.ForMember(x => x.Url, o => o.MapFrom(m => UrlHelper.RelativeToAbsolute(UrlHelper.RouteUrl("homepage"))))
+				.ForMember(x => x.Url, o => o.MapFrom(m => ConfigurationHelper.MainBlogUrl ?? "/"))
 				.ForMember(x => x.Body, o => o.Ignore())
 				.ForMember(x => x.CommenterKey, o => o.Ignore())
+				.ForMember(x => x.IsSpam, o => o.Ignore())
 				;
-
-			//CreateMap<UserProfile, CommentInput>()
-			//    .ForMember(x => x.Name, o => o.MapFrom(m => m.FirstName + " " + m.LastName))
-			//    .ForMember(x => x.Url, o => o.MapFrom(m => m.ProfileURL))
-			//    .ForMember(x => x.Body, o => o.Ignore())
-			//    .ForMember(x => x.CommenterKey, o => o.Ignore())
-			//    ;
-
-			CreateMap<HttpRequestWrapper, Tasks.AddCommentTask.RequestValues>();
 
 			CreateMap<User, PostViewModel.UserDetails>();
 		}

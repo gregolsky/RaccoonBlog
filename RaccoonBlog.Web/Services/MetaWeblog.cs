@@ -1,26 +1,43 @@
 using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.IO;
 using System.Linq;
-using System.Web;
-using System.Web.Mvc;
-using System.Web.Routing;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using CookComputing.XmlRpc;
 using RaccoonBlog.Web.Helpers;
 using RaccoonBlog.Web.Infrastructure.Common;
 using RaccoonBlog.Web.Infrastructure.Indexes;
 using RaccoonBlog.Web.Models;
 using RaccoonBlog.Web.Services.RssModels;
+using Raven.Client.Documents;
 using Post = RaccoonBlog.Web.Services.RssModels.Post;
 
 namespace RaccoonBlog.Web.Services
 {
+	// Note: In ASP.NET Core, XmlRpc services are typically implemented as controllers or middleware
+	// This will need to be adapted to work with ASP.NET Core's request pipeline
 	public class MetaWeblog : XmlRpcService, IMetaWeblog
 	{
-		private UrlHelper Url
+		private readonly IDocumentStore documentStore;
+		private readonly IConfiguration configuration;
+		private readonly IUrlHelper urlHelper;
+		private readonly HttpContext httpContext;
+		private readonly MediaService _mediaService;
+
+		public MetaWeblog(
+			IDocumentStore documentStore,
+			IConfiguration configuration,
+			IUrlHelper urlHelper,
+			IHttpContextAccessor httpContextAccessor,
+			MediaService mediaService)
 		{
-			get { return new UrlHelper(new RequestContext(new HttpContextWrapper(Context), new RouteData())); }
+			this.documentStore = documentStore;
+			this.configuration = configuration;
+			this.urlHelper = urlHelper;
+			this.httpContext = httpContextAccessor.HttpContext;
+			_mediaService =  mediaService;
 		}
 
 		#region IMetaWeblog Members
@@ -28,7 +45,7 @@ namespace RaccoonBlog.Web.Services
 		string IMetaWeblog.AddPost(string blogid, string username, string password, Post post, bool publish)
 		{
 			Models.Post newPost;
-			using (var session = MvcApplication.DocumentStore.OpenSession())
+			using (var session = documentStore.OpenSession())
 			{
 				var user = ValidateUser(username, password);
 				var comments = new PostComments
@@ -71,12 +88,12 @@ namespace RaccoonBlog.Web.Services
 
 		bool IMetaWeblog.UpdatePost(string postid, string username, string password, Post post, bool publish)
 		{
-			using (var session = MvcApplication.DocumentStore.OpenSession())
+			using (var session = documentStore.OpenSession())
 			{
 				var user = ValidateUser(username, password);
 				var postToEdit = session
 					.Include<Models.Post>(x => x.CommentsId)
-					.Load(postid);
+					.Load<Models.Post>(postid);
 				if (postToEdit == null)
 					throw new XmlRpcFaultException(0, "Post does not exists");
 
@@ -115,7 +132,7 @@ namespace RaccoonBlog.Web.Services
 		{
 			ValidateUser(username, password);
 
-			using (var session = MvcApplication.DocumentStore.OpenSession())
+			using (var session = documentStore.OpenSession())
 			{
 				var thePost = session.Load<Models.Post>(postid);
 				if (thePost == null)
@@ -139,24 +156,24 @@ namespace RaccoonBlog.Web.Services
 		{
 			ValidateUser(username, password);
 			var mostRecentTag = new DateTimeOffset(DateTimeOffset.Now.Year - 2,
-			                                       DateTimeOffset.Now.Month,
-			                                       1, 0, 0, 0,
-			                                       DateTimeOffset.Now.Offset);
+												   DateTimeOffset.Now.Month,
+												   1, 0, 0, 0,
+												   DateTimeOffset.Now.Offset);
 
-			using (var session = MvcApplication.DocumentStore.OpenSession())
+			using (var session = documentStore.OpenSession())
 			{
 				var categoryInfos = session.Query<Tags_Count.ReduceResult, Tags_Count>()
 					.Where(x => x.LastSeenAt > mostRecentTag)
 					.ToList();
 
 				return categoryInfos.Select(x => new CategoryInfo
-				                                 {
-				                                 	categoryid = x.Name,
-				                                 	description = x.Name,
-				                                 	title = x.Name,
-				                                 	htmlUrl = Url.Action("Tag", "Posts", new {slug = x.Name}),
-				                                 	rssUrl = Url.Action("Rss", "Syndication", new {tag = x.Name}),
-				                                 }).ToArray();
+												 {
+													 categoryid = x.Name,
+													 description = x.Name,
+													 title = x.Name,
+													 htmlUrl = urlHelper.Action("Tag", "Posts", new {slug = x.Name}),
+													 rssUrl = urlHelper.Action("Rss", "Syndication", new {tag = x.Name}),
+												 }).ToArray();
 			}
 		}
 
@@ -164,12 +181,12 @@ namespace RaccoonBlog.Web.Services
 		{
 			ValidateUser(username, password);
 
-			using (var session = MvcApplication.DocumentStore.OpenSession())
+			using (var session = documentStore.OpenSession())
 			{
 				var list = session.Query<Models.Post>()
-				                  .OrderByDescending(x => x.PublishAt)
-				                  .Take(numberOfPosts)
-				                  .ToList();
+								  .OrderByDescending(x => x.PublishAt)
+								  .Take(numberOfPosts)
+								  .ToList();
 
 				return list.Select(thePost => new Post
 				{
@@ -187,20 +204,40 @@ namespace RaccoonBlog.Web.Services
 		MediaObjectInfo IMetaWeblog.NewMediaObject(string blogid, string username, string password, MediaObject mediaObject)
 		{
 			ValidateUser(username, password);
-			var imagePhysicalPath = Context.Server.MapPath(ConfigurationManager.AppSettings["uploadsPath"]);
-			var imageWebPath = VirtualPathUtility.ToAbsolute(ConfigurationManager.AppSettings["UploadsPath"]);
-
-			imagePhysicalPath = Path.Combine(imagePhysicalPath, mediaObject.name);
-			var directoryPath = Path.GetDirectoryName(imagePhysicalPath).Replace("/", "\\");
+			var uploadsPath = configuration["UploadsPath"] ?? "/Content/uploads";
+			var webRootPath = configuration["WebRootPath"] ?? "wwwroot";
+			
+			var imagePhysicalPath = Path.Combine(webRootPath, uploadsPath.TrimStart('/'), mediaObject.name);
+			var directoryPath = Path.GetDirectoryName(imagePhysicalPath);
+			
 			if (!Directory.Exists(directoryPath))
 				Directory.CreateDirectory(directoryPath);
+			
 			File.WriteAllBytes(imagePhysicalPath, mediaObject.bits);
 
+			var imageWebPath = $"/{uploadsPath.TrimStart('/')}/{mediaObject.name}";
 
 			return new MediaObjectInfo()
 			{
-				url = Path.Combine(imageWebPath, mediaObject.name)
+				url = imageWebPath
 			};
+		}
+		
+		MediaObjectInfo IMetaWeblog.NewMediaObjectTest(string blogid, string username, string password, MediaObject mediaObject)
+		{
+			ValidateUser(username, password);
+
+			using (var memoryStream = new MemoryStream(mediaObject.bits))
+			{
+				var result = _mediaService.SaveImage(memoryStream, mediaObject.name, mediaObject.type ?? "application/octet-stream");
+				
+				var imageUrl = urlHelper.Action("GetImage", "Images", new { area = "", id = result.FileHash, fileName = result.FileName });
+
+				return new MediaObjectInfo()
+				{
+					url = imageUrl
+				};
+			}
 		}
 
 		int IMetaWeblog.newCategory(string blogid, string username, string password, WordpressCategory category)
@@ -213,18 +250,18 @@ namespace RaccoonBlog.Web.Services
 		{
 			ValidateUser(username, password);
 
-			using (var session = MvcApplication.DocumentStore.OpenSession())
+			using (var session = documentStore.OpenSession())
 			{
 				var thePost = session.Load<Models.Post>(postid);
 
 				if (thePost != null)
 				{
-                    if (string.IsNullOrEmpty(thePost.CommentsId) == false)
-                    {
-                        session.Delete(thePost.CommentsId);
-                    }
+					if (string.IsNullOrEmpty(thePost.CommentsId) == false)
+					{
+						session.Delete(thePost.CommentsId);
+					}
 
-                    session.Delete<Models.Post>(thePost);
+					session.Delete<Models.Post>(thePost);
 				}
 
 				session.SaveChanges();
@@ -242,7 +279,7 @@ namespace RaccoonBlog.Web.Services
 				{
 					blogid = "blogs/1",
 					blogName = username,
-					url = Context.Request.RawUrl
+					url = $"{httpContext.Request.Scheme}://{httpContext.Request.Host}{httpContext.Request.PathBase}"
 				},
 			};
 		}
@@ -267,7 +304,7 @@ namespace RaccoonBlog.Web.Services
 		private User ValidateUser(string username, string password)
 		{
 			User user;
-			using (var session = MvcApplication.DocumentStore.OpenSession())
+			using (var session = documentStore.OpenSession())
 			{
 				user = session.GetUserByEmail(username);
 			}

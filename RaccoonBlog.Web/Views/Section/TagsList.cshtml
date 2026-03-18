@@ -5,7 +5,7 @@
 <nav id="tags">
 	<ul>
 		@{
-			var url = Url.Action(MVC.Posts.ActionNames.Tag, MVC.Posts.Name, new { Slug = "_s_"}); // Url.Action is slow
+			var url = Url.Action("Tag", "Posts", new { Slug = "_s_"}); // Url.Action is slow
 			foreach (var tag in Model)
 			{
 				<li>

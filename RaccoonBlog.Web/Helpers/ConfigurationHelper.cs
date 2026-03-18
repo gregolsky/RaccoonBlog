@@ -1,17 +1,23 @@
 ﻿using System;
-using System.Configuration;
+using Microsoft.Extensions.Configuration;
 
 namespace RaccoonBlog.Web.Helpers
 {
 	public static class ConfigurationHelper
 	{
+		private static IConfiguration _configuration;
 		private static Tuple<string, string> microsoftOAuthKeys;
-
 		private static Tuple<string, string> googleOAuthKeys;
-
 		private static Tuple<string, string> twitterOAuthKeys;
-
 		private static Tuple<string, string> facebookOAuthKeys;
+
+		/// <summary>
+		/// Initialize the configuration helper. Call this from Program.cs after building the app.
+		/// </summary>
+		public static void Initialize(IConfiguration configuration)
+		{
+			_configuration = configuration;
+		}
 
 		public static Tuple<string, string> MicrosoftOAuthKeys
 		{
@@ -46,13 +52,16 @@ namespace RaccoonBlog.Web.Helpers
 			}
 		}
 
-	    public static string MainBlogUrl => ConfigurationManager.AppSettings["MainUrl"];
+		public static string MainBlogUrl => _configuration?["MainUrl"] ?? _configuration?["Raccoon:MainUrl"] ?? string.Empty;
 
-	    private static Tuple<string, string> GetKeys(string provider, string idKey, string secretKey)
+		private static Tuple<string, string> GetKeys(string provider, string idKey, string secretKey)
 		{
-			var keyPrefix = "Raccoon/OAuth/" + provider;
-			var id = ConfigurationManager.AppSettings[keyPrefix + "/" + idKey];
-			var secret = ConfigurationManager.AppSettings[keyPrefix + "/" + secretKey];
+			if (_configuration == null)
+				return null;
+
+			var keyPrefix = $"Raccoon:OAuth:{provider}";
+			var id = _configuration[$"{keyPrefix}:{idKey}"];
+			var secret = _configuration[$"{keyPrefix}:{secretKey}"];
 
 			if (string.IsNullOrWhiteSpace(id) || string.IsNullOrWhiteSpace(secret))
 				return null;

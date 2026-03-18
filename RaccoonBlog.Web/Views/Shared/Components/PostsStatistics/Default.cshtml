@@ -1,0 +1,14 @@
+@model RaccoonBlog.Web.ViewModels.PostsStatisticsViewModel
+
+@if (Model != null)
+{
+<div class="hstack flex-wrap justify-content-center margin-bottom">
+	<div class="vstack">
+		Posts: <strong>@Model.PostsCount.ToString("0,0")</strong>
+	</div>
+	<span class="separator">|</span>
+	<div class="vstack">
+		Comments: <strong>@Model.CommentsCount.ToString("0,0")</strong>
+	</div>
+</div>
+}

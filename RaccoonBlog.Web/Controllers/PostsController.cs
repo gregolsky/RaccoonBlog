@@ -1,7 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using RaccoonBlog.Web.Infrastructure.AutoMapper;
 using RaccoonBlog.Web.Infrastructure.AutoMapper.Profiles.Resolvers;
 using RaccoonBlog.Web.Infrastructure.Common;
@@ -10,12 +7,20 @@ using RaccoonBlog.Web.Models;
 using RaccoonBlog.Web.ViewModels;
 using Raven.Client.Documents;
 using Raven.Client.Documents.Linq;
+using Raven.Client.Documents.Session;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace RaccoonBlog.Web.Controllers
 {
 	public partial class PostsController : AggresivelyCachingRacconController
 	{
-		public virtual ActionResult Index()
+        public PostsController(IDocumentStore documentStore, IDocumentSession ravenSession)
+: base(documentStore, ravenSession)
+        {
+        }
+        public virtual IActionResult Index()
 		{
 			ViewBag.IsHomePage = CurrentPage == DefaultPage;
 
@@ -30,7 +35,7 @@ namespace RaccoonBlog.Web.Controllers
 			return ListView((int)stats.TotalResults, posts);
 		}
 
-		public virtual ActionResult Tag(string slug)
+		public virtual IActionResult Tag(string slug)
 		{
 			var posts = RavenSession.Query<Post>()
 				.Include(x => x.AuthorId)
@@ -44,14 +49,14 @@ namespace RaccoonBlog.Web.Controllers
 			return ListView((int)stats.TotalResults, posts);
 		}
 
-		public virtual ActionResult Series(string seriesId, string seriesSlug)
+		public virtual IActionResult Series(string seriesId, string seriesSlug)
 	    {
 			var serie = RavenSession
 				.Query<Posts_Series.Result, Posts_Series>()
 				.FirstOrDefault(x => x.SeriesId == seriesId);
 
 			if (serie == null)
-                return HttpNotFound();
+                return NotFound();
 
             var posts = RavenSession.Query<Post>()
                 .Include(x => x.AuthorId)
@@ -65,7 +70,7 @@ namespace RaccoonBlog.Web.Controllers
             return ListView((int)stats.TotalResults, posts);
 	    }
 
-		public virtual ActionResult Archive(int year, int? month, int? day)
+		public virtual IActionResult Archive(int year, int? month, int? day)
 		{
 			var postsQuery = RavenSession.Query<Post>()
 				.Include(x => x.AuthorId)
@@ -87,7 +92,7 @@ namespace RaccoonBlog.Web.Controllers
 			return ListView((int)stats.TotalResults, posts);
 		}
 
-		private ActionResult ListView(int count, IList<Post> posts)
+		private IActionResult ListView(int count, IList<Post> posts)
 		{
 		    ViewBag.ChangeViewStyle = true;
 

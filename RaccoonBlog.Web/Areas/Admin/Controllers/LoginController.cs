@@ -1,27 +1,33 @@
-using System.Web;
-using System.Web.Mvc;
+using System.Threading.Tasks;
 using HibernatingRhinos.Loci.Common.Models;
-
+using Microsoft.AspNetCore.Mvc;
 using RaccoonBlog.Web.Controllers;
 using RaccoonBlog.Web.Helpers;
 using RaccoonBlog.Web.Infrastructure.Common;
 using RaccoonBlog.Web.ViewModels;
+using Raven.Client.Documents;
+using Raven.Client.Documents.Session;
 
 namespace RaccoonBlog.Web.Areas.Admin.Controllers
 {
-	public partial class LoginController : RaccoonController
+    [Area("Admin")]
+    public partial class LoginController : RaccoonController
 	{
-		private readonly SignInHelper signInHelper;
+		private readonly SignInHelper _signInHelper;
 
-		public LoginController()
-		{
-			signInHelper = new SignInHelper(System.Web.HttpContext.Current.GetOwinContext().Authentication);
-		}
+        public LoginController(
+                SignInHelper signInHelper,
+                IDocumentStore documentStore,
+                IDocumentSession ravenSession)
+                : base(documentStore, ravenSession)
+        {
+            _signInHelper = signInHelper;
+        }
 
-		[HttpGet]
-		public virtual ActionResult Index(string returnUrl)
+        [HttpGet]
+		public virtual IActionResult Index(string returnUrl)
 		{
-			if (Request.IsAuthenticated)
+			if (User.Identity.IsAuthenticated)
 			{
 				return RedirectFromLoginPage();
 			}
@@ -30,7 +36,8 @@ namespace RaccoonBlog.Web.Areas.Admin.Controllers
 		}
 
 		[HttpPost]
-		public virtual ActionResult Index(LogOnModel input)
+		[ValidateAntiForgeryToken]
+		public virtual IActionResult Index(LogOnModel input)
 		{
 			var user = RavenSession.GetUserByEmail(input.Login);
 
@@ -46,35 +53,34 @@ namespace RaccoonBlog.Web.Areas.Admin.Controllers
 
 			if (ModelState.IsValid)
 			{
-				signInHelper.SignIn(input, true);
+				_signInHelper.SignIn(input, true);
 				return RedirectFromLoginPage(input.ReturnUrl);
 			}
 
 			return View(new LogOnModel { Login = input.Login, ReturnUrl = input.ReturnUrl });
 		}
 
-		private ActionResult RedirectFromLoginPage(string retrunUrl = null)
+		private IActionResult RedirectFromLoginPage(string retrunUrl = null)
 		{
-			if (string.IsNullOrEmpty(retrunUrl))
-				return RedirectToRoute("homepage");
-			return Redirect(retrunUrl);
+			if (string.IsNullOrEmpty(retrunUrl) || !Url.IsLocalUrl(retrunUrl))
+                return RedirectToAction("Index", "Posts", new { area = "" });
+            return Redirect(retrunUrl);
 		}
 
 		[HttpGet]
-		public virtual ActionResult LogOut(string returnurl)
+		public virtual async Task<IActionResult> LogOut(string returnurl)
 		{
-			signInHelper.SignOut();
+			await _signInHelper.SignOutAsync();
 			return RedirectFromLoginPage(returnurl);
 		}
-
-		[ChildActionOnly]
-		public virtual ActionResult CurrentUser()
+		
+		public virtual IActionResult CurrentUser()
 		{
-			if (Request.IsAuthenticated == false)
+			if (User.Identity.IsAuthenticated == false)
 				return View(new CurrentUserViewModel());
 
-			var user = RavenSession.GetUserByEmail(HttpContext.User.Identity.Name);
-			return View(new CurrentUserViewModel { FullName = user.FullName }); // TODO: we don't really need a VM here
+			var user = RavenSession.GetUserByEmail(User.Identity.Name);
+			return View(new CurrentUserViewModel { FullName = user.FullName });
 		}
 	}
 }

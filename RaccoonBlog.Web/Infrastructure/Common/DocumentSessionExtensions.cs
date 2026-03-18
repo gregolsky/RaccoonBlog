@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
-using System.Web;
+using System.Threading.Tasks;
 using RaccoonBlog.Web.Infrastructure.AutoMapper;
 using RaccoonBlog.Web.Infrastructure.Indexes;
 using RaccoonBlog.Web.Models;
@@ -43,6 +43,41 @@ namespace RaccoonBlog.Web.Infrastructure.Common
 				.ToList();
 		}
 
+		public static async Task<IList<Tuple<PostComments.Comment, Post>>> QueryForRecentCommentsAsync(
+			this IAsyncDocumentSession documentSession,
+			Func<IRavenQueryable<PostComments_CreationDate.Result>, IQueryable<PostComments_CreationDate.Result>> processQuery)
+		{
+			var query = documentSession
+				.Query<PostComments_CreationDate.Result, PostComments_CreationDate>()
+				.Include(comment => comment.PostCommentsId)
+				.Include(comment => comment.PostId)
+				.OrderByDescending(x => x.PostPublishAt)
+				.ThenByDescending(x => x.CreatedAt)
+				.Where(x => x.PostPublishAt < DateTimeOffset.Now.AsMinutes())
+				.ProjectInto<PostComments_CreationDate.Result>();
+
+			// TODO: do not order by posts creation date, but instead order by commented date.
+
+			var commentsIdentifiers = await processQuery(query)
+				.ToListAsync();
+
+			var result = new List<Tuple<PostComments.Comment, Post>>();
+			
+			foreach (var commentIdentifier in commentsIdentifiers)
+			{
+				var comments = await documentSession.LoadAsync<PostComments>(commentIdentifier.PostCommentsId);
+				var post = await documentSession.LoadAsync<Post>(commentIdentifier.PostId);
+				var comment = comments.Comments.FirstOrDefault(x => x.Id == commentIdentifier.CommentId);
+				
+				if (comment != null)
+				{
+					result.Add(Tuple.Create(comment, post));
+				}
+			}
+
+			return result;
+		}
+
 		public static PostReference GetNextPrevPost(this IDocumentSession session, Post compareTo, bool isNext)
 		{
 			var queryable = session.Query<Post>()
@@ -71,18 +106,22 @@ namespace RaccoonBlog.Web.Infrastructure.Common
 			return postReference.MapTo<PostReference>();
 		}
 
-		public static User GetCurrentUser(this IDocumentSession session)
+		public static User GetCurrentUser(this IDocumentSession session, ClaimsPrincipal user)
 		{
-			if (HttpContext.Current.Request.IsAuthenticated == false)
+			if (user?.Identity?.IsAuthenticated != true)
 				return null;
 
-			var claimsIdentity = HttpContext.Current.User.Identity as ClaimsIdentity;
+			var claimsIdentity = user.Identity as ClaimsIdentity;
 			if (claimsIdentity == null) 
 				return null;
 
-			var email = claimsIdentity.FindFirst(ClaimTypes.Email).Value;
-			var user = session.GetUserByEmail(email);
-			return user;
+			var emailClaim = claimsIdentity.FindFirst(ClaimTypes.Email);
+			if (emailClaim == null)
+				return null;
+
+			var email = emailClaim.Value;
+			var userEntity = session.GetUserByEmail(email);
+			return userEntity;
 		}
 
 		public static User GetUserByEmail(this IDocumentSession session, string email)

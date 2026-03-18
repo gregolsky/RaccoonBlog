@@ -12,7 +12,7 @@ else
 }
 
 <p>
-	@using (Html.BeginForm("AddIpToBlackList", "Posts", FormMethod.Post))
+	@using (Html.BeginForm("AddIpToBlackList", "Posts", Microsoft.AspNetCore.Mvc.Rendering.FormMethod.Post))
 	{
         @Html.HiddenFor(x => x.IpAddress)
 		<input type="submit" value="Add IP to blacklist" />

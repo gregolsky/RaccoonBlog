@@ -1,0 +1,37 @@
+@model IList<RaccoonBlog.Web.ViewModels.SectionDetails>
+
+@foreach (var item in Model)
+{
+	if (item.IsActionSection())
+	{
+		@if (item.ControllerName == "Section" && item.ActionName == "PostsSeries")
+		{
+			@await Component.InvokeAsync("PostsSeries", new { sectionTitle = item.Title })
+		}
+		else if (item.ControllerName == "Section" && item.ActionName == "FuturePosts")
+		{
+			@await Component.InvokeAsync("FuturePosts", new { sectionTitle = item.Title })
+		}
+		else if (item.ControllerName == "Section" && item.ActionName == "PostsStatistics")
+		{
+			@await Component.InvokeAsync("PostsStatistics")
+		}
+		else if (item.ControllerName == "Section" && item.ActionName == "RecentComments")
+		{
+			@await Component.InvokeAsync("RecentComments", new { sectionTitle = item.Title })
+		}
+		else
+		{
+			<div class="placeholder">
+				<p>Item: @item.ControllerName/@item.ActionName</p>
+			</div>
+		}
+	}
+	else
+	{
+		<div id="@Html.ConvertSectionTitleToId(item.Title)">
+			<h4>@(item.Title)</h4>
+			@(item.Body)
+		</div>
+	}
+}

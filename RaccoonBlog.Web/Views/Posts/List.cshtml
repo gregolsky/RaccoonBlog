@@ -1,22 +1,22 @@
 ﻿@using RaccoonBlog.Web.Infrastructure.Common
 @model PostsViewModel
 @{
-	ViewBag.CurrentAction = @ViewContext.Controller.ValueProvider.GetValue("action").RawValue.ToString();
+	ViewBag.CurrentAction = @ViewContext.RouteData.Values["action"]?.ToString();
 }
 
 @section HeaderAdditions
 {
     @{
         var title = ViewBag.BlogConfig.Title;
-        var url = Request.Url.AbsoluteUri;
+        var url = $"{Context.Request.Scheme}://{Context.Request.Host}{Context.Request.Path}{Context.Request.QueryString}";
         var description = "OREN EINI aka Ayende Rahien CEO of RAVENDB LTD, which develops RAVENDB, a NoSQL Open Source Document Database.";
     }
 
-    <meta name="og:site_name" content="@title">
-    <meta name="og:type" content="website">
-    <meta name="og:title" content="@title">
-    <meta name="og:description" content="@description">
-    <meta name="og:url" content="@url">
+    <meta property="og:site_name" content="@title">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="@title">
+    <meta property="og:description" content="@description">
+    <meta property="og:url" content="@url">
 
     <meta name="twitter:card" content="summary">
     <meta name="twitter:creator" content="@("@")@ViewBag.BlogConfig.TwitterLogin">
@@ -35,14 +35,14 @@
                     <strong>@post.PublishedAt.ToString("MMM dd")</strong>
                     <span>@post.PublishedAt.ToString("yyyy")</span>
                 </time>
-                <a href="@Url.Action("Details", "PostDetails", new { post.Id, post.Slug })">
+                <a asp-controller="PostDetails" asp-action="Details" asp-route-id="@post.Id" asp-route-slug="@post.Slug">
                     @if (post.IsSerie == false)
                     {
                         <h2>@post.Title</h2>
                     }
                     else
                     {
-                        <h2><span class="seriesTitle">@Html.Raw(TitleConverter.ToSeriesTitle(post.Title))</span>@Html.Raw(TitleConverter.ToPostTitle(post.Title))</h2>
+                        <h2><span class="seriesTitle">@TitleConverter.ToSeriesTitle(post.Title)</span>@TitleConverter.ToPostTitle(post.Title)</h2>
                     }
                 </a>
             </div>
@@ -58,16 +58,16 @@
 			</div>
 			<hr />
 			<div class="postData">
-				<a style='text-decoration:none;' href='@string.Format("http://twitter.com/intent/tweet?status={0}+{1} via @{2}", post.Title, Url.PostUrl(post.Id, post.Slug), post.Author.TwitterNick)'>
+			<a style='text-decoration:none;' href='@string.Format("http://twitter.com/intent/tweet?status={0}+{1} via @{2}", post.Title, Url.PostUrl(Context.Request, post.Id, post.Slug), post.Author.TwitterNick)'>
 					<span class="icomoon icon-twitter"></span><span>Tweet</span>
 				</a>
-				<a style='text-decoration:none;' type="icon_link" onclick="window.open('@string.Format("http://www.facebook.com/sharer/sharer.php?u={0}&title={1}", Url.PostUrl(post.Id, post.Slug), post.Title)','sharer','toolbar=0,status=0,width=580,height=325');" href="javascript: void(0)">
+			<a style='text-decoration:none;' type="icon_link" onclick="window.open('@string.Format("http://www.facebook.com/sharer/sharer.php?u={0}&title={1}", Url.PostUrl(Context.Request, post.Id, post.Slug), post.Title)','sharer','toolbar=0,status=0,width=580,height=325');" href="javascript: void(0)">
 					<span class="icomoon icon-facebook"></span><span>Share</span>
 				</a>
-				<a style='text-decoration:none;' type="icon_link" onclick="popUp=window.open('@string.Format("https://plus.google.com/share?url={0}", Url.PostUrl(post.Id, post.Slug))', 'popupwindow', 'scrollbars=yes,width=600,height=400');popUp.focus();return false;" href="javascript: void(0)">
+			<a style='text-decoration:none;' type="icon_link" onclick="popUp=window.open('@string.Format("https://plus.google.com/share?url={0}", Url.PostUrl(Context.Request, post.Id, post.Slug))', 'popupwindow', 'scrollbars=yes,width=600,height=400');popUp.focus();return false;" href="javascript: void(0)">
 					<span class="icomoon icon-linkedin"></span><span>Share</span>
 				</a>
-				<a href="@Url.Action("Details", "PostDetails", new { post.Id, post.Slug })#comments">
+				<a asp-controller="PostDetails" asp-action="Details" asp-route-id="@post.Id" asp-route-slug="@post.Slug" asp-fragment="comments">
 					<span class="icomoon-position glyphicon icon-comment" aria-hidden="true"></span><span>@post.CommentsCount comments</span>
 				</a>
 				@if (post.Tags.Count > 0)
@@ -77,7 +77,7 @@
 						<ul>
 							@foreach (var tag in post.Tags)
 							{
-								<li><a href="@Url.Action("Tag", "Posts", new {tag.Slug})">@tag.Name</a></li>
+								<li><a asp-controller="Posts" asp-action="Tag" asp-route-tag="@tag.Slug">@tag.Name</a></li>
 							}
 						</ul>
 					</div>
@@ -87,7 +87,7 @@
 			<div class="articleContent">
 				@post.Body
 			</div>
-			<div class="read-more"><a href="@Url.Action("Details", "PostDetails", new { post.Id, post.Slug })">read more ›</a></div>
+			<div class="read-more"><a asp-controller="PostDetails" asp-action="Details" asp-route-id="@post.Id" asp-route-slug="@post.Slug">read more ›</a></div>
 		</article>
 	}
 </div>

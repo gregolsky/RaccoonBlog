@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web.Mvc;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using RaccoonBlog.Web.Areas.Admin.Models;
 
 namespace RaccoonBlog.Web.Areas.Admin.Helpers
@@ -10,11 +11,11 @@ namespace RaccoonBlog.Web.Areas.Admin.Helpers
 
     public static class MenuUtil
 	{
-		public static IList<MenuItem> GetTopMenu(UrlHelper url)
+		public static IList<MenuItem> GetTopMenu(IUrlHelper url, HttpRequest request)
 		{
 			var items = new List<MenuItem>
 			{
-				new MenuItem {Title = "Back To Blog", Url = url.RouteUrl("homepage"), Type = MenuButtonType.Plain},
+				new MenuItem {Title = "Back To Blog", Url = url.Action("Index", "Posts", new { area = "" }), Type = MenuButtonType.Plain},
 				new MenuItem {Title = "Posts", Url = url.Action("Index", "Posts"), Type = MenuButtonType.Plain},
                 new MenuItem {Title = "Add new post", Url = url.Action("Add", "Posts"), Type = MenuButtonType.Add},
 				new MenuItem {Title = "Sections", Url = url.Action("Index", "Sections"), Type = MenuButtonType.Plain},
@@ -31,13 +32,13 @@ namespace RaccoonBlog.Web.Areas.Admin.Helpers
 				},
 			};
 
-			AnalyzeMenuItems(items, url.RequestContext.HttpContext.Request.Url ?? new Uri("/"));
+			var currentPath = request.Path + request.QueryString.ToUriComponent();
+			AnalyzeMenuItems(items, currentPath);
 			
-
 			return items;
 		}
 
-		private static void AnalyzeMenuItems(IEnumerable<MenuItem> items, Uri currentUri)
+		private static void AnalyzeMenuItems(IEnumerable<MenuItem> items, string currentPath)
 		{
 			foreach (var menu in items)
 			{
@@ -47,9 +48,9 @@ namespace RaccoonBlog.Web.Areas.Admin.Helpers
 					{
 						menu.Url = (menu.SubMenus.FirstOrDefault() ?? new MenuItem()).Url;
 					}
-					AnalyzeMenuItems(menu.SubMenus, currentUri);
+					AnalyzeMenuItems(menu.SubMenus, currentPath);
 				}
-				menu.IsCurrent = currentUri.PathAndQuery == menu.Url;
+				menu.IsCurrent = currentPath == menu.Url;
 			}
 		}
 	}

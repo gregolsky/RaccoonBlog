@@ -1,13 +1,18 @@
+using Microsoft.AspNetCore.Mvc.Filters;
+using Raven.Client.Documents;
+using Raven.Client.Documents.Session;
 using System;
-using System.Web.Mvc;
 
 namespace RaccoonBlog.Web.Controllers
 {
 	public abstract partial class AggresivelyCachingRacconController : RaccoonController
 	{
 		IDisposable aggressivelyCacheFor;
-
-		protected override void OnActionExecuting(ActionExecutingContext filterContext)
+        public AggresivelyCachingRacconController(IDocumentStore documentStore, IDocumentSession ravenSession)
+: base(documentStore, ravenSession)
+        {
+        }
+        public override void OnActionExecuting(ActionExecutingContext filterContext)
 		{
 			base.OnActionExecuting(filterContext);
 
@@ -16,7 +21,7 @@ namespace RaccoonBlog.Web.Controllers
 
 		protected abstract TimeSpan CacheDuration { get; }
 
-		protected override void OnActionExecuted(ActionExecutedContext filterContext)
+		public override void OnActionExecuted(ActionExecutedContext filterContext)
 		{
 			base.OnActionExecuted(filterContext);
 

@@ -1,17 +1,25 @@
-using System;
-using System.Linq;
+using Microsoft.AspNetCore.Mvc;
 using RaccoonBlog.Web.Helpers.Results;
 using RaccoonBlog.Web.Infrastructure.Common;
 using RaccoonBlog.Web.Infrastructure.Indexes;
+using Raven.Client.Documents;
 using Raven.Client.Documents.Linq;
+using Raven.Client.Documents.Session;
+using System;
+using System.Linq;
 
 namespace RaccoonBlog.Web.Controllers
 {
 	public class PostsApiController : AggresivelyCachingRacconController
 	{
-		protected override TimeSpan CacheDuration => TimeSpan.FromMinutes(3);
+        public PostsApiController(IDocumentStore documentStore, IDocumentSession ravenSession)
+: base(documentStore, ravenSession)
+        {
+        }
 
-		public virtual JsonNetResult GetPostsByTags(int count = 10)
+        protected override TimeSpan CacheDuration => TimeSpan.FromMinutes(3);
+
+		public virtual IActionResult GetPostsByTags(int count = 10)
 		{
 			if (count > 25)
 				throw new InvalidOperationException("Count can be 25 maximum");

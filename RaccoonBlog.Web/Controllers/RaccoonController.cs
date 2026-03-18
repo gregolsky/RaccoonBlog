@@ -1,31 +1,37 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web.Mvc;
-using System.Xml.Linq;
-using DevTrends.MvcDonutCaching;
 using HibernatingRhinos.Loci.Common.Extensions;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using RaccoonBlog.Web.Helpers.Results;
 using RaccoonBlog.Web.Models;
 using Raven.Client.Documents;
 using Raven.Client.Documents.Session;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Xml.Linq;
 
 namespace RaccoonBlog.Web.Controllers
 {
     public abstract partial class RaccoonController : Controller
     {
-        public static IDocumentStore DocumentStore { get; set; }
+        protected IDocumentStore DocumentStore { get; }
+        protected IDocumentSession RavenSession { get; }
 
-        public IDocumentSession RavenSession { get; set; }
-
-        protected HttpStatusCodeResult HttpNotModified()
+        protected RaccoonController(IDocumentStore documentStore, IDocumentSession ravenSession)
         {
-            return new HttpStatusCodeResult(304);
+            DocumentStore = documentStore;
+            RavenSession = ravenSession;
         }
 
-        protected ActionResult Xml(XDocument xml, string etag)
+        protected StatusCodeResult HttpNotModified()
+        {
+            return StatusCode(304);
+        }
+
+        protected IActionResult Xml(XDocument xml, string etag)
         {
             return new XmlResult(xml, etag);
         }
@@ -46,7 +52,7 @@ namespace RaccoonBlog.Web.Controllers
 
                     if (blogConfig == null && "welcome".Equals((string)RouteData.Values["controller"], StringComparison.OrdinalIgnoreCase) == false) // first launch
                     {
-                        HttpContext.Response.Redirect("~/welcome", true);
+                        Response.Redirect("~/welcome");
                     }
                 }
                 return blogConfig;
@@ -71,16 +77,13 @@ namespace RaccoonBlog.Web.Controllers
             }
         }
 
-        private OutputCacheManager outputCacheManager;
-        protected OutputCacheManager OutputCacheManager => outputCacheManager ?? (outputCacheManager = new OutputCacheManager());
-
-        protected override void OnActionExecuting(ActionExecutingContext filterContext)
+        public override void OnActionExecuting(ActionExecutingContext filterContext)
         {
             ViewBag.IsHomePage = false;
-            RavenSession = (IDocumentSession)HttpContext.Items["CurrentRequestRavenSession"];
+            base.OnActionExecuting(filterContext);
         }
 
-        protected override void OnActionExecuted(ActionExecutedContext filterContext)
+        public override void OnActionExecuted(ActionExecutedContext filterContext)
         {
             base.OnActionExecuted(filterContext);
 
@@ -97,9 +100,7 @@ namespace RaccoonBlog.Web.Controllers
         {
             get
             {
-                var s = Request.QueryString["page"];
-                int result;
-                if (int.TryParse(s, out result))
+                if (int.TryParse(Request.Query["page"], out var result))
                     return Math.Max(DefaultPage, result);
                 return DefaultPage;
             }
@@ -112,3 +113,4 @@ namespace RaccoonBlog.Web.Controllers
         }
     }
 }
+

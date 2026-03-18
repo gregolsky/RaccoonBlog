@@ -1,5 +1,6 @@
 using System;
-using System.Web;
+using System.Net;
+using RaccoonBlog.Web.Helpers;
 using RaccoonBlog.Web.Infrastructure.AutoMapper.Profiles.Resolvers;
 using RaccoonBlog.Web.Infrastructure.Common;
 using RaccoonBlog.Web.Models;
@@ -13,10 +14,10 @@ namespace RaccoonBlog.Web.Infrastructure.AutoMapper.Profiles
 	    {
 	        CreateMap<Post, PostSummaryJson>()
 	            .ForMember(x => x.Id, o => o.MapFrom(m => m.GetIdForUrl()))
-	            .ForMember(x => x.Title, o => o.MapFrom(m => HttpUtility.HtmlDecode(m.Title)))
+	            .ForMember(x => x.Title, o => o.MapFrom(m => WebUtility.HtmlDecode(m.Title)))
 	            .ForMember(x => x.Start, o => o.MapFrom(m => m.PublishAt.ToString("yyyy-MM-ddTHH:mm:ssZ")))
-	            .ForMember(x => x.Url, o => o.MapFrom(m => UrlHelper.Action("Details", "Posts", new {Id = m.GetIdForUrl(), Slug = SlugConverter.TitleToSlug(m.Title)})))
-	            .ForMember(x => x.AllDay, o => o.UseValue(false))
+	            .ForMember(x => x.Url, o => o.MapFrom(m => $"/admin/posts/details/{m.GetIdForUrl()}/{SlugConverter.TitleToSlug(m.Title)}"))
+	            .ForMember(x => x.AllDay, o => o.MapFrom(_ => false))
 	            ;
 
 	        CreateMap<Post, PostInput>()
@@ -34,6 +35,8 @@ namespace RaccoonBlog.Web.Infrastructure.AutoMapper.Profiles
 	            .ForMember(x => x.CommentsId, o => o.Ignore())
 	            .ForMember(x => x.LastEditedByUserId, o => o.Ignore())
 	            .ForMember(x => x.LastEditedAt, o => o.Ignore())
+	            .ForMember(x => x.Integration, o => o.Ignore())
+	            .ForMember(x => x.TagsAsSlugs, o => o.Ignore())
 	            .ForMember(x => x.Tags, o => o.MapFrom(m => TagsResolver.ResolveTagsInput(m.Tags)))
 	            .ForMember(x => x.PublishAt, o => o.MapFrom(m => m.PublishAt.HasValue ? m.PublishAt.Value : DateTimeOffset.MinValue))
 	            ;

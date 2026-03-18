@@ -41,13 +41,13 @@
                 &nbsp;
                 Blog configuration does not contain @confErrorsText.
                 Please
-                @Html.ActionLink("go to settings", MVC.Admin.Settings.ActionNames.Index, MVC.Admin.Settings.Name)
+                @Html.ActionLink("go to settings", "Index", "Settings")
                 to fill the missing fields.
             </p>
     }
         <br />
 
-    @using (Html.BeginForm("RssFutureAccess", "Settings", FormMethod.Post, new { @class = "form-horizontal" }))
+    @using (Html.BeginForm("RssFutureAccess", "Settings", Microsoft.AspNetCore.Mvc.Rendering.FormMethod.Post, new { @class = "form-horizontal" }))
     {
         @Html.EditorFor(x => x.User, "NameWithDescription")
         @Html.EditorFor(x => x.ExpiredOn, "NameWithDescription")
@@ -71,9 +71,9 @@
                     <input class="form-control linkbox"
                            id="new-link"
                            type="text"
-                           value="@Url.Action(MVC.Syndication.ActionNames.Rss, MVC.Syndication.Name,
+                           value="@Url.Action("Rss", "Syndication",
                               new {area = string.Empty, token = Model.Token},
-                              Request.Url.Scheme)" />
+                              Context.Request.Scheme)" />
 
                 </div>
                 <div class="col-sm-2 col-md-2">
@@ -105,9 +105,9 @@
                         <td>
                             <input class="linkbox linkbox_wide"
                                    type="text"
-                                   value="@Url.Action(MVC.Syndication.ActionNames.Rss, MVC.Syndication.Name,
+                                   value="@Url.Action("Rss", "Syndication",
                               new {area = string.Empty, token = access.Token},
-                              Request.Url.Scheme)" />
+                              Context.Request.Scheme)" />
                         </td>
                         <td>@access.User</td>
                         <td>@access.ExpiredOn</td>

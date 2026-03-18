@@ -1,31 +1,27 @@
 ﻿@using RaccoonBlog.Web.Models.SocialNetwork
 @using RaccoonBlog.Web.Models
 @using RaccoonBlog.Web.Helpers;
-@using RaccoonBlog.Web.Infrastructure.AutoMapper.Profiles.Resolvers
 @using RaccoonBlog.Web.Infrastructure.Common
 @model RaccoonBlog.Web.Areas.Admin.ViewModels.RedditManualSubmissionViewModel
 
-
-@helper ManualSubmissionAction(Post post, Reddit.PostSubmission postSubmission)
-{
-if (postSubmission.IsManualSubmissionPending == false)
-{
-        <a href="@Url.Action(MVC.Admin.Settings.ActionNames.SubmitToReddit, MVC.Admin.Settings.Name, new
-                 {
-                     sr = postSubmission.Subreddit,
-                     postId = post.Id
-                 })">
-            Submit to /r/@postSubmission.Subreddit manually
+@functions {
+    async Task ManualSubmissionAction(Post post, Reddit.PostSubmission postSubmission)
+    {
+        if (postSubmission.IsManualSubmissionPending == false)
+        {
+            <a asp-area="Admin" asp-controller="Settings" asp-action="SubmitToReddit" 
+               asp-route-sr="@postSubmission.Subreddit" asp-route-postId="@post.Id">
+                Submit to /r/@postSubmission.Subreddit manually
+            </a>
+        }
+        <br />
+        <a asp-area="Admin" asp-controller="Settings" asp-action="ResetFailedRedditSubmission"
+           asp-route-sr="@postSubmission.Subreddit" asp-route-postId="@post.Id">
+            Reset status
         </a>
-}
-    <br />
-    <a href="@Url.Action(MVC.Admin.Settings.ActionNames.ResetFailedRedditSubmission, MVC.Admin.Settings.Name, new
-                 {
-                     sr = postSubmission.Subreddit,
-                     postId = post.Id
-                 })">
-        Reset status
-    </a>
+        
+        await Task.CompletedTask;
+    }
 }
 
 <div class="reddit-submission">
@@ -87,17 +83,16 @@ if (postSubmission.IsManualSubmissionPending == false)
                         {
                             <tr>
                                 <td>
-                                    @Html.ActionLink(post.Title, MVC.PostDetails.ActionNames.Details, MVC.PostDetails.Name, new
-                               {
-                                   Id = RavenIdResolver.Resolve(post.Id),
-                                   Slug = SlugConverter.TitleToSlug(post.Title),
-                                   Area = ""
-                               }, null)
+                                    <a asp-area="" asp-controller="PostDetails" asp-action="Details"
+                                       asp-route-id="@Post.GetIdForUrl(post.Id)"
+                                       asp-route-slug="@SlugConverter.TitleToSlug(post.Title)">
+                                        @post.Title
+                                    </a>
                                 </td>
                                 <td>/r/@failedSubmission.Subreddit</td>
                                 <td>@failedSubmission.Status</td>
                                 <td class="actions">
-                                    @ManualSubmissionAction(post, failedSubmission)
+                                    @{ await ManualSubmissionAction(post, failedSubmission); }
                                 </td>
                             </tr>
                         }

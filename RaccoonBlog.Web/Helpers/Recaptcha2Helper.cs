@@ -1,38 +1,38 @@
-﻿using System.Configuration;
+﻿using Microsoft.AspNetCore.Html;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.Extensions.Configuration;
 using System.Threading.Tasks;
-using System.Web.Mvc;
 
 namespace RaccoonBlog.Web.Helpers
 {
     public class Recaptcha2Helper
     {
-        private static string RecaptchaSecret => ConfigurationManager.AppSettings["Recaptcha/Secret"];
-
-        private static string SiteKey => ConfigurationManager.AppSettings["ReCaptcha/SiteKey"];
-
+        private readonly IConfiguration _config;
+        private readonly IHttpContextAccessor _httpContext;
+        private readonly Recaptcha2Verifier _verifier;
         public const string ModelStateErrorKey = "CaptchaNotValid";
 
-        public static async Task<bool> Validate(ModelStateDictionary modelState)
+        public Recaptcha2Helper(IConfiguration config, IHttpContextAccessor httpContext, Recaptcha2Verifier verifier)
         {
-            var result = await Recaptcha2Verifier.VerifyResponse(RecaptchaSecret);
-            if (result.IsValid)
-            {
-                return true;
-            }
+            _config = config;
+            _httpContext = httpContext;
+            _verifier = verifier;
+        }
+
+        public async Task<bool> Validate(ModelStateDictionary modelState)
+        {
+            var secret = _config["Recaptcha:Secret"];
+            var token = _httpContext.HttpContext?.Request.Form["g-recaptcha-response"].ToString();
+
+            var result = await _verifier.VerifyResponse(token, secret);
+            if (result.IsValid) return true;
 
             modelState.AddModelError(ModelStateErrorKey, result.ErrorMessage);
             return false;
         }
 
-        public static MvcHtmlString ScriptRef()
-        {
-            return new MvcHtmlString("<script src='https://www.google.com/recaptcha/api.js'></script>");
-        }
-
-        public static MvcHtmlString Widget()
-        {
-            var result = $"<div class='g-recaptcha' data-sitekey='{SiteKey}'></div>";
-            return new MvcHtmlString(result);
-        }
+        public IHtmlContent ScriptRef() => new HtmlString("<script src='https://www.google.com/recaptcha/api.js'></script>");
+        public IHtmlContent Widget() => new HtmlString($"<div class='g-recaptcha' data-sitekey='{_config["Recaptcha:SiteKey"]}'></div>");
     }
 }

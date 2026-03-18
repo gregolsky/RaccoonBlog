@@ -42,7 +42,7 @@ namespace RaccoonBlog.Web.Infrastructure.Indexes
         public Posts_Series()
         {
             Map = posts => from p in posts
-                           let parts = p.Title.Split(':')
+                           let parts = p.Title.Split(new[] { ':' }, StringSplitOptions.None)
                            where parts.Length > 1
                            let series = parts[0].Trim().ToLower()
                            select new

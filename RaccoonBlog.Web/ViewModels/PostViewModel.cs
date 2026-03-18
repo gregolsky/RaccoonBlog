@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web.Mvc;
+using Microsoft.AspNetCore.Html;
 
 namespace RaccoonBlog.Web.ViewModels
 {
@@ -24,7 +24,7 @@ namespace RaccoonBlog.Web.ViewModels
         public class Comment
         {
             public int Id { get; set; }
-            public MvcHtmlString Body { get; set; }
+            public IHtmlContent Body { get; set; }
             public string Author { get; set; }
             public string Tooltip { get; set; }
             public string Url { get; set; }    // Look for HTML injection.
@@ -39,7 +39,7 @@ namespace RaccoonBlog.Web.ViewModels
             public Guid ShowPostEvenIfPrivate { get; set; }
             public string Title { get; set; }
             public string Slug { get; set; }
-            public MvcHtmlString Body { get; set; }
+            public IHtmlContent Body { get; set; }
 
             public DateTimeOffset CreatedAt { get; set; }
             public DateTimeOffset PublishedAt { get; set; }

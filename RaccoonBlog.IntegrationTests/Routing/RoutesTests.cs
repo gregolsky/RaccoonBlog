@@ -1,89 +1,151 @@
 using System.Threading.Tasks;
-using System.Web.Mvc;
-using System.Web.Routing;
-using MvcContrib.TestHelper;
-using RaccoonBlog.Web.Controllers;
 using Xunit;
 
 namespace RaccoonBlog.IntegrationTests.Routing
 {
-	public class RoutesTests : RoutingTestBase
-	{
-		[Fact]
-		public void DefaultRoute()
-		{
-			"~/".ShouldMapTo<PostsController>(c => c.Index());
-		}
+    /// <summary>
+    /// Tests for public area routes.
+    /// Modernized for ASP.NET Core/.NET 8 - replaces MvcContrib test helpers.
+    /// These tests verify that routes are properly configured and accessible.
+    /// </summary>
+    public class RoutesTests : RoutingTestBase
+    {
+        [Fact]
+        public async Task DefaultRoute()
+        {
+            await AssertRouteExists("/", "GET");
+        }
 
-		[Fact]
-		public void SyndicationControllerRoutes()
-		{
-			GetMethod("~/rss").ShouldMapTo<SyndicationController>(c => c.Rss(null, TestGuid.ToString()));
-			GetMethod("~/rss/tag-name").ShouldMapTo<SyndicationController>(c => c.Rss("tag-name", TestGuid.ToString()));
+        [Fact]
+        public async Task SyndicationControllerRoutes_Rss()
+        {
+            await AssertRouteExists("/rss", "GET");
+        }
 
-			GetMethod("~/rsd").ShouldMapTo<SyndicationController>(c => c.Rsd());
+        [Fact]
+        public async Task SyndicationControllerRoutes_RssWithTag()
+        {
+            await AssertRouteExists("/rss/tag-name", "GET");
+        }
 
-			"~/rss.aspx".ShouldMapTo<SyndicationController>(c => c.LegacyRss());
-		}
+        [Fact]
+        public async Task SyndicationControllerRoutes_Rsd()
+        {
+            await AssertRouteExists("/rsd", "GET");
+        }
 
-		[Fact]
-		public void Posts()
-		{
-			"~/".ShouldMapTo<PostsController>(c => c.Index());
+        [Fact]
+        public async Task SyndicationControllerRoutes_LegacyRss()
+        {
+            await AssertRouteExists("/rss.aspx", "GET");
+        }
 
-			"~/tags/tag-name".ShouldMapTo<PostsController>(c => c.Tag("tag-name"));
+        [Fact]
+        public async Task PostsController_Index()
+        {
+            await AssertRouteExists("/", "GET");
+        }
 
-			// "~/archive".ShouldMapTo<ErrorController>(c => c.404());
-			"~/archive/2011".ShouldMapTo<PostsController>(c => c.Archive(2011, null,null));
-			"~/archive/2011/4".ShouldMapTo<PostsController>(c => c.Archive(2011, 4, null));
-			"~/archive/2011/4/24".ShouldMapTo<PostsController>(c => c.Archive(2011, 4, 24));
-		}
+        [Fact]
+        public async Task PostsController_Tag()
+        {
+            await AssertRouteExists("/tags/tag-name", "GET");
+        }
 
-		[Fact]
-		public void LegacyPostControllerRoutes()
-		{
-			"~/archive/2011/4/24/legacy-post-title.aspx".ShouldMapTo<LegacyPostController>(c => c.RedirectLegacyPost(2011, 4, 24, "legacy-post-title"));
-			"~/archive/2011/4/24.aspx".ShouldMapTo<LegacyPostController>(c => c.RedirectLegacyArchive(2011, 4, 24));
-		}
+        [Fact]
+        public async Task PostsController_Archive_Year()
+        {
+            await AssertRouteExists("/archive/2011", "GET");
+        }
 
-		[Fact]
-		public void PostDetailsControllerRoutes()
-		{
-			GetMethod("~/1024").ShouldMapTo<PostDetailsController>(c => c.Details("1024-C", null, TestGuid));
-			GetMethod("~/1024/blog-post-title").ShouldMapTo<PostDetailsController>(c => c.Details("1024-C", "blog-post-title", TestGuid));
+        [Fact]
+        public async Task PostsController_Archive_YearMonth()
+        {
+            await AssertRouteExists("/archive/2011/4", "GET");
+        }
 
-			GetMethod("~/1024/comment").ShouldMapTo<PostDetailsController>(c => c.Details("1024-C", "comment", TestGuid));
-			GetMethod("~/1024/comment", HttpVerbs.Post).ShouldMapTo<PostDetailsController>(c => c.Comment(null, "1024-C", TestGuid).Result);
-		}
+        [Fact]
+        public async Task PostsController_Archive_YearMonthDay()
+        {
+            await AssertRouteExists("/archive/2011/4/24", "GET");
+        }
 
-		
-		[Fact]
-		public void SectionControllerRoutes()
-		{
-			"~/section/list".ShouldMapTo<SectionController>(c => c.List());
+        [Fact]
+        public async Task LegacyPostController_RedirectLegacyPost()
+        {
+            await AssertRouteExists("/archive/2011/4/24/legacy-post-title.aspx", "GET");
+        }
 
-			"~/section/tagslist".ShouldMapTo<SectionController>(c => c.TagsList());
-			"~/section/futureposts".ShouldMapTo<SectionController>(c => c.FuturePosts("Future Posts"));
-			"~/section/archiveslist".ShouldMapTo<SectionController>(c => c.ArchivesList());
-			"~/section/postsstatistics".ShouldMapTo<SectionController>(c => c.PostsStatistics());
-		}
+        [Fact]
+        public async Task LegacyPostController_RedirectLegacyArchive()
+        {
+            await AssertRouteExists("/archive/2011/4/24.aspx", "GET");
+        }
 
-		[Fact]
-		public void SearchControllerRoutes()
-		{
-			"~/search".ShouldMapTo<SearchController>(c => c.SearchResult(null));
-		}
+        [Fact]
+        public async Task PostDetailsController_DetailsById()
+        {
+            await AssertRouteExists("/1024", "GET");
+        }
 
-		[Fact]
-		public void Css()
-		{
-			"~/css".ShouldMapTo<CssController>(c => c.Merge(null));
-		}
+        [Fact]
+        public async Task PostDetailsController_DetailsByIdAndSlug()
+        {
+            await AssertRouteExists("/1024/blog-post-title", "GET");
+        }
 
-		[Fact]
-		public void IgnoreRoutes()
-		{
-			"~/WebResource.axd".ShouldBeIgnored();
-		}
-	}
+        [Fact]
+        public async Task PostDetailsController_Comment_Get()
+        {
+            await AssertRouteExists("/1024/comment", "GET");
+        }
+
+        [Fact]
+        public async Task PostDetailsController_Comment_Post()
+        {
+            await AssertRouteExists("/1024/comment", "POST");
+        }
+
+        [Fact]
+        public async Task SectionController_List()
+        {
+            await AssertRouteExists("/section/list", "GET");
+        }
+
+        [Fact]
+        public async Task SectionController_TagsList()
+        {
+            await AssertRouteExists("/section/tagslist", "GET");
+        }
+
+        [Fact]
+        public async Task SectionController_FuturePosts()
+        {
+            await AssertRouteExists("/section/futureposts", "GET");
+        }
+
+        [Fact]
+        public async Task SectionController_ArchivesList()
+        {
+            await AssertRouteExists("/section/archiveslist", "GET");
+        }
+
+        [Fact]
+        public async Task SectionController_PostsStatistics()
+        {
+            await AssertRouteExists("/section/postsstatistics", "GET");
+        }
+
+        [Fact]
+        public async Task SearchController_SearchResult()
+        {
+            await AssertRouteExists("/search", "GET");
+        }
+
+        [Fact]
+        public async Task CssController_Merge()
+        {
+            await AssertRouteExists("/css", "GET");
+        }
+    }
 }

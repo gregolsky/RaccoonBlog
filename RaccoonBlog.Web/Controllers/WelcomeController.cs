@@ -1,19 +1,26 @@
-﻿using System.Web.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using RaccoonBlog.Web.Models;
+using Raven.Client.Documents;
+using Raven.Client.Documents.Session;
 
 namespace RaccoonBlog.Web.Controllers
 {
 	public partial class WelcomeController : RaccoonController
 	{
-		//
-		// GET: /Welcome/
-		public virtual ActionResult Index()
+        public WelcomeController(IDocumentStore documentStore, IDocumentSession ravenSession) : base(documentStore, ravenSession)
+        {
+        }
+
+        //
+        // GET: /Welcome/
+        public virtual IActionResult Index()
 		{
 			return AssertConfigurationIsNeeded() ?? View(BlogConfig.New());
 		}
 
 		[HttpPost]
-		public virtual ActionResult CreateBlog(BlogConfig config)
+		[ValidateAntiForgeryToken]
+		public virtual IActionResult CreateBlog(BlogConfig config)
 		{
 			var result = AssertConfigurationIsNeeded();
 			if (result != null)
@@ -42,7 +49,7 @@ namespace RaccoonBlog.Web.Controllers
 			return RedirectToAction("Success", config);
 		}
 
-		public virtual ActionResult Success()
+		public virtual IActionResult Success()
 		{
 			BlogConfig bc;
 
@@ -56,7 +63,7 @@ namespace RaccoonBlog.Web.Controllers
 			return bc == null ? View("Index") : View(bc);
 		}
 
-		private ActionResult AssertConfigurationIsNeeded()
+		private IActionResult AssertConfigurationIsNeeded()
 		{
 			BlogConfig bc;
 

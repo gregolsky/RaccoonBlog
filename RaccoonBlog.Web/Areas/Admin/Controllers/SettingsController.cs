@@ -1,33 +1,40 @@
-using System;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Web.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using RaccoonBlog.Web.Areas.Admin.Models;
 using RaccoonBlog.Web.Areas.Admin.ViewModels;
 using RaccoonBlog.Web.Helpers;
 using RaccoonBlog.Web.Models;
 using RaccoonBlog.Web.Models.SocialNetwork;
+using Raven.Client.Documents;
 using Raven.Client.Documents.Operations;
 using Raven.Client.Documents.Queries;
 using Raven.Client.Documents.Session;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace RaccoonBlog.Web.Areas.Admin.Controllers
 {
     public partial class SettingsController : AdminController
     {
+        public SettingsController(IDocumentStore documentStore, IDocumentSession ravenSession)
+        : base(documentStore, ravenSession)
+        {
+        }
+
         [HttpGet]
-        public virtual ActionResult Index()
+        public virtual IActionResult Index()
         {
             return View(BlogConfig);
         }
 
         [HttpPost]
-        public virtual ActionResult Index(BlogConfig config)
+        [ValidateAntiForgeryToken]
+        public virtual IActionResult Index(BlogConfig config)
         {
             if (ModelState.IsValid == false)
             {
                 ViewBag.Message = ModelState.FirstErrorMessage();
-                if (Request.IsAjaxRequest())
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
                     return Json(new { Success = false, ViewBag.Message });
                 return View(BlogConfig);
             }
@@ -42,10 +49,8 @@ namespace RaccoonBlog.Web.Areas.Admin.Controllers
             RavenSession.Store(config, BlogConfig.Key);
             RavenSession.SaveChanges();
 
-            OutputCacheManager.RemoveItem(MVC.Section.Name, MVC.Section.ActionNames.ContactMe);
-
             ViewBag.Message = "Configurations successfully saved!";
-            if (Request.IsAjaxRequest())
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
                 return Json(new { Success = true, ViewBag.Message });
             return View(config);
         }
@@ -59,14 +64,14 @@ namespace RaccoonBlog.Web.Areas.Admin.Controllers
         }
 
         [HttpGet]
-        public virtual async Task<ActionResult> RedditSubmission()
+        public virtual async Task<IActionResult> RedditSubmission()
         {
             var model = await PrepareRedditManualSubmissionViewModel();
             return View(model);
         }
 
         [HttpGet]
-        public virtual ActionResult SubmitToReddit(string postId, string sr)
+        public virtual IActionResult SubmitToReddit(string postId, string sr)
         {
             var post = RavenSession.Load<Post>(postId);
             var redditSubmitUrl = RedditHelper.SubmitUrl(sr, post);
@@ -80,14 +85,14 @@ namespace RaccoonBlog.Web.Areas.Admin.Controllers
         }
 
         [HttpGet]
-        public virtual ActionResult ResetFailedRedditSubmission(string postId, string sr)
+        public virtual IActionResult ResetFailedRedditSubmission(string postId, string sr)
         {
             var post = RavenSession.Load<Post>(postId);
             var postSubmission = post.Integration.Reddit.GetPostSubmissionForSubreddit(sr);
             postSubmission.Status = null;
             postSubmission.Attempts = 0;
             RavenSession.SaveChanges();
-            return RedirectToAction(MVC.Admin.Settings.ActionNames.RedditSubmission);
+            return RedirectToAction("RedditSubmission");
         }
 
         private async Task<RedditManualSubmissionViewModel> PrepareRedditManualSubmissionViewModel()
@@ -99,7 +104,7 @@ namespace RaccoonBlog.Web.Areas.Admin.Controllers
         }
 
         [HttpGet]
-        public virtual ActionResult RssFutureAccess()
+        public virtual IActionResult RssFutureAccess()
         {
             ValidateConfiguration();
             SetFutureRssAccessList(RavenSession);
@@ -108,7 +113,8 @@ namespace RaccoonBlog.Web.Areas.Admin.Controllers
         }
 
         [HttpPost]
-        public virtual ActionResult RssFutureAccess(FutureRssAccess input)
+        [ValidateAntiForgeryToken]
+        public virtual IActionResult RssFutureAccess(FutureRssAccess input)
         {
             ValidateConfiguration();
 

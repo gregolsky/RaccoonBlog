@@ -1,6 +1,6 @@
 ﻿[
   {
-    "outputFile": "Content/css/error.css",
-    "inputFile": "Content/css/error.less"
+    "outputFile": "wwwroot/css/custom/ayende.styles.css",
+    "inputFile": "wwwroot/css/custom/ayende.styles.less"
   }
 ]

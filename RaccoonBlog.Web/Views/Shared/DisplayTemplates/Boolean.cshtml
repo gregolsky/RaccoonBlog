@@ -10,13 +10,38 @@
 }
 <div class="display_item">
     <strong>@ViewData.ModelMetadata.DisplayName</strong>
-    @if (ViewData.ModelMetadata.IsNullableValueType) {
+    @if (ViewData.ModelMetadata.IsNullableValueType) 
+    {
         <select class="list-box tri-state" disabled="disabled">
-            <option value=""@(Value.HasValue ? null : " selected='selected'")>Not Set</option>
-            <option value="true"@(Value.HasValue && Value.Value ? " selected='selected'" : null)>True</option>
-            <option value="false"@(Value.HasValue && !Value.Value ? " selected='selected'" : null)>False</option>
+            @if (!Value.HasValue)
+            {
+                <option value="" selected="selected">Not Set</option>
+                <option value="true">True</option>
+                <option value="false">False</option>
+            }
+            else if (Value.Value)
+            {
+                <option value="">Not Set</option>
+                <option value="true" selected="selected">True</option>
+                <option value="false">False</option>
+            }
+            else
+            {
+                <option value="">Not Set</option>
+                <option value="true">True</option>
+                <option value="false" selected="selected">False</option>
+            }
         </select>
-    } else {
-        <input type="checkbox" class="check-box" disabled="disabled"@(Value.HasValue && Value.Value ? " checked='checked'" : null) />
+    } 
+    else 
+    {
+        @if (Value.HasValue && Value.Value)
+        {
+            <input type="checkbox" class="check-box" disabled="disabled" checked="checked" />
+        }
+        else
+        {
+            <input type="checkbox" class="check-box" disabled="disabled" />
+        }
     }
 </div>

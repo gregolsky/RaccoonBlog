@@ -15,10 +15,7 @@
     <title>RaccoonBlog :: Login</title>
 
     <link href='//fonts.googleapis.com/css?family=Lato:300,400,700&subset=latin,latin-ext' rel='stylesheet' type='text/css' />
-    @Html.RenderAdminTheme()
-    <!--[if IE 8]>
-    @Scripts.Render("~/Content/js/respond")
-    <![endif]-->
+    <link rel="stylesheet" href="~/admin/css/admin-bundle.min.css" asp-append-version="true" />
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js" type="text/javascript"></script>
 </head>
 <body id="login">
@@ -52,6 +49,7 @@
         <span class="small">Copyright © Raccoon Blog 2011 - 2015</span>
     </footer>
     
-    @Scripts.Render("~/Content/js/admin/main")
+    <script src="~/Content/js/admin/main.js"></script>
+    <script src="~/admin/js/bootstrap.js"></script>
 </body>
 </html>

@@ -41,7 +41,7 @@
 <a href='@Url.Action("Index", "Sections")' class="btn btn-primary btn-sm pull-right-sm">View sections</a>
 <div class="clearfix"></div>
 <hr />
-@using (Html.BeginForm("Update", "Sections", FormMethod.Post, new {@class = "form-horizontal"}))
+@using (Html.BeginForm("Update", "Sections", Microsoft.AspNetCore.Mvc.Rendering.FormMethod.Post, new {@class = "form-horizontal"}))
 {
     <div class="row">
         <div class="col-lg-4">

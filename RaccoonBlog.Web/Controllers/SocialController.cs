@@ -4,78 +4,44 @@
 //  </copyright>
 // -----------------------------------------------------------------------
 
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using RaccoonBlog.Web.Helpers;
+using RaccoonBlog.Web.Infrastructure.AutoMapper;
+using RaccoonBlog.Web.Models;
+using Raven.Client.Documents;
+using Raven.Client.Documents.Session;
 using System;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using System.Web;
-using System.Web.Mvc;
-using Microsoft.AspNet.Identity.Owin;
-using Microsoft.Owin.Security;
-using RaccoonBlog.Web.Helpers;
-using RaccoonBlog.Web.Infrastructure.AutoMapper;
-using RaccoonBlog.Web.Models;
 
 namespace RaccoonBlog.Web.Controllers
 {
 	public partial class SocialController : RaccoonController
 	{
-		public virtual ActionResult Login(string provider, string redirectUrl)
+        public SocialController(IDocumentStore documentStore, IDocumentSession ravenSession) : base(documentStore, ravenSession)
+        {
+        }
+        public virtual IActionResult Login(string provider, string redirectUrl)
 		{
-			Session["Dummy"] = "Dummy"; // OWIN External Login hack
-
 			// Request a redirect to the external login provider
-			return new ChallengeResult(provider, Url.Action("ExternalLoginCallback", "Social", new { ReturnUrl = redirectUrl }));
-		}
-
-		private IAuthenticationManager AuthenticationManager
-		{
-			get
+			var properties = new AuthenticationProperties
 			{
-				return HttpContext.GetOwinContext().Authentication;
-			}
+				RedirectUri = Url.Action("ExternalLoginCallback", "Social", new { ReturnUrl = redirectUrl })
+			};
+			return Challenge(properties, provider);
 		}
-
 
 		private const string XsrfKey = "XsrfId";
 
-		internal class ChallengeResult : HttpUnauthorizedResult
+		private static void SetCommenterValuesFromResponse(ClaimsPrincipal principal, Commenter commenter)
 		{
-			public ChallengeResult(string provider, string returnUrl)
-				: this(provider, returnUrl, null)
-			{
-			}
-
-			public ChallengeResult(string provider, string redirectUri, string userId)
-			{
-				LoginProvider = provider;
-				RedirectUri = redirectUri;
-				UserId = userId;
-			}
-
-			public string LoginProvider { get; set; }
-			public string RedirectUri { get; set; }
-			public string UserId { get; set; }
-
-			public override void ExecuteResult(ControllerContext context)
-			{
-				var properties = new AuthenticationProperties { RedirectUri = RedirectUri };
-				if (UserId != null)
-				{
-					properties.Dictionary[XsrfKey] = UserId;
-				}
-				context.HttpContext.GetOwinContext().Authentication.Challenge(properties, LoginProvider);
-			}
-		}
-
-		private static void SetCommenterValuesFromResponse(ExternalLoginInfo response, Commenter commenter)
-		{
-			var claims = response.ExternalIdentity;
-
-			var emailClaim = claims.FindFirst(ClaimTypes.Email) ??
-                claims.FindFirst("email");
-			var nameClaim = claims.FindFirst(ClaimTypes.Name);
-			var urlClaim = claims.FindFirst("urn:google:profile");
+			var emailClaim = principal.FindFirst(ClaimTypes.Email) ??
+				principal.FindFirst("email");
+			var nameClaim = principal.FindFirst(ClaimTypes.Name);
+			var urlClaim = principal.FindFirst("urn:google:profile");
 
 			if (string.IsNullOrWhiteSpace(commenter.Email) && emailClaim != null && string.IsNullOrWhiteSpace(emailClaim.Value) == false)
 				commenter.Email = emailClaim.Value;
@@ -88,20 +54,28 @@ namespace RaccoonBlog.Web.Controllers
 		}
 		
 		[AllowAnonymous]
-		public virtual async Task<ActionResult> ExternalLoginCallback(string returnUrl)
+		public virtual async Task<IActionResult> ExternalLoginCallback(string returnUrl)
 		{
-			Session["Dummy"] = "Dummy"; // OWIN External Login hack
-
 			Uri returnUri;
 			Uri.TryCreate(returnUrl, UriKind.Absolute, out returnUri);
 
-			var loginInfo = await AuthenticationManager.GetExternalLoginInfoAsync();
-			if (loginInfo == null || returnUri == null)
+			var authenticateResult = await HttpContext.AuthenticateAsync();
+			if (!authenticateResult.Succeeded || returnUri == null)
 			{
-				return returnUri != null ? (ActionResult)Redirect(returnUri.AbsoluteUri) : RedirectToRoute("homepage");
+				return returnUri != null ? (IActionResult)Redirect(returnUri.AbsoluteUri) : RedirectToRoute("homepage");
 			}
 
-			var claimedIdentifier = loginInfo.Login.ProviderKey + "@" + loginInfo.Login.LoginProvider;
+			var principal = authenticateResult.Principal;
+			var providerKey = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+			var loginProvider = principal.FindFirst("LoginProvider")?.Value ?? 
+				principal.Identity?.AuthenticationType ?? "Unknown";
+
+			if (string.IsNullOrEmpty(providerKey))
+			{
+				return returnUri != null ? (IActionResult)Redirect(returnUri.AbsoluteUri) : RedirectToRoute("homepage");
+			}
+
+			var claimedIdentifier = providerKey + "@" + loginProvider;
 			var commenter = RavenSession.Query<Commenter>()
 								.FirstOrDefault(c => c.OpenId == claimedIdentifier) ?? new Commenter
 																					   {
@@ -109,7 +83,7 @@ namespace RaccoonBlog.Web.Controllers
 																						   OpenId = claimedIdentifier,
 																					   };
 
-			SetCommenterValuesFromResponse(loginInfo, commenter);
+			SetCommenterValuesFromResponse(principal, commenter);
 
 			CommenterUtil.SetCommenterCookie(Response, commenter.Key.MapTo<string>());
 			RavenSession.Store(commenter);

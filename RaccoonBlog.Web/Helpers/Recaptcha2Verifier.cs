@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
-using System.Web;
+using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json.Linq;
 using NLog;
 
@@ -10,56 +10,33 @@ namespace RaccoonBlog.Web.Helpers
 {
     public class Recaptcha2Verifier
     {
-        private static readonly Logger _log = LogManager.GetCurrentClassLogger();
+        private readonly HttpClient _httpClient;
+        private static readonly NLog.Logger _log = NLog.LogManager.GetCurrentClassLogger();
 
-        private const string RecaptchaResponseFieldName = "g-recaptcha-response";
+        public Recaptcha2Verifier(HttpClient httpClient) => _httpClient = httpClient;
 
-        public static async Task<CaptchaVerificationResult> VerifyResponse(string recaptchaSecret)
+        public async Task<CaptchaVerificationResult> VerifyResponse(string token, string secret)
         {
-            var request = HttpContext.Current.Request;
-            if (request == null || !request.Form.HasKeys())
-            {
-                return CaptchaVerificationResult.Error("Captcha response not supplied.");
-            }
+            if (string.IsNullOrEmpty(token)) return CaptchaVerificationResult.Error("Captcha response not supplied.");
 
-            var response = request.Form[RecaptchaResponseFieldName];
-            if (string.IsNullOrEmpty(response))
-            {
-                return CaptchaVerificationResult.Error("Captcha response not supplied.");
-            }
+            var content = new FormUrlEncodedContent(new[] {
+            new KeyValuePair<string, string>("secret", secret),
+            new KeyValuePair<string, string>("response", token)
+        });
 
-            var httpClient = new HttpClient
-            {
-                BaseAddress = new Uri("https://www.google.com"),
-                Timeout = TimeSpan.FromSeconds(30)
-            };
-
-            var formContent = new FormUrlEncodedContent(
-                new[]
-                {
-                    new KeyValuePair<string, string>("secret", recaptchaSecret),
-                    new KeyValuePair<string, string>("response", response)
-                });
-
-            HttpResponseMessage apiResponse = await httpClient.PostAsync(
-                "/recaptcha/api/siteverify", formContent).ConfigureAwait(false);
-
-            string responseContent = await apiResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
             try
             {
-                JObject responseObj = JObject.Parse(responseContent);
+                var response = await _httpClient.PostAsync("/recaptcha/api/siteverify", content);
+                response.EnsureSuccessStatusCode();
+                var json = JObject.Parse(await response.Content.ReadAsStringAsync());
 
-                if (responseObj["success"].Value<bool>())
-                {
-                    return CaptchaVerificationResult.Valid;
-                }
+                if (json["success"]?.Value<bool>() == true) return CaptchaVerificationResult.Valid;
             }
-            catch (Exception err)
+            catch (Exception ex)
             {
-                _log.ErrorException("Error validating captcha.", err);
+                _log.Error(ex, "Captcha API error");
             }
-
-            return CaptchaVerificationResult.Error("Captcha response is invalid. Please try again.");
+            return CaptchaVerificationResult.Error("Captcha verification failed.");
         }
     }
 
