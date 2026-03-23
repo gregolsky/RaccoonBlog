@@ -50,15 +50,13 @@ namespace RaccoonBlog.Web.Controllers
             var nowAsMinutes = DateTimeOffset.Now.AsMinutes();
             var tagsToSearch = post.Tags ?? Array.Empty<string>();
 
-            var related = RavenSession.Query<Posts_ByTag.Query, Posts_ByTag>()
-                .Where(p => p.PublishAt < nowAsMinutes && p.Tags.ContainsAny(tagsToSearch))
-                .OrderByDescending(p => p.PublishAt)
-                .Take(10)
-                .Select(p => new PostReference { Id = p.Id, Title = p.Title, PublishedAt = p.PublishAt, Tags = p.Tags })
-                .ToList()
-                .Where(p => p.Id != post.Id)
-                .Take(3)
-                .ToList();
+            var related = RavenSession.Query<Posts_ByVector.Query, Posts_ByVector>()
+                                      .Where(p => p.PublishAt < DateTimeOffset.Now.AsMinutes())
+                                      .VectorSearch(x => x.WithField(p => p.Vector), x => x.ForDocument(post.Id))
+                                      .Take(3)
+                                      .Skip(1) // skip the current post, always the best match :-)
+                                      .Select(p => new PostReference { Id = p.Id, Title = p.Title, PublishedAt = p.PublishAt, Tags = p.Tags})
+                                      .ToList();
 
             var comments = RavenSession.Load<PostComments>(post.CommentsId) ?? new PostComments();
             var vm = new PostViewModel
