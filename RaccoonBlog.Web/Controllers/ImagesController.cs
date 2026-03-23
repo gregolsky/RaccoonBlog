@@ -1,3 +1,4 @@
+using System.IO;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
 using RaccoonBlog.Web.Services;
@@ -14,18 +15,21 @@ public class ImagesController : Controller
         _ravenSession = ravenSession;
     }
     
-    [HttpGet("images/getimage/{id}")]
+    [HttpGet("Images/{**imagePath}")]
     [OutputCache(Duration = 1800)]
-    public IActionResult GetImage(string id, [FromQuery] string fileName)
+    public IActionResult GetImage(string imagePath)
     {
-        var docId = "images/" + id;
+        var fileName = Path.GetFileName(imagePath).ToLowerInvariant();
+
+        if (string.IsNullOrEmpty(fileName))
+            return NotFound();
         
+        var docId = "images/" + fileName;
         var imageDoc = _ravenSession.Load<PostImage>(docId);
+
         if (imageDoc == null) return NotFound();
         
-        var realFileName = imageDoc.FileName;
-        
-        var attachment = _ravenSession.Advanced.Attachments.Get(docId, realFileName);
+        var attachment = _ravenSession.Advanced.Attachments.Get(imageDoc.Id, imageDoc.FileName);
         if (attachment == null) return NotFound();
         
         Response.RegisterForDispose(attachment);

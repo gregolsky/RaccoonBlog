@@ -186,8 +186,8 @@ public class MetaWeblogService : IMetaWeblogProvider
         byte[] imageBytes = Convert.FromBase64String(mediaObject.bits);
         using (var memoryStream = new MemoryStream(imageBytes))
         {
-            var result = _mediaService.SaveImage(memoryStream, mediaObject.name, mediaObject.type ?? "application/octet-stream");
-            var imageUrl = $"/blog/images/getimage/{result.FileHash}?fileName={result.FileName}";
+            var savedFileName = _mediaService.SaveImage(memoryStream, mediaObject.name, mediaObject.type ?? "application/octet-stream");
+            var imageUrl = $"/blog/Images/{savedFileName}";
             return Task.FromResult(new MediaObjectInfo { url = imageUrl });
         }
     }
