@@ -218,3 +218,4 @@ _Pvt_Extensions
 /RaccoonBlog.Web/*.raven-database-topology
 
 .idea
+.nuget/nuget.exe
