@@ -28,7 +28,7 @@
     <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="8.0.11" />
     
     <!-- Keep compatible packages -->
-    <PackageReference Include="AutoMapper" Version="13.0.1" />
+    <PackageReference Include="AutoMapper" Version="15.1.1" />
     <PackageReference Include="HtmlAgilityPack" Version="1.6.16" />
     <PackageReference Include="RavenDB.Client" Version="7.2.1" />
     <PackageReference Include="RavenDB.Embedded" Version="7.2.1" />
