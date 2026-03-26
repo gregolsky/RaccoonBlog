@@ -31,9 +31,9 @@
     <PackageReference Include="AutoMapper" Version="15.1.1" />
     <PackageReference Include="HtmlAgilityPack" Version="1.6.16" />
     
-    <!-- RavenDB packages - ALL v6.0.104 for compatibility -->
-    <PackageReference Include="RavenDB.Client" Version="6.0.104" />
-    <PackageReference Include="RavenDB.Embedded" Version="6.0.104" />
+    <!-- RavenDB packages -->
+    <PackageReference Include="RavenDB.Client" Version="7.2.1" />
+    <PackageReference Include="RavenDB.Embedded" Version="7.2.1" />
     
     <!-- Updated xunit packages for .NET 8 compatibility -->
     <PackageReference Include="xunit" Version="2.9.2" />
