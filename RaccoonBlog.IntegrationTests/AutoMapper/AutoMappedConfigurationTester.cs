@@ -1,4 +1,5 @@
 using AutoMapper;
+using Microsoft.Extensions.Logging.Abstractions;
 using RaccoonBlog.Web.Infrastructure.AutoMapper;
 using RaccoonBlog.Web.Infrastructure.AutoMapper.Profiles;
 using RaccoonBlog.Web.Models;
@@ -25,7 +26,7 @@ namespace RaccoonBlog.IntegrationTests.AutoMapper
 				cfg.AddProfile<SeriesMapperProfile>();
 				cfg.AddProfile<UserAdminMapperProfile>();
 				cfg.AddProfile<PostsAdminViewModelMapperProfile>();
-			});
+			}, NullLoggerFactory.Instance);
 
 			_mapper = _configuration.CreateMapper();
 
