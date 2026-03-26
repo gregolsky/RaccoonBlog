@@ -1,4 +1,4 @@
-name: RaccoonBlog .NET 8 CI
+name: RaccoonBlog .NET 10 CI
 
 on:
   push:
