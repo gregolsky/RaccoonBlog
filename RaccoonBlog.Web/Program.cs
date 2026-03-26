@@ -224,7 +224,7 @@ if (!string.IsNullOrEmpty(twitterConsumerKey) && !string.IsNullOrEmpty(twitterCo
     });
 }
 
-// Configure AutoMapper using modern DI pattern for AutoMapper 12.x
+// Configure AutoMapper using modern DI pattern for AutoMapper 15.x
 // This automatically registers IMapper in DI and scans for profiles
 builder.Services.AddAutoMapper(cfg =>
 {
