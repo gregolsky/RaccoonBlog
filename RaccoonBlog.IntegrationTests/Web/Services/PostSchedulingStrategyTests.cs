@@ -3,36 +3,23 @@ using System.Linq;
 using RaccoonBlog.Web.Infrastructure.Common;
 using RaccoonBlog.Web.Models;
 using RaccoonBlog.Web.Services;
+using RaccoonBlog.IntegrationTests.Infrastructure;
 using Raven.Client.Documents;
 using Raven.Client.Documents.Session;
-using Raven.Embedded;
 using Xunit;
 
 namespace RaccoonBlog.IntegrationTests.Web.Services
 {
 	public class PostSchedulingStrategyTests : IDisposable
 	{
-	    private static EmbeddedServer _embeddedServer;
-	    private static readonly object _lock = new object();
-	    
 		protected DateTimeOffset Now { get; private set; }
 		protected IDocumentStore DocumentStore { get; private set; }
 		protected IDocumentSession Session { get; private set; }
 
 		public PostSchedulingStrategyTests()
 		{
-			lock (_lock)
-			{
-				if (_embeddedServer == null)
-				{
-					var server = EmbeddedServer.Instance;
-					server.StartServer();
-					_embeddedServer = server;
-				}
-			}
-			
 			Now = DateTimeOffset.Now;
-		    DocumentStore = _embeddedServer.GetDocumentStore(Guid.NewGuid().ToString());
+		    DocumentStore = EmbeddedServerHelper.Instance.GetDocumentStore(Guid.NewGuid().ToString());
 			Session = DocumentStore.OpenSession();
 		}
 

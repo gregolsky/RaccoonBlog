@@ -16,22 +16,7 @@ namespace RaccoonBlog.IntegrationTests.Infrastructure
     /// </summary>
     public class TestWebApplicationFactory : WebApplicationFactory<Program>
     {
-        private static EmbeddedServer _embeddedServer;
-        private static readonly object _lock = new object();
         private IDocumentStore _testDocumentStore;
-
-        public TestWebApplicationFactory()
-        {
-            lock (_lock)
-            {
-                if (_embeddedServer == null)
-                {
-                    var server = EmbeddedServer.Instance;
-                    server.StartServer();
-                    _embeddedServer = server;
-                }
-            }
-        }
 
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
@@ -59,7 +44,7 @@ namespace RaccoonBlog.IntegrationTests.Infrastructure
                 }
 
                 // Create a new test DocumentStore with a unique database name
-                _testDocumentStore = _embeddedServer.GetDocumentStore($"TestDb_{Guid.NewGuid()}");
+                _testDocumentStore = EmbeddedServerHelper.Instance.GetDocumentStore($"TestDb_{Guid.NewGuid()}");
                 
                 // Configure test store to wait for non-stale results
                 _testDocumentStore.OnBeforeQuery += (sender, args) =>
