@@ -25,8 +25,9 @@ namespace RaccoonBlog.IntegrationTests.Web.Services
 			{
 				if (_embeddedServer == null)
 				{
-					_embeddedServer = EmbeddedServer.Instance;
-					_embeddedServer.StartServer();
+					var server = EmbeddedServer.Instance;
+					server.StartServer();
+					_embeddedServer = server;
 				}
 			}
 			
