@@ -27,7 +27,6 @@ namespace RaccoonBlog.IntegrationTests.Infrastructure
                 if (_embeddedServer == null)
                 {
                     _embeddedServer = EmbeddedServer.Instance;
-                    _embeddedServer.StartServer();
                 }
             }
         }
