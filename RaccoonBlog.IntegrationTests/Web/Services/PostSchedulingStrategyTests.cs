@@ -21,14 +21,12 @@ namespace RaccoonBlog.IntegrationTests.Web.Services
 
 		public PostSchedulingStrategyTests()
 		{
-			// Use EmbeddedServer singleton - StartServer() is called automatically on first GetDocumentStore
 			lock (_lock)
 			{
 				if (_embeddedServer == null)
 				{
 					_embeddedServer = EmbeddedServer.Instance;
-					// StartServer is called automatically by EmbeddedServer.Instance the first time
-					// DO NOT call _embeddedServer.StartServer() manually - it will throw on subsequent calls
+					_embeddedServer.StartServer();
 				}
 			}
 			
