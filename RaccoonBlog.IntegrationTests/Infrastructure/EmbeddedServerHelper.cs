@@ -10,7 +10,7 @@ namespace RaccoonBlog.IntegrationTests.Infrastructure
     /// </summary>
     public static class EmbeddedServerHelper
     {
-        private static EmbeddedServer _instance;
+        private static volatile EmbeddedServer _instance;
         private static readonly object _lock = new object();
 
         public static EmbeddedServer Instance
