@@ -1,0 +1,37 @@
+services:
+  ravendb:
+    image: ravendb/ravendb:latest
+    container_name: raccoonblog-ravendb
+    ports:
+      - "8081:8080"
+      - "38888:38888"
+    environment:
+      - RAVEN_Setup_Mode=None
+      - RAVEN_Security_UnsecuredAccessAllowed=PublicNetwork
+      - RAVEN_License_Eula_Accepted=true
+      - RAVEN_ServerUrl=http://0.0.0.0:8080
+      - RAVEN_ServerUrl_Tcp=tcp://0.0.0.0:38888
+      - RAVEN_PublicServerUrl=http://raccoonblog-ravendb:8080
+      - RAVEN_PublicServerUrl_Tcp=tcp://raccoonblog-ravendb:38888
+      - RAVEN_License=''
+    volumes:
+      - ravendb_data:/var/lib/ravendb/data
+    healthcheck:
+      test: [ "CMD-SHELL", "curl http://localhost:8080/setup/alive >/dev/null || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+  web:
+    image: raccoonblog:web
+    container_name: raccoonblog-web
+    restart: no
+    ports:
+      - "8080:80"
+    depends_on:
+      - ravendb
+    environment:
+      - Raven__Urls=http://raccoonblog-ravendb:8080
+      - Raven__Database=staging.ayende.com
+volumes:
+  ravendb_data:
+      name: raccoonblog_ravendb_data
