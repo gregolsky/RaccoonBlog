@@ -1,5 +1,7 @@
 using System;
 using System.Linq;
+using Microsoft.Extensions.DependencyInjection;
+using RaccoonBlog.IntegrationTests.Infrastructure;
 using RaccoonBlog.Web.Infrastructure.Common;
 using RaccoonBlog.Web.Models;
 using RaccoonBlog.Web.Services;
@@ -10,37 +12,33 @@ using Xunit;
 
 namespace RaccoonBlog.IntegrationTests.Web.Services
 {
-	public class PostSchedulingStrategyTests : IDisposable
+	public class PostSchedulingStrategyTests : IClassFixture<TestWebApplicationFactory>, IDisposable
 	{
-	    private static EmbeddedServer _embeddedServer;
-	    private static readonly object _lock = new object();
-	    
+	    private readonly IServiceScope _scope;
 		protected DateTimeOffset Now { get; private set; }
-		protected IDocumentStore DocumentStore { get; private set; }
 		protected IDocumentSession Session { get; private set; }
 
-		public PostSchedulingStrategyTests()
+		public PostSchedulingStrategyTests(TestWebApplicationFactory factory)
 		{
-			// Use EmbeddedServer singleton - StartServer() is called automatically on first GetDocumentStore
-			lock (_lock)
-			{
-				if (_embeddedServer == null)
-				{
-					_embeddedServer = EmbeddedServer.Instance;
-					// StartServer is called automatically by EmbeddedServer.Instance the first time
-					// DO NOT call _embeddedServer.StartServer() manually - it will throw on subsequent calls
-				}
-			}
-			
+			_scope = factory.Services.CreateScope();
+			Session = _scope.ServiceProvider.GetRequiredService<IDocumentSession>();
 			Now = DateTimeOffset.Now;
-		    DocumentStore = _embeddedServer.GetDocumentStore(Guid.NewGuid().ToString());
-			Session = DocumentStore.OpenSession();
+			ClearPosts();
+		}
+
+		private void ClearPosts()
+		{
+			var posts = Session.Query<Post>().ToList();
+			foreach (var post in posts)
+			{
+				Session.Delete(post);
+			}
+			Session.SaveChanges();
 		}
 
 		public virtual void Dispose()
 		{
-			Session?.Dispose();
-			DocumentStore?.Dispose();
+			_scope?.Dispose();
 		}
 
 		[Fact]
