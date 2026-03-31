@@ -22,6 +22,9 @@ services:
       timeout: 5s
       retries: 20
   web:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
     image: raccoonblog:web
     container_name: raccoonblog-web
     restart: no
@@ -32,6 +35,9 @@ services:
     environment:
       - Raven__Urls=http://raccoonblog-ravendb:8080
       - Raven__Database=staging.ayende.com
+      - LOKI_ENDPOINT=${LOKI_ENDPOINT}
+      - LOKI_USERNAME=${LOKI_USERNAME}
+      - LOKI_PASSWORD=${LOKI_PASSWORD}
 volumes:
   ravendb_data:
       name: raccoonblog_ravendb_data
