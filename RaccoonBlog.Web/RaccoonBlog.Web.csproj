@@ -51,17 +51,13 @@
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="8.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.MicrosoftAccount" Version="8.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Twitter" Version="8.0.0" />
-    
-    <!-- AutoMapper packages - Upgraded to 12.x for .NET 8 compatibility -->
-    <PackageReference Include="AutoMapper" Version="12.0.1" />
-    <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1" />
-    
+    <PackageReference Include="AutoMapper" Version="13.0.0" />
     <!-- Keep compatible packages -->
     <PackageReference Include="FluentScheduler" Version="5.3.0" />
     <PackageReference Include="HtmlAgilityPack" Version="1.6.16" />
     <PackageReference Include="JetBrains.Annotations" Version="11.1.0" />
     <PackageReference Include="Lambda2Js.Signed" Version="3.1.4" />
-    <PackageReference Include="Microsoft.AspNetCore.JsonPatch" Version="8.0.22" />
+    <PackageReference Include="Microsoft.AspNetCore.JsonPatch" Version="10.0.3" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="8.0.11" />
     <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="8.0.0" />
     <PackageReference Include="Microsoft.Bcl.HashCode" Version="6.0.0" />
@@ -90,7 +86,7 @@
     <PackageReference Include="RedditSharp" Version="2.0.0" />
     
     <!-- RavenDB packages - ALL v6.0.104 for compatibility -->
-    <PackageReference Include="RavenDB.Client" Version="6.0.104" />
+    <PackageReference Include="RavenDB.Client" Version="7.2.1" />
     <PackageReference Include="RavenDB.Embedded" Version="6.0.104" />
     <PackageReference Include="RavenDB.TestDriver" Version="6.0.104" />
     <PackageReference Include="WilderMinds.MetaWeblog" Version="5.1.3" />
