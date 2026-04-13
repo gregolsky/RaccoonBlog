@@ -23,6 +23,7 @@ ENV DOTNET_CLI_TELEMETRY_OPTOUT=1 \
 RUN addgroup --system --gid 10001 appgroup && adduser --system --uid 10001 --ingroup appgroup appuser
 
 COPY --from=build /app/publish ./
+COPY --from=build /src/RaccoonBlog.Web/NLog.config ./NLog.config
 
 RUN chown -R appuser:appgroup /app
 
