@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using System.Web;
 using RaccoonBlog.Web.Models.SocialNetwork;
 
 namespace RaccoonBlog.Web.Models

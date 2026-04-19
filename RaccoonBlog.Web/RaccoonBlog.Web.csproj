@@ -13,27 +13,42 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- T4MVC generated files configuration -->
-    <Compile Update="T4MVC.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>T4MVC.tt</DependentUpon>
-    </Compile>
-    
-    <None Update="T4MVC.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>T4MVC.cs</LastGenOutput>
-    </None>
-
     <!-- Exclude files not needed -->
     <Compile Remove="ViewModels\BlogConfigurationInput.cs" />
     
-    <!-- Exclude MetaWeblog service - uses XmlRpcService from xmlrpcnet which references System.Web -->
-    <!-- This needs to be rewritten for ASP.NET Core if XML-RPC support is required -->
+    <!-- Exclude old MetaWeblog/XmlRpc files - replaced by MetaWeblogService using WilderMinds.MetaWeblog -->
     <Compile Remove="Services\MetaWeblog.cs" />
+    <Compile Remove="Services\IMetaWeblog.cs" />
+    <Compile Remove="Services\RssModels\BlogInfo.cs" />
+    <Compile Remove="Services\RssModels\Category.cs" />
+    <Compile Remove="Services\RssModels\CategoryInfo.cs" />
+    <Compile Remove="Services\RssModels\Enclosure.cs" />
+    <Compile Remove="Services\RssModels\MediaObject.cs" />
+    <Compile Remove="Services\RssModels\MediaObjectInfo.cs" />
+    <Compile Remove="Services\RssModels\Post.cs" />
+    <Compile Remove="Services\RssModels\Source.cs" />
+    <Compile Remove="Services\RssModels\UserInfo.cs" />
+    <Compile Remove="Services\RssModels\WordpressCategory.cs" />
+
+    <!-- Exclude unused helpers that depend on old System.Web.Mvc types -->
+    <Compile Remove="Helpers\Binders\RemoveSpacesEnumBinder.cs" />
+    <Compile Remove="Helpers\StaticFileUrlHelperExtensions.cs" />
     <Content Remove="compilerconfig.json" />
     <None Include="compilerconfig.json" />
     <None Include="Services\MetaWeblog.cs" />
+    <None Include="Services\IMetaWeblog.cs" />
+    <None Include="Services\RssModels\BlogInfo.cs" />
+    <None Include="Services\RssModels\Category.cs" />
+    <None Include="Services\RssModels\CategoryInfo.cs" />
+    <None Include="Services\RssModels\Enclosure.cs" />
+    <None Include="Services\RssModels\MediaObject.cs" />
+    <None Include="Services\RssModels\MediaObjectInfo.cs" />
+    <None Include="Services\RssModels\Post.cs" />
+    <None Include="Services\RssModels\Source.cs" />
+    <None Include="Services\RssModels\UserInfo.cs" />
+    <None Include="Services\RssModels\WordpressCategory.cs" />
+    <None Include="Helpers\Binders\RemoveSpacesEnumBinder.cs" />
+    <None Include="Helpers\StaticFileUrlHelperExtensions.cs" />
     <None Include="wwwroot\images\android-chrome-192x192.png" />
     <None Include="wwwroot\images\android-chrome-512x512.png" />
     <None Include="wwwroot\images\apple-touch-icon.png" />
@@ -45,13 +60,16 @@
 
   <ItemGroup>
     <!-- Core ASP.NET Core packages -->
-    <PackageReference Include="BuildBundlerMinifier" Version="3.2.449" />
     <PackageReference Include="LigerShark.WebOptimizer.Core" Version="3.0.477" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Facebook" Version="8.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="8.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.MicrosoftAccount" Version="8.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Twitter" Version="8.0.0" />
-    <PackageReference Include="AutoMapper" Version="13.0.0" />
+    
+    <!-- AutoMapper - Upgraded to 15.1.1 to fix GHSA-rvv3-g6hj-g44x (DoS via uncontrolled recursion) -->
+    <!-- DI extensions are included in the core package since 13.0 -->
+    <PackageReference Include="AutoMapper" Version="15.1.1" />
+    
     <!-- Keep compatible packages -->
     <PackageReference Include="FluentScheduler" Version="5.3.0" />
     <PackageReference Include="HtmlAgilityPack" Version="1.6.16" />
@@ -72,9 +90,6 @@
     <PackageReference Include="System.Collections.Immutable" Version="9.0.5" />
     <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.1.2" />
     
-    <!-- T4MVC - Keep temporarily for buildable state, will remove in Phase 2 -->
-    <PackageReference Include="T4MVC" Version="4.1.0" />
-    
     <!-- Updated security-vulnerable packages -->
     <PackageReference Include="jQuery" Version="3.7.1" />
     <PackageReference Include="jQuery.Validation" Version="1.21.0" />
@@ -91,9 +106,10 @@
     <PackageReference Include="RavenDB.Embedded" Version="6.0.104" />
     <PackageReference Include="RavenDB.TestDriver" Version="6.0.104" />
     <PackageReference Include="WilderMinds.MetaWeblog" Version="5.1.3" />
-    
-    <!-- XML-RPC - Keep for potential future use, but MetaWeblog.cs is excluded -->
-    <PackageReference Include="xmlrpcnet" Version="2.5.0" />
+
+    <!-- Pin transitive dependencies to fix known vulnerabilities -->
+    <PackageReference Include="System.Drawing.Common" Version="4.7.2" />
+    <PackageReference Include="System.Net.Http" Version="4.3.4" />
   </ItemGroup>
 
   <!-- Clean generated CSS files on Clean -->

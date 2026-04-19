@@ -5,9 +5,9 @@ using RaccoonBlog.IntegrationTests.Infrastructure;
 using RaccoonBlog.Web.Infrastructure.Common;
 using RaccoonBlog.Web.Models;
 using RaccoonBlog.Web.Services;
+using RaccoonBlog.IntegrationTests.Infrastructure;
 using Raven.Client.Documents;
 using Raven.Client.Documents.Session;
-using Raven.Embedded;
 using Xunit;
 
 namespace RaccoonBlog.IntegrationTests.Web.Services

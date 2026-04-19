@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-
-namespace RaccoonBlog.Web.Services.Reddit
+﻿namespace RaccoonBlog.Web.Services.Reddit
 {
     public class LinkPost
     {
