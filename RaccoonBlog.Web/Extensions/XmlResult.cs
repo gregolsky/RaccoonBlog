@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Threading;
+using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.Mvc;
@@ -25,13 +26,13 @@ namespace HibernatingRhinos.Loci.Common.Extensions
 
 			context.HttpContext.Response.ContentType = "text/xml";
 
-			using (var xmlWriter = XmlWriter.Create(context.HttpContext.Response.Body, new XmlWriterSettings
+			await using (var xmlWriter = XmlWriter.Create(context.HttpContext.Response.Body, new XmlWriterSettings
+			             {
+				             Async = true,
+				             Indent = false
+			             }))
 			{
-				Async = true,
-				Indent = false
-			}))
-			{
-				_document.WriteTo(xmlWriter);
+				await _document.WriteToAsync(xmlWriter, context.HttpContext.RequestAborted);
 				await xmlWriter.FlushAsync();
 			}
 		}
